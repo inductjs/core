@@ -1,0 +1,45 @@
+{
+  "name": "@induct/core",
+  "version": "0.0.2",
+  "main": "lib/index.js",
+  "module": "lib/index.es.js",
+  "types": "lib/index.d.ts",
+  "description": "NodeJS API generator",
+  "scripts": {
+    "test": "jest",
+    "tets:coverage": "npm run test",
+    "build": "tsc --outDir ./dist --declarationDir ./lib --declaration true --sourceMap true && rollup -c && rm -rf ./dist",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yeseh/induct-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Yeseh/induct-core.git/issues"
+  },
+  "homepage": "git+https://github.com/Yeseh/induct-core#readme",
+  "keywords": [],
+  "author": "Jesse Wellenberg",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^4.1.1",
+    "@types/node": "^14.0.1",
+    "@types/rimraf": "^3.0.0",
+    "@typescript-eslint/parser": "^2.33.0",
+    "@yeseh/eslint-config": "^1.0.6",
+    "@yeseh/prettier-config": "^1.0.0",
+    "chalk": "^4.0.0",
+    "eslint": "^7.0.0",
+    "prettier": "^2.0.5",
+    "prettier-eslint": "^9.0.1",
+    "prompt": "^1.0.0",
+    "replace": "^1.2.0",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.10.0",
+    "ts-node": "^8.10.1",
+    "typescript": "^3.9.2"
+  },
+  "dependencies": {}
+}
