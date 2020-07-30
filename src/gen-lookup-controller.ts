@@ -1,63 +1,60 @@
-import { ModelOptions, IModel } from "./types/model-schema";
-import {
-  ControllerFunctionOptions,
-  Controller,
-} from "./types/controller-schema";
-import { IControllerResult, ControllerResult } from "./controller-result";
-import { StatusCode } from "./types/http-schema";
+import {ModelOptions, IModel} from './types/model-schema';
+import {ControllerFunctionOptions, Controller} from './types/controller-schema';
+import {IControllerResult, ControllerResult} from './controller-result';
+import {StatusCode} from './types/http-schema';
 
 export const createLookupController = <T, M extends IModel<T>>(
-  opts: ControllerFunctionOptions<T, M>
+    opts: ControllerFunctionOptions<T, M>
 ): Controller<T> => {
-  const { modelFn, factoryFn } = opts;
+    const {modelFn, factoryFn} = opts;
 
-  return async (
-    res,
-    factoryParams: Partial<T>,
-    opts?: ModelOptions
-  ): Promise<ControllerResult<T>> => {
-    let result: IControllerResult<T>;
-
-    try {
-      const model = await factoryFn(factoryParams, opts);
-
-      if (!model) {
-        return new ControllerResult({
-          res,
-          status: StatusCode.BAD_REQUEST,
-        });
-      }
-
-      if (typeof model[modelFn] !== "function") {
-        throw new TypeError(
-          `${modelFn} is not a function of the supplied model`
-        );
-      }
-
-      const lookup = (await model[modelFn]()) as T[];
-
-      if (lookup.length == 0) {
-        result = {
-          res,
-          status: StatusCode.NOT_FOUND,
-        };
-      } else {
-        const data = lookup.length === 1 ? lookup[0] : lookup;
-
-        result = {
-          res,
-          status: StatusCode.OK,
-          data,
-        };
-      }
-    } catch (e) {
-      result = {
+    return async (
         res,
-        status: StatusCode.INTERNAL_SERVER_ERROR,
-        error: e,
-      };
-    }
+        factoryParams: Partial<T>,
+        opts?: ModelOptions
+    ): Promise<ControllerResult<T>> => {
+        let result: IControllerResult<T>;
 
-    return new ControllerResult(result);
-  };
+        try {
+            const model = await factoryFn(factoryParams, opts);
+
+            if (!model) {
+                return new ControllerResult({
+                    res,
+                    status: StatusCode.BAD_REQUEST,
+                });
+            }
+
+            if (typeof model[modelFn] !== 'function') {
+                throw new TypeError(
+                    `${modelFn} is not a function of the supplied model`
+                );
+            }
+
+            const lookup = (await model[modelFn]()) as T[];
+
+            if (lookup.length == 0) {
+                result = {
+                    res,
+                    status: StatusCode.NOT_FOUND,
+                };
+            } else {
+                const data = lookup.length === 1 ? lookup[0] : lookup;
+
+                result = {
+                    res,
+                    status: StatusCode.OK,
+                    data,
+                };
+            }
+        } catch (e) {
+            result = {
+                res,
+                status: StatusCode.INTERNAL_SERVER_ERROR,
+                error: e,
+            };
+        }
+
+        return new ControllerResult(result);
+    };
 };

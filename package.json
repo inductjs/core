@@ -8,10 +8,12 @@
   "scripts": {
     "test": "jest",
     "tets:coverage": "npm run test",
-    "prebuild": "eslint \"src/**/*.ts\" --fix",
-    "build": "tsc --outDir ./dist --declarationDir ./lib --declaration true --sourceMap true && rollup -c && rm -rf ./dist",
+    "prebuild": "eslint \"src/**/*.ts\" --fix && prettier --write \"src/**/*.ts\"",
+    "build": "npm run prebuild && rollup -c",
+    "watch": "rollup -cw",
     "prepublishOnly": "npm run build"
   },
+  "prettier": "@yeseh/prettier-config",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Yeseh/induct-core.git"
@@ -32,7 +34,7 @@
     "@types/rimraf": "^3.0.0",
     "@typescript-eslint/parser": "^2.33.0",
     "@yeseh/eslint-config": "^1.1.0",
-    "@yeseh/prettier-config": "^1.0.0",
+    "@yeseh/prettier-config": "^1.1.2",
     "chalk": "^4.0.0",
     "eslint": "^7.5.0",
     "express": "^4.17.1",
