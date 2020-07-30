@@ -1,8 +1,8 @@
-import {ModelOptions, IModel} from './types/model-schema';
-import {ControllerFunctionOptions, Controller} from './types/controller-schema';
-import {StatusCode} from './types/http-schema';
+import {ModelOptions, IModel} from "./types/model-schema";
+import {ControllerFunctionOptions, Controller} from "./types/controller-schema";
+import {StatusCode} from "./types/http-schema";
 
-import {IControllerResult, ControllerResult} from './controller-result';
+import {IControllerResult, ControllerResult} from "./controller-result";
 
 export const createModController = <T, M extends IModel<T>>(
     opts: ControllerFunctionOptions<T, M>
@@ -26,7 +26,7 @@ export const createModController = <T, M extends IModel<T>>(
                 });
             }
 
-            if (typeof model[modelFn] !== 'function') {
+            if (typeof model[modelFn] !== "function") {
                 throw new TypeError(
                     `${modelFn} is not a function of the supplied model`
                 );
@@ -36,7 +36,7 @@ export const createModController = <T, M extends IModel<T>>(
 
             if (!modified) {
                 const failStatus =
-                    modelFn === 'create'
+                    modelFn === "create"
                         ? StatusCode.BAD_REQUEST
                         : StatusCode.NOT_FOUND;
 
@@ -47,9 +47,9 @@ export const createModController = <T, M extends IModel<T>>(
             } else {
                 let sucStatus: StatusCode = StatusCode.OK;
 
-                if (modelFn === 'create') {
+                if (modelFn === "create") {
                     sucStatus = StatusCode.CREATED;
-                } else if (modelFn === 'delete') {
+                } else if (modelFn === "delete") {
                     sucStatus = StatusCode.NO_CONTENT;
                 }
 

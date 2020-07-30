@@ -1,6 +1,6 @@
-import {StatusCode} from './types/http-schema';
-import {ValidationError} from './types/error-schema';
-import {Response} from 'express';
+import {StatusCode} from "./types/http-schema";
+import {ValidationError} from "./types/error-schema";
+import {Response} from "express";
 
 export interface IControllerResult<T> {
     status: StatusCode;

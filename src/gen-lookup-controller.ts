@@ -1,7 +1,7 @@
-import {ModelOptions, IModel} from './types/model-schema';
-import {ControllerFunctionOptions, Controller} from './types/controller-schema';
-import {IControllerResult, ControllerResult} from './controller-result';
-import {StatusCode} from './types/http-schema';
+import {ModelOptions, IModel} from "./types/model-schema";
+import {ControllerFunctionOptions, Controller} from "./types/controller-schema";
+import {IControllerResult, ControllerResult} from "./controller-result";
+import {StatusCode} from "./types/http-schema";
 
 export const createLookupController = <T, M extends IModel<T>>(
     opts: ControllerFunctionOptions<T, M>
@@ -25,7 +25,7 @@ export const createLookupController = <T, M extends IModel<T>>(
                 });
             }
 
-            if (typeof model[modelFn] !== 'function') {
+            if (typeof model[modelFn] !== "function") {
                 throw new TypeError(
                     `${modelFn} is not a function of the supplied model`
                 );

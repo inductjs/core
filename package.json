@@ -1,10 +1,11 @@
 {
   "name": "@induct/core",
   "version": "0.1.0",
-  "main": "lib/index.js",
-  "module": "lib/index.es.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
   "description": "NodeJS API generator",
+  "type": "module",
   "scripts": {
     "test": "jest",
     "tets:coverage": "npm run test",
@@ -25,7 +26,6 @@
   "keywords": [],
   "author": "Jesse Wellenberg",
   "license": "MIT",
-  "type": "module",
   "devDependencies": {
     "@rollup/plugin-typescript": "^4.1.1",
     "@types/express": "^4.17.7",
