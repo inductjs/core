@@ -1,4 +1,4 @@
-import knex from 'knex';
+import knex from "knex";
 
 export type ModelFactory<T, M> = (
     factoryParams: Partial<T>,
@@ -43,16 +43,16 @@ export interface IModel<T> {
 }
 
 export type BaseModelFunction =
-    | 'commitTransaction'
-    | 'create'
-    | 'delete'
-    | 'destroyConnection'
-    | 'startTransaction'
-    | 'rollbackTransaction'
-    | 'findOneById'
-    | 'findAll'
-    | 'update'
-    | 'validate';
+    | "commitTransaction"
+    | "create"
+    | "delete"
+    | "destroyConnection"
+    | "startTransaction"
+    | "rollbackTransaction"
+    | "findOneById"
+    | "findAll"
+    | "update"
+    | "validate";
 
 export interface ValidationResult<T> {
     validatedArray: T[];
