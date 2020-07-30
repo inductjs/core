@@ -1,6 +1,6 @@
 {
   "name": "@induct/core",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "main": "lib/index.js",
   "module": "lib/index.es.js",
   "types": "lib/index.d.ts",
@@ -8,6 +8,7 @@
   "scripts": {
     "test": "jest",
     "tets:coverage": "npm run test",
+    "prebuild": "eslint \"src/**/*.ts\" --fix",
     "build": "tsc --outDir ./dist --declarationDir ./lib --declaration true --sourceMap true && rollup -c && rm -rf ./dist",
     "prepublishOnly": "npm run build"
   },
@@ -25,13 +26,17 @@
   "type": "module",
   "devDependencies": {
     "@rollup/plugin-typescript": "^4.1.1",
+    "@types/express": "^4.17.7",
+    "@types/knex": "^0.16.1",
     "@types/node": "^14.0.1",
     "@types/rimraf": "^3.0.0",
     "@typescript-eslint/parser": "^2.33.0",
-    "@yeseh/eslint-config": "^1.0.6",
+    "@yeseh/eslint-config": "^1.1.0",
     "@yeseh/prettier-config": "^1.0.0",
     "chalk": "^4.0.0",
-    "eslint": "^7.0.0",
+    "eslint": "^7.5.0",
+    "express": "^4.17.1",
+    "knex": "^0.21.2",
     "prettier": "^2.0.5",
     "prettier-eslint": "^9.0.1",
     "prompt": "^1.0.0",
@@ -41,5 +46,8 @@
     "ts-node": "^8.10.1",
     "typescript": "^3.9.2"
   },
-  "dependencies": {}
+  "peerDependencies": {
+    "express": "^4.17.1",
+    "knex": "^0.21.2"
+  }
 }

@@ -6,7 +6,6 @@
         "moduleResolution": "node",
         "experimentalDecorators": true,
         "allowJs": true,
-        "strict": true,
     },
     "lib": ["es2015", "dom"],
     "include": ["src/**/*"],
