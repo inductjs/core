@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import knex from "knex";
-import {IModel, ModelOptions} from "./types/model-schema";
+import {IModel, InductModelOpts} from "./types/model-schema";
 
 /**
  * Base class for CRUD operation APIs. Takes a generic type parameter based on
  */
 export abstract class Model<T> implements IModel<T> {
     /**
-     * Tenant database connection object based.
-     * Based on the request state when a child class is instantiated
+     * Tenant database connection object.
      */
     protected _con: knex;
     /**
@@ -30,12 +29,11 @@ export abstract class Model<T> implements IModel<T> {
     /**
      * Contains the model options used to generate the model instance
      */
-    protected _options: ModelOptions;
+    protected _options: InductModelOpts;
     /**
-     * Represents an object that can be used to create new DB transactions
+     * Represents an object that can be used to create new database transactions
      */
     protected trxProvider: any;
-
     /**
      * Represents whether the model data has been validated
      */
@@ -45,16 +43,13 @@ export abstract class Model<T> implements IModel<T> {
         this._model = model;
 
         this._con = con;
-        // else this._con = getTestConnection();
-
-        // this.trxProvider = this._con.transactionProvider();
     }
 
     get validated(): boolean {
         return this._validated;
     }
 
-    get options(): ModelOptions {
+    get options(): InductModelOpts {
         return this._options;
     }
 
@@ -83,6 +78,8 @@ export abstract class Model<T> implements IModel<T> {
     }
     /** Creates a new database transaction and sets this transaction to the model instance */
     public async startTransaction(): Promise<knex.Transaction> {
+        if (this._trx) await this._trx.destroy();
+
         this._trx = await this._con.transaction();
 
         return this._trx;

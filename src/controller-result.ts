@@ -36,7 +36,7 @@ class ControllerResult<T> implements IControllerResult<T> {
         return this.res.status(this.status).send({
             data: this.data,
             info: this.info,
-            error: this.error,
+            error: this.error.name,
             validationErrors: this.validationErrors,
         });
     }

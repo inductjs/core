@@ -1,7 +1,7 @@
 export {
-    Controller,
-    ControllerFunctionOptions,
-    IControllerBase,
+    InductController,
+    InductControllerOpts,
+    InductControllerBase as IControllerBase,
 } from "./types/controller-schema";
 
 export {ValidationError, QueryError} from "./types/error-schema";
@@ -9,11 +9,11 @@ export {ValidationError, QueryError} from "./types/error-schema";
 export {StatusCode} from "./types/http-schema";
 
 export {
-    ModelFactory,
+    InductModelFactory as ModelFactory,
     ModelFunction,
-    ModelOptions,
+    InductModelOpts as ModelOptions,
     IModel,
-    BaseModelFunction,
+    InductModelFunction as BaseModelFunction,
     ValidationResult,
 } from "./types/model-schema";
 

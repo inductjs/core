@@ -1,23 +1,33 @@
-import {ModelOptions, IModel} from "./types/model-schema";
-import {ControllerFunctionOptions, Controller} from "./types/controller-schema";
+import {InductModelOpts, IModel} from "./types/model-schema";
+import {InductControllerOpts, InductController} from "./types/controller-schema";
 import {StatusCode} from "./types/http-schema";
 
 import {IControllerResult, ControllerResult} from "./controller-result";
 
+
+/**
+ * Returns a generic controller function for POST, PATCH, and DELETE routes;
+ * @param opts InductControllerOpts
+ * @example
+ * const controller = createModController({
+ *      modelFactory: createModelFactory(['user_id', 'username'], UserModel),
+ *      modelFn: 'create'
+ * })
+ */
 export const createModController = <T, M extends IModel<T>>(
-    opts: ControllerFunctionOptions<T, M>
-): Controller<T> => {
-    const {modelFn, factoryFn} = opts;
+    opts: InductControllerOpts<T, M>
+): InductController<T> => {
+    const {modelFn, modelFactory} = opts;
 
     return async (
         res,
         factoryParams: Partial<T>,
-        opts?: ModelOptions
+        opts?: InductModelOpts
     ): Promise<ControllerResult<T>> => {
         let result: IControllerResult<T>;
 
         try {
-            const model = await factoryFn(factoryParams, opts);
+            const model = await modelFactory(factoryParams, opts);
 
             if (!model) {
                 return new ControllerResult({
@@ -35,8 +45,7 @@ export const createModController = <T, M extends IModel<T>>(
             const modified = (await model[modelFn]()) as T;
 
             if (!modified) {
-                const failStatus =
-                    modelFn === "create"
+                const failStatus = modelFn === "create"
                         ? StatusCode.BAD_REQUEST
                         : StatusCode.NOT_FOUND;
 

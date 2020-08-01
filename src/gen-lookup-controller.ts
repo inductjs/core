@@ -1,17 +1,17 @@
-import {ModelOptions, IModel} from "./types/model-schema";
-import {ControllerFunctionOptions, Controller} from "./types/controller-schema";
+import {InductModelOpts, IModel} from "./types/model-schema";
+import {InductControllerOpts, InductController} from "./types/controller-schema";
 import {IControllerResult, ControllerResult} from "./controller-result";
 import {StatusCode} from "./types/http-schema";
 
 export const createLookupController = <T, M extends IModel<T>>(
-    opts: ControllerFunctionOptions<T, M>
-): Controller<T> => {
-    const {modelFn, factoryFn} = opts;
+    opts: InductControllerOpts<T, M>
+): InductController<T> => {
+    const {modelFn, modelFactory: factoryFn} = opts;
 
     return async (
         res,
         factoryParams: Partial<T>,
-        opts?: ModelOptions
+        opts?: InductModelOpts
     ): Promise<ControllerResult<T>> => {
         let result: IControllerResult<T>;
 

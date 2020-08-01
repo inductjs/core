@@ -1,15 +1,15 @@
 import knex from "knex";
 
-export type ModelFactory<T, M> = (
+export type InductModelFactory<T, M> = (
     factoryParams: Partial<T>,
-    opts?: ModelOptions
+    opts?: InductModelOpts
 ) => Promise<M>;
 
 export type ModelFunction<T> = () => Promise<
     T | T[] | number | ValidationResult<T>
 >;
 
-export interface ModelOptions {
+export interface InductModelOpts {
     /** Set to true for bulk operations accross the whole table, skipping individual validation  */
     all?: boolean;
     /** Set to true to validate input data on instantiation */
@@ -19,7 +19,7 @@ export interface ModelOptions {
 export interface IModel<T> {
     trx: knex.Transaction;
     validated: boolean;
-    options: ModelOptions;
+    options: InductModelOpts;
     table_name: string;
     id_field: string;
     model: T;
@@ -42,7 +42,7 @@ export interface IModel<T> {
     get<K extends keyof T>(prop: K): T[K];
 }
 
-export type BaseModelFunction =
+export type InductModelFunction =
     | "commitTransaction"
     | "create"
     | "delete"
@@ -55,6 +55,6 @@ export type BaseModelFunction =
     | "validate";
 
 export interface ValidationResult<T> {
-    validatedArray: T[];
-    validationErrors: Error[];
+    data: T | T[];
+    errors: Error[];
 }
