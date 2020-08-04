@@ -1,3 +1,5 @@
+![CI](https://github.com/Yeseh/induct-core/workflows/CI/badge.svg?branch=master)
+
 # Induct
 WORK IN PROGRESS, NOT USABLE
 
