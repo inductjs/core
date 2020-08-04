@@ -1,4 +1,8 @@
-import {InductModelOpts, IModel, InductModelFactory} from "./types/model-schema";
+import {
+    InductModelOpts,
+    IModel,
+    InductModelFactory,
+} from "./types/model-schema";
 
 /**
  * Creates a factory function which returns a promise that resolves to an instance of the supplied model class.

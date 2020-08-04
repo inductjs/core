@@ -1,5 +1,9 @@
 import {Request, Response, NextFunction} from "express";
-import {InductModelFactory, InductModelFunction, InductModelOpts} from "./model-schema";
+import {
+    InductModelFactory,
+    BaseModelFunction,
+    InductModelOpts,
+} from "./model-schema";
 import {ControllerResult} from "../controller-result";
 
 export type InductController<T> = (
@@ -11,7 +15,7 @@ export type InductController<T> = (
 export interface InductControllerOpts<T, M> {
     modelFactory: InductModelFactory<T, M>;
     /** Name of the model function that the controller should call */
-    modelFn: InductModelFunction;
+    modelFn: BaseModelFunction;
     /** Options that should be provided to the model factory */
     modelOpts?: InductModelOpts;
 }

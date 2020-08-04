@@ -1,9 +1,11 @@
 import {InductModelOpts, IModel} from "./types/model-schema";
-import {InductControllerOpts, InductController} from "./types/controller-schema";
+import {
+    InductControllerOpts,
+    InductController,
+} from "./types/controller-schema";
 import {StatusCode} from "./types/http-schema";
 
 import {IControllerResult, ControllerResult} from "./controller-result";
-
 
 /**
  * Returns a generic controller function for POST, PATCH, and DELETE routes;
@@ -45,7 +47,8 @@ export const createModController = <T, M extends IModel<T>>(
             const modified = (await model[modelFn]()) as T;
 
             if (!modified) {
-                const failStatus = modelFn === "create"
+                const failStatus =
+                    modelFn === "create"
                         ? StatusCode.BAD_REQUEST
                         : StatusCode.NOT_FOUND;
 

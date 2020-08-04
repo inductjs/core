@@ -1,5 +1,8 @@
 import {InductModelOpts, IModel} from "./types/model-schema";
-import {InductControllerOpts, InductController} from "./types/controller-schema";
+import {
+    InductControllerOpts,
+    InductController,
+} from "./types/controller-schema";
 import {IControllerResult, ControllerResult} from "./controller-result";
 import {StatusCode} from "./types/http-schema";
 

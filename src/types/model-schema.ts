@@ -5,7 +5,7 @@ export type InductModelFactory<T, M> = (
     opts?: InductModelOpts
 ) => Promise<M>;
 
-export type ModelFunction<T> = () => Promise<
+export type InductModelFunction<T> = () => Promise<
     T | T[] | number | ValidationResult<T>
 >;
 
@@ -14,6 +14,7 @@ export interface InductModelOpts {
     all?: boolean;
     /** Set to true to validate input data on instantiation */
     validate?: boolean;
+    connection?: knex;
 }
 
 export interface IModel<T> {
@@ -24,25 +25,25 @@ export interface IModel<T> {
     id_field: string;
     model: T;
 
-    create?: (value?: Partial<T>) => Promise<T>;
-    delete?: (value?: string | number) => Promise<number | string>;
-    destroyConnection: () => Promise<void>;
-    exists?: <K extends keyof T>(
-        column: keyof T,
-        value: T[K]
-    ) => Promise<boolean>;
     startTransaction: () => Promise<knex.Transaction>;
+    destroyConnection: () => Promise<void>;
     commitTransaction: () => Promise<void>;
     rollbackTransaction: () => Promise<void>;
     findOneById: (value?: string | number) => Promise<T[]>;
     findAll: () => Promise<T[]>;
+    create?: (value?: Partial<T>) => Promise<T>;
+    delete?: (value?: string | number) => Promise<number | string>;
     update?: (value?: Partial<T>) => Promise<T | number>;
+    exists?: <K extends keyof T>(
+        column: keyof T,
+        value: T[K]
+    ) => Promise<boolean>;
     validate?: (value?: T) => Promise<T>;
     set<K extends keyof T>(prop: K, value: T[K]): void;
     get<K extends keyof T>(prop: K): T[K];
 }
 
-export type InductModelFunction =
+export type BaseModelFunction =
     | "commitTransaction"
     | "create"
     | "delete"

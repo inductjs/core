@@ -1,7 +1,7 @@
 export {
     InductController,
     InductControllerOpts,
-    InductControllerBase as IControllerBase,
+    InductControllerBase,
 } from "./types/controller-schema";
 
 export {ValidationError, QueryError} from "./types/error-schema";
@@ -9,11 +9,10 @@ export {ValidationError, QueryError} from "./types/error-schema";
 export {StatusCode} from "./types/http-schema";
 
 export {
-    InductModelFactory as ModelFactory,
-    ModelFunction,
-    InductModelOpts as ModelOptions,
+    InductModelFactory,
+    InductModelFunction,
+    InductModelOpts,
     IModel,
-    InductModelFunction as BaseModelFunction,
     ValidationResult,
 } from "./types/model-schema";
 
@@ -30,8 +29,12 @@ export {createModController} from "./gen-mod-controller";
 import {createModelFactory} from "./gen-model";
 export {createModelFactory} from "./gen-model";
 
+import {createAzureFunctionsRouter} from "./gen-functions-router";
+export {createAzureFunctionsRouter} from "./gen-functions-router";
+
 export default {
     createModController,
     createLookupController,
     createModelFactory,
+    createAzureFunctionsRouter,
 };
