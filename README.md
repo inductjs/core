@@ -1,7 +1,7 @@
 # Induct
-WORK IN PROGRESS
+WORK IN PROGRESS, NOT USABLE
 
-NodeJS API mockup and generation tool based on database schemas
+Helper library for quickly REST API's, with support for ExpressJS and Azure Functions.
 
 # License
 MIT
