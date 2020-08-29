@@ -1,29 +1,28 @@
 import {
     InductModelOpts,
     InductModelFactory,
-    BaseModelFunction,
     LookupModelFunction,
     ModifierModelFunction,
 } from "./types/model-schema";
 import {IControllerResult, ControllerResult} from "./controller-result";
 import {createModelFactory} from "./gen-model-factory";
 import {StatusCode} from "./types/http-schema";
-import {RequestHandler, Request, Response, NextFunction} from "express";
+import {RequestHandler, Request, Response, Router, NextFunction} from "express";
 import knex from "knex";
 
-interface InductConstructorOpts<T> {
+export interface InductConstructorOpts<T> {
     /** KnexJS database connection object */
     connection: knex;
     /** Schema class for typesafety and validation */
-    schema: new () => T;
-    /** Model function to use in this controller */
-    modelFn: BaseModelFunction;
+    schema: new (val: T) => T;
     /** Name of ID field to use for lookups */
     idField: keyof T;
     /** Name of the table to query */
     tableName: string;
     /** [NOT IMPLEMENTED] Array of field names that can be used as a lookup field */
     additionalLookupFields?: Array<keyof T>;
+    /** url parameter for resource ID's. Default = "id" */
+    idParam?: string;
     /** Set to true for bulk operations accross the whole table, skipping individual validation  */
     all?: boolean;
     /** Set to true to validate input data on instantiation */
@@ -33,24 +32,21 @@ interface InductConstructorOpts<T> {
 }
 
 export class Induct<T> {
-    connection: knex;
-    schema: new () => T;
-    modelFn: BaseModelFunction;
-    modelFactory: InductModelFactory<T>;
+    private connection: knex;
+    schema: new (val: T) => T;
     idField: keyof T;
-    lookupFields: Array<keyof T>;
     fieldsList: Array<keyof T>;
     tableName: string;
 
     all: boolean;
-
     validate: boolean;
-    fields: Array<string>;
+
+    modelFactory: InductModelFactory<T>;
+    lookupFields: Array<keyof T>;
 
     constructor(args: InductConstructorOpts<T>) {
         this.connection = args.connection;
         this.schema = args.schema;
-        this.modelFn = args.modelFn;
         this.idField = args.idField;
         this.tableName = args.tableName;
         this.lookupFields = [args.idField, ...args.additionalLookupFields];
@@ -140,7 +136,7 @@ export class Induct<T> {
         };
     }
 
-    modifyController(modelFn: ModifierModelFunction): RequestHandler {
+    modifyHandler(modelFn: ModifierModelFunction): RequestHandler {
         const modelOpts = this._getModelOptions();
 
         return async (
@@ -202,5 +198,18 @@ export class Induct<T> {
             }
             return new ControllerResult(result).send();
         };
+    }
+
+    public router(): Router {
+        const router = Router(); // eslint-disable-line new-cap
+
+        router.get("/", this.lookupHandler("findAll"));
+        router.get("/:id", this.lookupHandler("findOneById"));
+
+        router.post("/", this.modifyHandler("create"));
+        router.patch("/:id", this.modifyHandler("update"));
+        router.delete("/:id", this.modifyHandler("delete"));
+
+        return router;
     }
 }

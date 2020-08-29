@@ -14,6 +14,7 @@ export type InductController<T> = (
 export interface InductControllerOpts<T, M> {
     /** Name of the model function that the controller should call */
     modelFn: BaseModelFunction;
+    modelFactory: InductModelFactory<T>;
 }
 
 export interface InductControllerBase {
