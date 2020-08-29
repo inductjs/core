@@ -1,72 +1,72 @@
 {
-  "name": "@induct/core",
-  "version": "0.1.4",
-  "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
-  "description": "NodeJS API generator",
-  "scripts": {
-    "test": "jest",
-    "tets:coverage": "npm run test",
-    "lint": "eslint \"src/**/*.ts\" --fix && prettier --write \"src/**/*.ts\"",
-    "build": "npm run lint && rollup -c",
-    "watch": "rollup -cw",
-    "prepublishOnly": "npm version patch && npm run build"
-  },
-  "prettier": "@yeseh/prettier-config",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Yeseh/induct-core.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Yeseh/induct-core.git/issues"
-  },
-  "jest": {
-    "transform": {
-      ".(ts|tsx)": "ts-jest"
+    "name": "@induct/core",
+    "version": "0.1.10",
+    "main": "dist/index.js",
+    "module": "dist/index.es.js",
+    "types": "dist/index.d.ts",
+    "description": "NodeJS API generator",
+    "scripts": {
+        "test": "jest",
+        "tets:coverage": "npm run test",
+        "lint": "eslint \"src/**/*.ts\" --fix && prettier --write \"src/**/*.ts\"",
+        "build": "npm run lint && rollup -c",
+        "watch": "rollup -cw",
+        "prepublishOnly": "npm version patch && npm run build"
     },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ]
-  },
-  "homepage": "git+https://github.com/Yeseh/induct-core#readme",
-  "keywords": [],
-  "author": "Jesse Wellenberg",
-  "license": "MIT",
-  "devDependencies": {
-    "@azure/functions": "^1.2.2",
-    "@types/express": "^4.17.7",
-    "@types/knex": "^0.16.1",
-    "@types/node": "^14.0.1",
-    "@types/rimraf": "^3.0.0",
-    "@typescript-eslint/parser": "^2.33.0",
-    "@yeseh/eslint-config": "^1.1.0",
-    "@yeseh/prettier-config": "^1.1.2",
-    "azure-functions-ts-essentials": "^1.3.2",
-    "chalk": "^4.0.0",
-    "eslint": "^7.5.0",
-    "express": "^4.17.1",
-    "jest": "^26.2.2",
-    "knex": "^0.21.2",
-    "prettier": "^2.0.5",
-    "prettier-eslint": "^9.0.1",
-    "prompt": "^1.0.0",
-    "replace": "^1.2.0",
-    "rimraf": "^3.0.2",
-    "rollup": "^2.10.0",
-    "rollup-plugin-typescript2": "^0.27.1",
-    "ts-jest": "^26.1.4",
-    "ts-node": "^8.10.1",
-    "typescript": "^3.9.2"
-  },
-  "peerDependencies": {
-    "express": "^4.17.1",
-    "knex": "^0.21.2"
-  },
-  "dependencies": {
-    "class-validator": "^0.12.2"
-  }
+    "prettier": "@yeseh/prettier-config",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Yeseh/induct-core.git"
+    },
+    "bugs": {
+        "url": "https://github.com/Yeseh/induct-core.git/issues"
+    },
+    "jest": {
+        "transform": {
+            ".(ts|tsx)": "ts-jest"
+        },
+        "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+        "moduleFileExtensions": [
+            "ts",
+            "tsx",
+            "js"
+        ]
+    },
+    "homepage": "git+https://github.com/Yeseh/induct-core#readme",
+    "keywords": [],
+    "author": "Jesse Wellenberg",
+    "license": "MIT",
+    "devDependencies": {
+        "@azure/functions": "^1.2.2",
+        "@types/express": "^4.17.7",
+        "@types/knex": "^0.16.1",
+        "@types/node": "^14.0.1",
+        "@types/rimraf": "^3.0.0",
+        "@typescript-eslint/parser": "^2.33.0",
+        "@yeseh/eslint-config": "^1.1.0",
+        "@yeseh/prettier-config": "^1.1.2",
+        "azure-functions-ts-essentials": "^1.3.2",
+        "chalk": "^4.0.0",
+        "eslint": "^7.5.0",
+        "express": "^4.17.1",
+        "jest": "^26.2.2",
+        "knex": "^0.21.2",
+        "prettier": "^2.0.5",
+        "prettier-eslint": "^9.0.1",
+        "prompt": "^1.0.0",
+        "replace": "^1.2.0",
+        "rimraf": "^3.0.2",
+        "rollup": "^2.10.0",
+        "rollup-plugin-typescript2": "^0.27.1",
+        "ts-jest": "^26.1.4",
+        "ts-node": "^8.10.1",
+        "typescript": "^3.9.2"
+    },
+    "peerDependencies": {
+        "express": "^4.17.1",
+        "knex": "^0.21.2"
+    },
+    "dependencies": {
+        "class-validator": "^0.12.2"
+    }
 }
