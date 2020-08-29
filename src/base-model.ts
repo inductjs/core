@@ -45,7 +45,7 @@ export abstract class Model<T> implements IModel<T> {
     public fields: Array<keyof T> | string;
 
     constructor(values: T, opts: InductModelOpts<T>) {
-        this._model = new opts.schema(values); // eslint-disable-line new-cap
+        if (values) this._model = new opts.schema(values); // eslint-disable-line new-cap
         this._table_name = opts.tableName;
         this._id_field = opts.idField;
         this.fields = opts.fields ?? "*";

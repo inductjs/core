@@ -49,7 +49,10 @@ export class Induct<T> {
         this.schema = args.schema;
         this.idField = args.idField;
         this.tableName = args.tableName;
-        this.lookupFields = [args.idField, ...args.additionalLookupFields];
+        this.lookupFields = [
+            args.idField,
+            ...(args.additionalLookupFields ?? []),
+        ];
         this.fieldsList = args.fieldsList;
 
         this.validate = args.validate;

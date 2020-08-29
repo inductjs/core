@@ -9,7 +9,7 @@ class InductModel<T> extends Model<T> {
     constructor(values: T, opts: InductModelOpts<T>) {
         super(values, opts);
         // Select all fields if fields list is not supplied
-        this._qb = this.con(this._table_name);
+        this._qb = this._con(this._table_name);
     }
 
     async findAll(): Promise<T[]> {
