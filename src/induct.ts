@@ -33,16 +33,16 @@ export interface InductConstructorOpts<T> {
 
 export class Induct<T> {
     private connection: knex;
-    schema: new (val: T) => T;
-    idField: keyof T;
-    fieldsList: Array<keyof T>;
-    tableName: string;
+    private schema: new (val: T) => T;
+    private idField: keyof T;
+    private fieldsList: Array<keyof T>;
+    private tableName: string;
 
-    all: boolean;
-    validate: boolean;
+    private all: boolean;
+    private validate: boolean;
 
-    modelFactory: InductModelFactory<T>;
-    lookupFields: Array<keyof T>;
+    private modelFactory: InductModelFactory<T>;
+    private lookupFields: Array<keyof T>;
 
     constructor(args: InductConstructorOpts<T>) {
         this.connection = args.connection;
@@ -203,11 +203,16 @@ export class Induct<T> {
     public router(): Router {
         const router = Router(); // eslint-disable-line new-cap
 
+        this.all = true;
         router.get("/", this.lookupHandler("findAll"));
-        router.get("/:id", this.lookupHandler("findOneById"));
+        this.all = false;
 
+        this.validate = true;
         router.post("/", this.modifyHandler("create"));
         router.patch("/:id", this.modifyHandler("update"));
+        this.validate = false;
+
+        router.get("/:id", this.lookupHandler("findOneById"));
         router.delete("/:id", this.modifyHandler("delete"));
 
         return router;

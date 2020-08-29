@@ -19,29 +19,33 @@ export const createModelFactory = <T>(
         values: T,
         opts: InductModelOpts<T>
     ): Promise<InductModel<T>> => {
-        const {all, validate} = opts;
+        try {
+            const {all, validate} = opts;
 
-        // Check if a possible lookup value is present
-        const lookupVal = values
-            ? valProps.filter((prop) => !!values[prop])
-            : [];
+            // Check if a possible lookup value is present
+            const lookupVal = values
+                ? valProps.filter((prop) => !!values[prop])
+                : [];
 
-        // Throw if no possible lookup field is supplied
-        if (valProps && lookupVal.length === 0 && !all) {
-            throw new TypeError("Lookup field or bulk option unspecified");
-        }
-
-        // Create and return model
-        const model = new InductModel<T>(values, opts);
-
-        if (validate) {
-            const errors = await model.validate();
-            if (errors.length > 0) {
-                throw new ValidationError(`Schema validation failed`);
+            // Throw if no possible lookup field is supplied
+            if (valProps && lookupVal.length === 0 && !all) {
+                throw new TypeError("Lookup field or bulk option unspecified");
             }
-        }
 
-        return model;
+            // Create and return model
+            const model = new InductModel<T>(values, opts);
+
+            if (validate) {
+                const errors = await model.validate();
+                if (errors.length > 0) {
+                    throw new ValidationError(`Schema validation failed`);
+                }
+            }
+
+            return model;
+        } catch (e) {
+            console.log(e); // eslint-disable-line no-console
+        }
     };
     return modelFactory;
 };
