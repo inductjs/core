@@ -4,15 +4,14 @@ import {ValidationError} from "./types/error-schema";
 
 /**
  * Creates a factory function which returns a promise that resolves to an instance of the supplied model class.
- * The returned function is used as an input for Induct's controller factories.
+ * The returned function is used as an input for Induct's controller factories. Takes a type parameter of a schema class.
  *
  * @param valProps array of property names that can be used by the model to lookup data (ex. user_id).
  * Used to check if a valid lookup field is supplied.
- * @type Takes a type parameter of a schema class.
  * @example
  * const modelFactory = createModelFactory(['user_id', 'username'])
  */
-export const createModelFactory = <T>(
+export const inductModelFactory = <T>(
     valProps: Array<keyof T>
 ): InductModelFactory<T> => {
     const modelFactory = async (

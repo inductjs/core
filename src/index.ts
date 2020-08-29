@@ -18,7 +18,7 @@ export {IControllerResult, ControllerResult} from "./controller-result";
 
 // export {createLookupHandler} from "./gen-lookup-controller";
 // export {createModController} from "./gen-mod-controller";
-export {createModelFactory} from "./gen-model-factory";
+export {inductModelFactory} from "./gen-model-factory";
 // export {createAzureFunctionsRouter} from "./gen-functions-router";
 
 import {Induct} from "./induct";

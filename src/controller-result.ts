@@ -24,15 +24,17 @@ class ControllerResult<T> implements IControllerResult<T> {
     public readonly validationErrors: ValidationError[];
 
     constructor(result: IControllerResult<T>) {
-        this.status = result.status;
-        this.data = result.data;
-        this.info = result.info;
-        this.error = result.error;
-        this.res = result.res;
-        this.validationErrors = result.validationErrors;
+        Object.assign(this, result);
+
+        // this.status = result.status;
+        // this.data = result.data;
+        // this.info = result.info;
+        // this.error = result.error;
+        // this.res = result.res;
+        // this.validationErrors = result.validationErrors;
     }
 
-    /** Shorthand wrapper function around express' .json. Returns response with data stored in controller result */
+    /** Shorthand wrapper function around express' .json. Returns JSON response formed from data stored in controller result */
     public send(): Response {
         return this.res.status(this.status).json({
             data: this.data,

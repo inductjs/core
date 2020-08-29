@@ -5,7 +5,7 @@ import {
     ModifierModelFunction,
 } from "./types/model-schema";
 import {IControllerResult, ControllerResult} from "./controller-result";
-import {createModelFactory} from "./gen-model-factory";
+import {inductModelFactory} from "./gen-model-factory";
 import {StatusCode} from "./types/http-schema";
 import {RequestHandler, Request, Response, Router, NextFunction} from "express";
 import knex from "knex";
@@ -58,7 +58,7 @@ export class Induct<T> {
         this.validate = args.validate;
         this.all = args.all;
 
-        this.modelFactory = createModelFactory<T>(this.lookupFields);
+        this.modelFactory = inductModelFactory<T>(this.lookupFields);
     }
 
     private _getModelOptions(): InductModelOpts<T> {

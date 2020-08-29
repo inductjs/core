@@ -47,6 +47,7 @@ export abstract class Model<T> implements IModel<T> {
     constructor(values: T, opts: InductModelOpts<T>) {
         if (values) this._model = new opts.schema(values); // eslint-disable-line new-cap
         this._table_name = opts.tableName;
+        this._con = opts.connection;
         this._id_field = opts.idField;
         this.fields = opts.fields ?? "*";
     }
@@ -80,9 +81,9 @@ export abstract class Model<T> implements IModel<T> {
     }
 
     public async destroyConnection(): Promise<void> {
-        await this._con.destroy();
+        await this._trx.destroy();
     }
-    /** Creates a new database transaction and sets this transaction to the model instance */
+
     public async startTransaction(): Promise<knex.Transaction> {
         if (this._trx) await this._trx.destroy();
 
@@ -99,12 +100,10 @@ export abstract class Model<T> implements IModel<T> {
         this._trx.rollback();
     }
 
-    /** Typed property getter of model data */
     public get<K extends keyof T>(prop: K): T[K] {
         return this._model[prop];
     }
 
-    /** Typed property setter of model data */
     public set<K extends keyof T>(prop: K, value: T[K]): void {
         this._model[prop] = value;
     }
@@ -119,31 +118,17 @@ export abstract class Model<T> implements IModel<T> {
 
         return exists.length > 0;
     }
-    /**
-     * Use the resource unique identifier to lookup one value.
-     * Returns an array to validate results in the controller.
-     */
+
     public abstract async findOneById(lookup?: T[keyof T]): Promise<T[]>;
 
-    /**
-     * Returns an array of objects of the model's type
-     */
     public abstract async findAll(): Promise<T[]>;
-    /**
-     * Abstract update method. Requires resource specific implementation
-     */
+
     public abstract async update(value?: Partial<T>): Promise<T | number>;
-    /**
-     * Inserts the data stored in the class instance into the resource table
-     */
+
     public abstract async create(value?: Partial<T>): Promise<T>;
-    /**
-     * Deletes the specified entry from the resource table. Returns an amount of deleted rows.
-     */
+
     public abstract async delete(lookup?: T[keyof T]): Promise<T[keyof T]>;
-    /**
-     * Returns a validated JSON representation of the class properties;
-     */
+
     public async validate(): Promise<ValidationError[]> {
         return validate(this._model);
     }
