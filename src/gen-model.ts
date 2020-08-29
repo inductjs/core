@@ -1,20 +1,14 @@
 import {QueryError} from "./types/error-schema";
+import {InductModelOpts} from "./types/model-schema";
 import {Model} from "./base-model";
 import knex from "knex";
 
 class InductModel<T> extends Model<T> {
-    public fields: string[] | string;
     readonly _qb: knex.QueryBuilder;
 
-    constructor(
-        values: T,
-        schema: new (values: T) => T,
-        con: knex,
-        fields?: string[]
-    ) {
-        super(values, schema, con);
+    constructor(values: T, opts: InductModelOpts<T>) {
+        super(values, opts);
         // Select all fields if fields list is not supplied
-        this.fields = fields ?? "*";
         this._qb = this.con(this._table_name);
     }
 
@@ -28,7 +22,7 @@ class InductModel<T> extends Model<T> {
         }
     }
 
-    async findOneById(lookup?: string | number): Promise<T[]> {
+    async findOneById(lookup?: T[keyof T]): Promise<T[]> {
         try {
             const lookupValue = lookup ?? this._model[this._id_field];
 
@@ -71,7 +65,7 @@ class InductModel<T> extends Model<T> {
         }
     }
 
-    async delete(lookup?: number | string): Promise<number | string> {
+    async delete(lookup?: T[keyof T]): Promise<T[keyof T]> {
         try {
             const lookupVal = lookup ?? this._model[this._id_field];
 

@@ -13,12 +13,13 @@ import {ValidationError} from "./types/error-schema";
  * const modelFactory = createModelFactory(['user_id', 'username'])
  */
 export const createModelFactory = <T>(
-    valProps: Array<string>
+    valProps: Array<keyof T>
 ): InductModelFactory<T> => {
     const modelFactory = async (
-        args: InductModelOpts<T>
+        values: T,
+        opts: InductModelOpts<T>
     ): Promise<InductModel<T>> => {
-        const {values, schema, connection, all, validate, fields} = args;
+        const {all, validate} = opts;
 
         // Check if a possible lookup value is present
         const lookupVal = values
@@ -31,7 +32,7 @@ export const createModelFactory = <T>(
         }
 
         // Create and return model
-        const model = new InductModel<T>(values, schema, connection, fields);
+        const model = new InductModel<T>(values, opts);
 
         if (validate) {
             const errors = await model.validate();

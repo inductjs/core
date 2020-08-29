@@ -5,7 +5,7 @@ import {Response} from "express";
 export interface IControllerResult<T> {
     status: StatusCode;
     res: Response;
-    data?: T | T[];
+    data?: T | T[] | T[keyof T] | number;
     info?: string;
     error?: Error;
     blocked?: boolean;
@@ -17,7 +17,7 @@ export interface IControllerResult<T> {
 
 class ControllerResult<T> implements IControllerResult<T> {
     public readonly status: StatusCode;
-    public readonly data: T | T[];
+    public readonly data: T | T[] | T[keyof T] | number;
     public readonly info: string;
     public readonly error: Error;
     public readonly res: Response;

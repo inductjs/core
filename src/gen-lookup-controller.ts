@@ -5,26 +5,28 @@ import {
 } from "./types/controller-schema";
 import {IControllerResult, ControllerResult} from "./controller-result";
 import {StatusCode} from "./types/http-schema";
+import {RequestHandler, Request, Response, NextFunction} from "express";
 
-export const createLookupController = <T, M extends IModel<T>>(
+export const createLookupHandler = <T, M extends IModel<T>>(
     opts: InductControllerOpts<T, M>
-): InductController<T> => {
-    const {modelFn, modelFactory: factoryFn} = opts;
+): RequestHandler => {
+    const {modelFn, modelFactory: factoryFn, modelOpts} = opts;
 
     return async (
-        res,
-        opts: InductModelOpts<T>
-    ): Promise<ControllerResult<T>> => {
+        req: Request,
+        res: Response,
+        next?: NextFunction
+    ): Promise<Response> => {
         let result: IControllerResult<T>;
 
         try {
-            const model = await factoryFn(opts);
+            const model = await factoryFn(req.body, modelOpts);
 
             if (!model) {
                 return new ControllerResult({
                     res,
                     status: StatusCode.BAD_REQUEST,
-                });
+                }).send();
             }
 
             if (typeof model[modelFn] !== "function") {
@@ -57,6 +59,8 @@ export const createLookupController = <T, M extends IModel<T>>(
             };
         }
 
-        return new ControllerResult(result);
+        const controllerResult = new ControllerResult(result);
+
+        return controllerResult.send();
     };
 };

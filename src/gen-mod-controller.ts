@@ -1,11 +1,9 @@
-import {InductModelOpts, IModel} from "./types/model-schema";
-import {
-    InductControllerOpts,
-    InductController,
-} from "./types/controller-schema";
+import {InductModel} from "./gen-model";
+import {InductControllerOpts} from "./types/controller-schema";
 import {StatusCode} from "./types/http-schema";
 
 import {IControllerResult, ControllerResult} from "./controller-result";
+import {Request, Response, NextFunction, RequestHandler} from "express";
 
 /**
  * Returns a generic controller function for POST, PATCH, and DELETE routes;
@@ -16,25 +14,26 @@ import {IControllerResult, ControllerResult} from "./controller-result";
  *      modelFn: 'create'
  * })
  */
-export const createModController = <T, M extends IModel<T>>(
+export const createModController = <T, M extends InductModel<T>>(
     opts: InductControllerOpts<T, M>
-): InductController<T> => {
-    const {modelFn, modelFactory} = opts;
+): RequestHandler => {
+    const {modelFn, modelFactory, modelOpts} = opts;
 
     return async (
-        res,
-        opts: InductModelOpts<T>
-    ): Promise<ControllerResult<T>> => {
+        req: Request,
+        res: Response,
+        next?: NextFunction
+    ): Promise<Response> => {
         let result: IControllerResult<T>;
 
         try {
-            const model = await modelFactory(opts);
+            const model = await modelFactory(req.body, modelOpts);
 
             if (!model) {
                 return new ControllerResult({
                     res,
                     status: StatusCode.BAD_REQUEST,
-                });
+                }).send();
             }
 
             if (typeof model[modelFn] !== "function") {
@@ -77,6 +76,6 @@ export const createModController = <T, M extends IModel<T>>(
                 error: e,
             };
         }
-        return new ControllerResult(result);
+        return new ControllerResult(result).send();
     };
 };

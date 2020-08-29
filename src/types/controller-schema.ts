@@ -12,11 +12,8 @@ export type InductController<T> = (
 ) => Promise<ControllerResult<T>>;
 
 export interface InductControllerOpts<T, M> {
-    modelFactory: InductModelFactory<T>;
     /** Name of the model function that the controller should call */
     modelFn: BaseModelFunction;
-    /** Options that should be provided to the model factory */
-    modelOpts: InductModelOpts<T>;
 }
 
 export interface InductControllerBase {

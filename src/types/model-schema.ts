@@ -3,6 +3,7 @@ import {InductModel} from "../gen-model";
 import {ValidationError} from "class-validator";
 
 export type InductModelFactory<T> = (
+    values: T | T[],
     args: InductModelOpts<T>
 ) => Promise<InductModel<T>>;
 
@@ -10,16 +11,20 @@ export type InductModelFunction<T> = () => Promise<
     T | T[] | number | ValidationResult<T>
 >;
 
+export type LookupModelFunction = "findAll" | "findOneById";
+export type ModifierModelFunction = "create" | "delete" | "update";
+
 export interface InductModelOpts<T> {
-    values: T;
     /** Knex database connection object for the model to use */
     connection: knex;
     schema: new (values: T) => T;
+    tableName: string;
+    idField: keyof T;
     /** Set to true for bulk operations accross the whole table, skipping individual validation  */
     all?: boolean;
     /** Set to true to validate input data on instantiation */
     validate?: boolean;
-    fields?: Array<string>;
+    fields?: Array<keyof T>;
 }
 
 export interface IModel<T> {
@@ -27,17 +32,17 @@ export interface IModel<T> {
     validated: boolean;
     options: InductModelOpts<T>;
     table_name: string;
-    id_field: string;
+    id_field: keyof T;
     model: T;
 
     startTransaction: () => Promise<knex.Transaction>;
     destroyConnection: () => Promise<void>;
     commitTransaction: () => Promise<void>;
     rollbackTransaction: () => Promise<void>;
-    findOneById: (value?: string | number) => Promise<T[]>;
+    findOneById: (lookup?: T[keyof T]) => Promise<T[]>;
     findAll: () => Promise<T[]>;
     create?: (value?: Partial<T>) => Promise<T>;
-    delete?: (value?: number | string) => Promise<number | string>;
+    delete?: (lookup?: T[keyof T]) => Promise<T[keyof T]>;
     update?: (value?: Partial<T>) => Promise<T | number>;
     exists?: <K extends keyof T>(
         column: keyof T,

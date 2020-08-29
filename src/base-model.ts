@@ -18,7 +18,7 @@ export abstract class Model<T> implements IModel<T> {
     /**
      * Name of the ID field in the table as a string
      */
-    protected _id_field: string;
+    protected _id_field: keyof T;
     /**
      * Represents the transaction that the model is using
      */
@@ -42,10 +42,13 @@ export abstract class Model<T> implements IModel<T> {
      */
     protected _validated: boolean;
 
-    constructor(values: T, Schema: new (value: T) => T, con: knex) {
-        this._model = new Schema(values);
+    public fields: Array<keyof T> | string;
 
-        this._con = con;
+    constructor(values: T, opts: InductModelOpts<T>) {
+        this._model = new opts.schema(values); // eslint-disable-line new-cap
+        this._table_name = opts.tableName;
+        this._id_field = opts.idField;
+        this.fields = opts.fields ?? "*";
     }
 
     get validated(): boolean {
@@ -64,7 +67,7 @@ export abstract class Model<T> implements IModel<T> {
         return this._table_name;
     }
 
-    get id_field(): string {
+    get id_field(): keyof T {
         return this._id_field;
     }
 
@@ -120,7 +123,7 @@ export abstract class Model<T> implements IModel<T> {
      * Use the resource unique identifier to lookup one value.
      * Returns an array to validate results in the controller.
      */
-    public abstract async findOneById(lookup?: string | number): Promise<T[]>;
+    public abstract async findOneById(lookup?: T[keyof T]): Promise<T[]>;
 
     /**
      * Returns an array of objects of the model's type
@@ -137,9 +140,7 @@ export abstract class Model<T> implements IModel<T> {
     /**
      * Deletes the specified entry from the resource table. Returns an amount of deleted rows.
      */
-    public abstract async delete(
-        value: string | number
-    ): Promise<number | string>;
+    public abstract async delete(lookup?: T[keyof T]): Promise<T[keyof T]>;
     /**
      * Returns a validated JSON representation of the class properties;
      */
