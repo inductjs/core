@@ -23,13 +23,12 @@ export const createModController = <T, M extends IModel<T>>(
 
     return async (
         res,
-        factoryParams: Partial<T>,
-        opts?: InductModelOpts
+        opts: InductModelOpts<T>
     ): Promise<ControllerResult<T>> => {
         let result: IControllerResult<T>;
 
         try {
-            const model = await modelFactory(factoryParams, opts);
+            const model = await modelFactory(opts);
 
             if (!model) {
                 return new ControllerResult({

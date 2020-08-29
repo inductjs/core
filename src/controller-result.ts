@@ -32,8 +32,9 @@ class ControllerResult<T> implements IControllerResult<T> {
         this.validationErrors = result.validationErrors;
     }
 
+    /** Shorthand wrapper function around express' .json. Returns response with data stored in controller result */
     public send(): Response {
-        return this.res.status(this.status).send({
+        return this.res.status(this.status).json({
             data: this.data,
             info: this.info,
             error: this.error.name,

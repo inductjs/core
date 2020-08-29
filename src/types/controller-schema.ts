@@ -8,16 +8,15 @@ import {ControllerResult} from "../controller-result";
 
 export type InductController<T> = (
     response: Response,
-    factoryParams: Partial<T>,
-    modelOpts?: InductModelOpts
+    modelOpts: InductModelOpts<T>
 ) => Promise<ControllerResult<T>>;
 
 export interface InductControllerOpts<T, M> {
-    modelFactory: InductModelFactory<T, M>;
+    modelFactory: InductModelFactory<T>;
     /** Name of the model function that the controller should call */
     modelFn: BaseModelFunction;
     /** Options that should be provided to the model factory */
-    modelOpts?: InductModelOpts;
+    modelOpts: InductModelOpts<T>;
 }
 
 export interface InductControllerBase {

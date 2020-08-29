@@ -16,7 +16,9 @@ export {
     ValidationResult,
 } from "./types/model-schema";
 
-export {Model} from "./base-model";
+export {InductModel} from "./gen-model";
+
+export {Model as InductBaseModel} from "./base-model";
 
 export {IControllerResult, ControllerResult} from "./controller-result";
 
@@ -26,8 +28,8 @@ export {createLookupController} from "./gen-lookup-controller";
 import {createModController} from "./gen-mod-controller";
 export {createModController} from "./gen-mod-controller";
 
-import {createModelFactory} from "./gen-model";
-export {createModelFactory} from "./gen-model";
+import {createModelFactory} from "./gen-model-factory";
+export {createModelFactory} from "./gen-model-factory";
 
 import {createAzureFunctionsRouter} from "./gen-functions-router";
 export {createAzureFunctionsRouter} from "./gen-functions-router";

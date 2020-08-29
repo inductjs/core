@@ -1,26 +1,31 @@
 import knex from "knex";
+import {InductModel} from "../gen-model";
+import {ValidationError} from "class-validator";
 
-export type InductModelFactory<T, M> = (
-    factoryParams: Partial<T>,
-    opts?: InductModelOpts
-) => Promise<M>;
+export type InductModelFactory<T> = (
+    args: InductModelOpts<T>
+) => Promise<InductModel<T>>;
 
 export type InductModelFunction<T> = () => Promise<
     T | T[] | number | ValidationResult<T>
 >;
 
-export interface InductModelOpts {
+export interface InductModelOpts<T> {
+    values: T;
+    /** Knex database connection object for the model to use */
+    connection: knex;
+    schema: new (values: T) => T;
     /** Set to true for bulk operations accross the whole table, skipping individual validation  */
     all?: boolean;
     /** Set to true to validate input data on instantiation */
     validate?: boolean;
-    connection?: knex;
+    fields?: Array<string>;
 }
 
 export interface IModel<T> {
     trx: knex.Transaction;
     validated: boolean;
-    options: InductModelOpts;
+    options: InductModelOpts<T>;
     table_name: string;
     id_field: string;
     model: T;
@@ -32,13 +37,13 @@ export interface IModel<T> {
     findOneById: (value?: string | number) => Promise<T[]>;
     findAll: () => Promise<T[]>;
     create?: (value?: Partial<T>) => Promise<T>;
-    delete?: (value?: string | number) => Promise<number | string>;
+    delete?: (value?: number | string) => Promise<number | string>;
     update?: (value?: Partial<T>) => Promise<T | number>;
     exists?: <K extends keyof T>(
         column: keyof T,
         value: T[K]
     ) => Promise<boolean>;
-    validate?: (value?: T) => Promise<T>;
+    validate?: () => Promise<ValidationError[]>;
     set<K extends keyof T>(prop: K, value: T[K]): void;
     get<K extends keyof T>(prop: K): T[K];
 }

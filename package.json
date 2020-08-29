@@ -65,5 +65,8 @@
   "peerDependencies": {
     "express": "^4.17.1",
     "knex": "^0.21.2"
+  },
+  "dependencies": {
+    "class-validator": "^0.12.2"
   }
 }

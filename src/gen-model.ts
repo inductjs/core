@@ -1,44 +1,87 @@
-import {
-    InductModelOpts,
-    IModel,
-    InductModelFactory,
-} from "./types/model-schema";
+import {QueryError} from "./types/error-schema";
+import {Model} from "./base-model";
+import knex from "knex";
 
-/**
- * Creates a factory function which returns a promise that resolves to an instance of the supplied model class.
- * The returned function is used as an input for Induct's controller factories.
- *
- * @param valProps array of property names that can be used by the model to lookup data (ex. user_id)
- * @param Model Model class that extends Induct's IModel interface
- * @example
- * const modelFactory = createModelFactory(['user_id', 'username'], UserModel)
- */
-export const createModelFactory = <T, M extends IModel<T>>(
-    valProps: Array<string>,
-    Model: new (params: T, opts: InductModelOpts) => M
-): InductModelFactory<T, M> => {
-    const modelFactory = async (
-        factoryParams: T,
-        opts?: InductModelOpts
-    ): Promise<M> => {
+class InductModel<T> extends Model<T> {
+    public fields: string[] | string;
+    readonly _qb: knex.QueryBuilder;
+
+    constructor(
+        values: T,
+        schema: new (values: T) => T,
+        con: knex,
+        fields?: string[]
+    ) {
+        super(values, schema, con);
+        // Select all fields if fields list is not supplied
+        this.fields = fields ?? "*";
+        this._qb = this.con(this._table_name);
+    }
+
+    async findAll(): Promise<T[]> {
         try {
-            // Check if a possible lookup value is present
-            const lookupVal = factoryParams
-                ? valProps.filter((prop) => !!factoryParams[prop])
-                : [];
+            const result = await this._qb.select(this.fields);
 
-            // Throw if no possible lookup field is supplied
-            if (valProps && lookupVal.length === 0 && !opts?.all) {
-                throw new TypeError("Lookup field or bulk option unspecified");
-            }
-
-            // Create and return model
-            const model = new Model(factoryParams, opts);
-
-            return model;
+            return result;
         } catch (e) {
-            return null;
+            throw new QueryError(`InductModel.findAll failed with error ${e}`);
         }
-    };
-    return modelFactory;
-};
+    }
+
+    async findOneById(lookup?: string | number): Promise<T[]> {
+        try {
+            const lookupValue = lookup ?? this._model[this._id_field];
+
+            const result = this._qb
+                .select(this.fields)
+                .where(this._id_field, lookupValue);
+
+            return result;
+        } catch (e) {
+            throw new QueryError(
+                `InductModel.findOneById failed with error ${e}`
+            );
+        }
+    }
+
+    async create(value?: Partial<T>): Promise<T> {
+        try {
+            const insertedValue = value ?? this._model;
+
+            await this._qb.insert(insertedValue);
+
+            return this._model;
+        } catch (e) {
+            throw new QueryError(`InductModel.create failed with error ${e}`);
+        }
+    }
+
+    async update(value?: Partial<T>): Promise<number> {
+        try {
+            const updatedVal = value ?? this._model;
+            const lookupVal = this._model[this._id_field];
+
+            const result = await this._qb
+                .update(updatedVal)
+                .where(this._id_field, lookupVal);
+
+            return result;
+        } catch (e) {
+            throw new QueryError(`InductModel.update failed with error ${e}`);
+        }
+    }
+
+    async delete(lookup?: number | string): Promise<number | string> {
+        try {
+            const lookupVal = lookup ?? this._model[this._id_field];
+
+            await this._qb.where(this._id_field, lookupVal).del();
+
+            return lookup;
+        } catch (e) {
+            throw new QueryError(`InductModel.delete failed with error ${e}`);
+        }
+    }
+}
+
+export {InductModel};

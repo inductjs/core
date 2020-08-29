@@ -11,7 +11,7 @@ export const createAzureFunctionsRouter = <T, M extends IModel<T>>(
     return async (
         context: Context,
         req: HttpRequest,
-        opts?: InductModelOpts
+        opts?: InductModelOpts<T>
     ): Promise<HttpResponse> => {
         const id = req.params ? req.params.id : undefined;
 

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import knex from "knex";
 import {IModel, InductModelOpts} from "./types/model-schema";
+import {validate, ValidationError} from "class-validator";
 
 /**
  * Base class for CRUD operation APIs. Takes a generic type parameter based on
@@ -26,10 +27,12 @@ export abstract class Model<T> implements IModel<T> {
      * Stores the model data
      */
     protected _model: T;
+
+    protected _modelList: T[];
     /**
      * Contains the model options used to generate the model instance
      */
-    protected _options: InductModelOpts;
+    protected _options: InductModelOpts<T>;
     /**
      * Represents an object that can be used to create new database transactions
      */
@@ -39,8 +42,8 @@ export abstract class Model<T> implements IModel<T> {
      */
     protected _validated: boolean;
 
-    constructor(model: T, con: knex) {
-        this._model = model;
+    constructor(values: T, Schema: new (value: T) => T, con: knex) {
+        this._model = new Schema(values);
 
         this._con = con;
     }
@@ -49,7 +52,7 @@ export abstract class Model<T> implements IModel<T> {
         return this._validated;
     }
 
-    get options(): InductModelOpts {
+    get options(): InductModelOpts<T> {
         return this._options;
     }
 
@@ -140,5 +143,7 @@ export abstract class Model<T> implements IModel<T> {
     /**
      * Returns a validated JSON representation of the class properties;
      */
-    public abstract async validate(value?: T): Promise<T>;
+    public async validate(): Promise<ValidationError[]> {
+        return validate(this._model);
+    }
 }

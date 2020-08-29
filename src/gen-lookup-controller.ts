@@ -13,13 +13,12 @@ export const createLookupController = <T, M extends IModel<T>>(
 
     return async (
         res,
-        factoryParams: Partial<T>,
-        opts?: InductModelOpts
+        opts: InductModelOpts<T>
     ): Promise<ControllerResult<T>> => {
         let result: IControllerResult<T>;
 
         try {
-            const model = await factoryFn(factoryParams, opts);
+            const model = await factoryFn(opts);
 
             if (!model) {
                 return new ControllerResult({
