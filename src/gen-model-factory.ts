@@ -31,7 +31,7 @@ export const inductModelFactory = <T>(
                 throw new TypeError("Lookup field or bulk option unspecified");
             }
 
-            // Create and return model
+            // Create and return model\
             const model = new InductModel<T>(values, opts);
 
             if (validate) {

@@ -7,6 +7,10 @@ export type InductModelFactory<T> = (
     args: InductModelOpts<T>
 ) => Promise<InductModel<T>>;
 
+export type GenericModelFactory<T> = (
+    ...args: unknown[]
+) => Promise<unknown> | unknown;
+
 export type InductModelFunction<T> = () => Promise<
     T | T[] | number | ValidationResult<T>
 >;

@@ -1,9 +1,11 @@
 import {
     InductModelOpts,
     InductModelFactory,
+    GenericModelFactory,
     LookupModelFunction,
     ModifierModelFunction,
 } from "./types/model-schema";
+import {InductModel} from "./gen-model";
 import {IControllerResult, ControllerResult} from "./controller-result";
 import {inductModelFactory} from "./gen-model-factory";
 import {StatusCode} from "./types/http-schema";
@@ -19,8 +21,6 @@ export interface InductConstructorOpts<T> {
     idField: keyof T;
     /** Name of the table to query */
     tableName: string;
-    /** [NOT IMPLEMENTED] Array of field names that can be used as a lookup field */
-    additionalLookupFields?: Array<keyof T>;
     /** url parameter for resource ID's. Default = "id" */
     idParam?: string;
     /** Set to true for bulk operations accross the whole table, skipping individual validation  */
@@ -29,6 +29,10 @@ export interface InductConstructorOpts<T> {
     validate?: boolean; // Validation in MOD CONTROLLER instead of MODEL????
     /** Array of field names that are returned in lookup controllers */
     fieldsList?: Array<keyof T>;
+    /** [NOT IMPLEMENTED] Array of field names that can be used as a lookup field */
+    additionalLookupFields?: Array<keyof T>;
+    /** [NOT IMPLEMENTED]  Custom model factory function */
+    modelFactory?: InductModelFactory<T> | GenericModelFactory<T>;
 }
 
 export class Induct<T> {
@@ -42,7 +46,7 @@ export class Induct<T> {
     private all: boolean;
     private validate: boolean;
 
-    private modelFactory: InductModelFactory<T>;
+    private modelFactory: InductModelFactory<T> | GenericModelFactory<T>;
     private lookupFields: Array<keyof T>;
 
     constructor(args: InductConstructorOpts<T>) {
@@ -61,7 +65,8 @@ export class Induct<T> {
         this.validate = args.validate;
         this.all = args.all;
 
-        this.modelFactory = inductModelFactory<T>(this.lookupFields);
+        this.modelFactory =
+            args.modelFactory || inductModelFactory<T>(this.lookupFields);
     }
 
     private _getModelOptions(
@@ -94,6 +99,15 @@ export class Induct<T> {
         }
 
         return opts;
+    }
+
+    async model(data: T, opts?: InductModelOpts<T>): Promise<InductModel<T>> {
+        const modelOpts = this._getModelOptions(opts);
+        const factory = inductModelFactory([this.idField]);
+
+        const model = await factory(data, modelOpts);
+
+        return model;
     }
 
     lookupHandler(
