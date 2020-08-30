@@ -2,11 +2,14 @@
 
 # Induct
 
-Library that provides abstractions over ExpressJS in order to quickly create REST APIs from an SQL Database for prototyping purposes.
+Induct provides abstractions over ExpressJS in order to quickly create REST APIs from an SQL Database for prototyping purposes. 
+
+
+Induct uses [Knex](https://knexjs.org/) to query databases, and therefore only supports databases supported by Knex.
 
 ## Getting Started
 
-Install Induct Core as a dependency:
+Install Induct Core as a dependency of your project:
 
 > npm install @induct/core --save
 
@@ -101,7 +104,39 @@ router.post(`/`, induct.modifyHandler("create", {validate: true}));
 router.delete(`/:${induct.idParam}`, induct.modifyHandler("update"));
 ```
 
-These route handlers still use the generic InductModel
+These route handlers still use the generic InductModel class to communicate with your database.
+
+### Use InductModel in custom route handler
+You can use Inducts generic model class in your own route handlers as follows:
+
+```typescript
+
+// Create an Induct instance
+const induct = new Induct({
+    connection: knex, // Knex connection object to your database
+    schema: UserSchema,
+    tableName: "dbo.users",
+    idField: "uuid",
+});
+
+// Create your custom route handler
+export const routeHandler = async (
+    req: Request,
+    res: Response
+): Promise<Response> => {
+    // Get a model instance and lookup using the id parameter
+    const model = await induct.modelInstance({uuid: req.params.id});
+    const result = await model.findOneById();
+
+    // Return a response based on the results of the query
+    if (result && result[0]) return res.status(200).json(result);
+    else return res.status(404).json({message: "Resource not found"});
+};
+```
+
+### Using custom models
+
+Not supported yet, hopefully in a future version.
 
 ## Example Application
 
