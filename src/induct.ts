@@ -35,6 +35,7 @@ export class Induct<T> {
     private connection: knex;
     private schema: new (val: T) => T;
     private idField: keyof T;
+    private idParam: string;
     private fieldsList: Array<keyof T>;
     private tableName: string;
 
@@ -49,6 +50,8 @@ export class Induct<T> {
         this.schema = args.schema;
         this.idField = args.idField;
         this.tableName = args.tableName;
+        this.idParam = args.idParam || "id";
+
         this.lookupFields = [
             args.idField,
             ...(args.additionalLookupFields ?? []),
@@ -61,7 +64,15 @@ export class Induct<T> {
         this.modelFactory = inductModelFactory<T>(this.lookupFields);
     }
 
-    private _getModelOptions(): InductModelOpts<T> {
+    private _getModelOptions(
+        overrides: Partial<InductModelOpts<T>> = {}
+    ): InductModelOpts<T> {
+        const overrideEntries = Object.entries(overrides);
+
+        for (const [key, value] of overrideEntries) {
+            this[key] = value;
+        }
+
         const {
             all,
             validate,
@@ -83,8 +94,11 @@ export class Induct<T> {
         };
     }
 
-    lookupHandler(modelFn: LookupModelFunction): RequestHandler {
-        const modelOpts = this._getModelOptions();
+    lookupHandler(
+        modelFn: LookupModelFunction,
+        opts?: Partial<InductModelOpts<T>>
+    ): RequestHandler {
+        const modelOpts = this._getModelOptions(opts);
 
         return async (
             req: Request,
@@ -93,8 +107,14 @@ export class Induct<T> {
         ): Promise<Response> => {
             let result: IControllerResult<T>;
 
+            const values = {...req.body};
+
+            if (modelFn === "findOneById") {
+                values[this.idField] = req.params.id;
+            }
+
             try {
-                const model = await this.modelFactory(req.body, modelOpts);
+                const model = await this.modelFactory(values, modelOpts);
 
                 if (!model) {
                     return new ControllerResult({
@@ -139,8 +159,11 @@ export class Induct<T> {
         };
     }
 
-    modifyHandler(modelFn: ModifierModelFunction): RequestHandler {
-        const modelOpts = this._getModelOptions();
+    modifyHandler(
+        modelFn: ModifierModelFunction,
+        opts?: Partial<InductModelOpts<T>>
+    ): RequestHandler {
+        const modelOpts = this._getModelOptions(opts);
 
         return async (
             req: Request,
@@ -149,8 +172,14 @@ export class Induct<T> {
         ): Promise<Response> => {
             let result: IControllerResult<T>;
 
+            const values = {...req.body};
+
+            if (modelFn === "update" || modelFn === "delete") {
+                values[this.idField] = req.params[this.idParam];
+            }
+
             try {
-                const model = await this.modelFactory(req.body, modelOpts);
+                const model = await this.modelFactory(values, modelOpts);
 
                 if (!model) {
                     return new ControllerResult({
@@ -206,14 +235,10 @@ export class Induct<T> {
     public router(): Router {
         const router = Router(); // eslint-disable-line new-cap
 
-        this.all = true;
-        router.get("/", this.lookupHandler("findAll"));
-        this.all = false;
+        router.get("/", this.lookupHandler("findAll", {all: true}));
 
-        this.validate = true;
-        router.post("/", this.modifyHandler("create"));
-        router.patch("/:id", this.modifyHandler("update"));
-        this.validate = false;
+        router.post("/", this.modifyHandler("create", {validate: true}));
+        router.patch("/:id", this.modifyHandler("update", {validate: true}));
 
         router.get("/:id", this.lookupHandler("findOneById"));
         router.delete("/:id", this.modifyHandler("delete"));
