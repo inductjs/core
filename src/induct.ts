@@ -7,7 +7,7 @@ import {
 import {IControllerResult, ControllerResult} from "./controller-result";
 import {inductModelFactory} from "./gen-model-factory";
 import {StatusCode} from "./types/http-schema";
-import {RequestHandler, Request, Response, Router, NextFunction} from "express";
+import {RequestHandler, Request, Response, Router} from "express";
 import knex from "knex";
 
 export interface InductConstructorOpts<T> {
@@ -102,11 +102,7 @@ export class Induct<T> {
     ): RequestHandler {
         const modelOpts = this._getModelOptions(opts);
 
-        return async (
-            req: Request,
-            res: Response,
-            next?: NextFunction
-        ): Promise<Response> => {
+        return async (req: Request, res: Response): Promise<Response> => {
             let result: IControllerResult<T>;
 
             const values = {...req.body};
@@ -167,11 +163,7 @@ export class Induct<T> {
     ): RequestHandler {
         const modelOpts = this._getModelOptions(opts);
 
-        return async (
-            req: Request,
-            res: Response,
-            next?: NextFunction
-        ): Promise<Response> => {
+        return async (req: Request, res: Response): Promise<Response> => {
             let result: IControllerResult<T>;
 
             const values = {...req.body};
