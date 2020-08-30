@@ -55,11 +55,11 @@ const router = induct.router();
 
 This method will create an express router with the following routes:
 
-GET / retrieve all records in the table
-GET /:idParam retrieve one record
-POST / create one record
-PATCH /:idParam update one record
-DELETE /:idParam delete one record
+- GET / retrieve all records in the table
+- GET /:idParam retrieve one record
+- POST / create one record
+- PATCH /:idParam update one record
+- DELETE /:idParam delete one record
 
 ### Setup a server
 
@@ -125,7 +125,7 @@ export const routeHandler = async (
     res: Response
 ): Promise<Response> => {
     // Get a model instance and lookup using the id parameter
-    const model = await induct.modelInstance({uuid: req.params.id});
+    const model = await induct.model({uuid: req.params.id});
     const result = await model.findOneById();
 
     // Return a response based on the results of the query
