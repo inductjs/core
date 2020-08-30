@@ -71,7 +71,7 @@ class InductModel<T> extends Model<T> {
 
             await this._qb.where(this._id_field, lookupVal).del();
 
-            return lookup;
+            return lookupVal;
         } catch (e) {
             throw new QueryError(`InductModel.delete failed with error ${e}`);
         }

@@ -69,10 +69,6 @@ export class Induct<T> {
     ): InductModelOpts<T> {
         const overrideEntries = Object.entries(overrides);
 
-        for (const [key, value] of overrideEntries) {
-            this[key] = value;
-        }
-
         const {
             all,
             validate,
@@ -83,7 +79,7 @@ export class Induct<T> {
             idField,
         } = this;
 
-        return {
+        const opts = {
             all,
             validate,
             fields: fieldsList,
@@ -92,6 +88,12 @@ export class Induct<T> {
             tableName,
             idField,
         };
+
+        for (const [key, value] of overrideEntries) {
+            opts[key] = value;
+        }
+
+        return opts;
     }
 
     lookupHandler(
