@@ -55,11 +55,11 @@ const router = induct.router();
 
 This method will create an express router with the following routes:
 
-GET / retrieve all records in the table
-GET /:idParam retrieve one record
-POST / create one record
-PATCH /:idParam update one record
-DELETE /:idParam delete one record
+- GET / retrieve all records in the table
+- GET /:idParam retrieve one record
+- POST / create one record
+- PATCH /:idParam update one record
+- DELETE /:idParam delete one record
 
 ### Setup a server
 
