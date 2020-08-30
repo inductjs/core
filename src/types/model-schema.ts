@@ -8,7 +8,7 @@ export type InductModelFactory<T> = (
 ) => Promise<InductModel<T>>;
 
 export type GenericModelFactory<T> = (
-    ...args: unknown[]
+    ...args: any[]
 ) => Promise<unknown> | unknown;
 
 export type InductModelFunction<T> = () => Promise<
@@ -27,8 +27,13 @@ export type BaseModelFunction =
     | "findAll"
     | "update"
     | "validate";
-export type LookupModelFunction = "findAll" | "findOneById";
-export type ModifierModelFunction = "create" | "delete" | "update";
+
+export type HandlerFunction =
+    | "findAll"
+    | "findOneById"
+    | "create"
+    | "delete"
+    | "update";
 
 export interface InductModelOpts<T> {
     /** Knex database connection object for the model to use */

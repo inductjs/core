@@ -2,8 +2,7 @@ import {
     InductModelOpts,
     InductModelFactory,
     GenericModelFactory,
-    LookupModelFunction,
-    ModifierModelFunction,
+    HandlerFunction,
 } from "./types/model-schema";
 import {InductModel} from "./gen-model";
 import {IControllerResult, ControllerResult} from "./controller-result";
@@ -110,8 +109,19 @@ export class Induct<T> {
         return model;
     }
 
-    lookupHandler(
-        modelFn: LookupModelFunction,
+    handler(
+        modelFn: HandlerFunction,
+        opts?: Partial<InductModelOpts<T>>
+    ): RequestHandler {
+        if (modelFn.indexOf("find") !== -1) {
+            return this.lookupHandler(modelFn, opts);
+        } else {
+            return this.modifyHandler(modelFn, opts);
+        }
+    }
+
+    private lookupHandler(
+        modelFn: HandlerFunction,
         opts?: Partial<InductModelOpts<T>>
     ): RequestHandler {
         const modelOpts = this._getModelOptions(opts);
@@ -171,8 +181,8 @@ export class Induct<T> {
         };
     }
 
-    modifyHandler(
-        modelFn: ModifierModelFunction,
+    private modifyHandler(
+        modelFn: HandlerFunction,
         opts?: Partial<InductModelOpts<T>>
     ): RequestHandler {
         const modelOpts = this._getModelOptions(opts);
