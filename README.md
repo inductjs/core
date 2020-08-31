@@ -50,7 +50,7 @@ const induct = new Induct({
     fieldsList: ["uuid", "name"], // OPTIONAL: limit fields retrieved
 });
 
-const router = induct.router();
+export const inductRouter = induct.router();
 ```
 
 This method will create an express router with the following routes:
@@ -69,13 +69,13 @@ Finally, create an express entry point as usual, and bring in the created router
 // index.ts
 import {createServer} from "http";
 import express from "express";
-import {router} from "./router";
+import {inductRouter} from "./router";
 import bodyParser from "body-parser";
 
 const app = express();
 app.use(bodyParser.json({limit: "50mb"})); // Make sure you are using body parser!
 
-app.use("/users", router);
+app.use("/users", inductRouter);
 
 const server = createServer(app);
 
@@ -88,29 +88,24 @@ Induct exposes several levels of abstraction. The getting started example highli
 
 ### Generic route handlers
 
-You can generate express route handlers using the lookupHandler (for GET requests) and modifyHandler (for POST, PATCH, DELETE requests) functions.
+You can create generic express route handlers for InductModel methods using the induct.handler() method:
 
 ```typescript
 const router = express.Router();
 
-router.get("/", induct.lookupHandler("findAll", {all: true}));
-router.get(`/:${induct.idParam}`, induct.lookupHandler("findOneById"));
+router.get("/", induct.handler("findAll", {all: true}));
+router.post(`/`, induct.handler("create", {validate: true}));
 
-router.patch(
-    `/:${induct.idParam}`,
-    induct.modifyHandler("update", {validate: true})
-);
-router.post(`/`, induct.modifyHandler("create", {validate: true}));
-router.delete(`/:${induct.idParam}`, induct.modifyHandler("update"));
+router.get(`/:${induct.idParam}`, induct.handler("findOneById"));
+router.patch(`/:${induct.idParam}`,induct.handler("update", {validate: true}));
+router.delete(`/:${induct.idParam}`, induct.handler("update"));
 ```
-
-These route handlers still use the generic InductModel class to communicate with your database.
+These handlers use the generic InductModel methods to query your database.
 
 ### Use InductModel in custom route handler
 You can use Inducts generic model class in your own route handlers as follows:
 
 ```typescript
-
 // Create an Induct instance
 const induct = new Induct({
     connection: knex, // Knex connection object to your database
