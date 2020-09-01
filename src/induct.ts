@@ -262,8 +262,10 @@ export class Induct<T> {
             context: Context,
             req: HttpRequest
         ): Promise<HttpResponse> => {
-            const id = req.params ? req.params.id : undefined;
+            const id = req.params?.id;
             const values = {...req.body};
+
+            if (id) values[this.idField] = id;
 
             let result: T | T[] | number | string | unknown;
             let res: HttpResponse;
