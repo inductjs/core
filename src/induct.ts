@@ -254,7 +254,7 @@ export class Induct<T> {
     }
 
     public azureFunctionsRouter(
-        opts: Partial<InductModelOpts<T>>
+        opts?: Partial<InductModelOpts<T>>
     ): AzureFunction {
         const modelOpts = this._getModelOptions(opts);
 
