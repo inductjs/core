@@ -3,12 +3,16 @@ import {
     InductModelFactory,
     GenericModelFactory,
     HandlerFunction,
+    IModel,
 } from "./types/model-schema";
 import {InductModel} from "./gen-model";
 import {IControllerResult, ControllerResult} from "./controller-result";
 import {inductModelFactory} from "./gen-model-factory";
 import {StatusCode} from "./types/http-schema";
 import {RequestHandler, Request, Response, Router} from "express";
+import {AzureFunction, Context, HttpRequest} from "@azure/functions";
+import {HttpResponse, HttpMethod} from "azure-functions-ts-essentials";
+import {InductControllerOpts} from "./types/controller-schema";
 import knex from "knex";
 
 export interface InductConstructorOpts<T> {
@@ -45,7 +49,7 @@ export class Induct<T> {
     private all: boolean;
     private validate: boolean;
 
-    private modelFactory: InductModelFactory<T> | GenericModelFactory<T>;
+    private modelFactory: InductModelFactory<T>;
     private lookupFields: Array<keyof T>;
 
     constructor(args: InductConstructorOpts<T>) {
@@ -64,8 +68,7 @@ export class Induct<T> {
         this.validate = args.validate;
         this.all = args.all;
 
-        this.modelFactory =
-            args.modelFactory || inductModelFactory<T>(this.lookupFields);
+        this.modelFactory = inductModelFactory<T>(this.lookupFields);
     }
 
     private _getModelOptions(
@@ -151,7 +154,7 @@ export class Induct<T> {
                     );
                 }
 
-                const lookup = await model[modelFn]();
+                const lookup = (await model[modelFn]()) as Array<T>;
 
                 if (lookup.length == 0) {
                     result = {
@@ -247,6 +250,68 @@ export class Induct<T> {
                 };
             }
             return new ControllerResult(result).send();
+        };
+    }
+
+    public azureFunctionsRouter(
+        opts: Partial<InductModelOpts<T>>
+    ): AzureFunction {
+        const modelOpts = this._getModelOptions(opts);
+
+        return async (
+            context: Context,
+            req: HttpRequest
+        ): Promise<HttpResponse> => {
+            const id = req.params ? req.params.id : undefined;
+            const values = {...req.body};
+
+            let result: T | T[] | number | string | unknown;
+            let res: HttpResponse;
+
+            try {
+                const Model = await this.modelFactory(values, modelOpts);
+
+                if (!Model) {
+                    res = {status: 400, body: "Bad request"};
+                } else {
+                    switch (req.method) {
+                        case HttpMethod.Get:
+                            result = id
+                                ? await Model.findOneById()
+                                : await Model.findAll();
+                            res = {status: 200, body: result};
+                            break;
+
+                        case HttpMethod.Post:
+                            result = await Model.create();
+                            res = {status: 201, body: result};
+                            break;
+
+                        case HttpMethod.Patch:
+                            result = await Model.update();
+                            res = !result
+                                ? {status: 400, body: "Bad request"}
+                                : {status: 200, body: result};
+                            break;
+
+                        case HttpMethod.Delete:
+                            result = (await Model.delete()) as unknown;
+                            res = !result
+                                ? {status: 404, body: "Resource not found"}
+                                : {status: 204, body: result};
+                            break;
+
+                        default:
+                            res = {status: 405, body: "Method not allowed"};
+                            break;
+                    }
+                }
+            } catch (e) {
+                res = {status: 500, body: `${e.name}`};
+            }
+
+            if (!res) return {status: 400, body: `Bad request`};
+            else return res;
         };
     }
 
