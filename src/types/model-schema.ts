@@ -1,5 +1,5 @@
 import knex from "knex";
-import {InductModel} from "../gen-model";
+import {InductModel} from "../base-model";
 import {ValidationError} from "class-validator";
 
 export type InductModelFactory<T> = (
@@ -52,14 +52,14 @@ export interface InductModelOpts<T> {
     fields?: Array<keyof T>;
 }
 
-export interface IModel<T> {
+export interface IInductModel<T> {
     /** Access the current open transaction to query the database */
     trx: knex.Transaction;
     /** True if the validation function has run on this model instance */
     validated: boolean;
     /** The options provided to the model on instantiation */
     options: InductModelOpts<T>;
-    /** Name of the table that this model should expose. Should include the table schema if applicable. */
+    /** Name of the table/view that this model should expose. Should include the table schema if applicable. */
     table_name: string;
     /** Field used as the id URL parameter to perform requests on */
     id_field: keyof T;
@@ -67,17 +67,17 @@ export interface IModel<T> {
     model: T;
 
     /** [TRANSACTIONS NOT IMPLEMENTED] Starts a knex transaction and stores this in the class instance */
-    startTransaction: () => Promise<knex.Transaction>;
+    // startTransaction: () => Promise<knex.Transaction>;
     /** [TRANSACTIONS NOT IMPLEMENTED] Destroys the current knex transaction */
-    destroyConnection: () => Promise<void>;
+    // destroyConnection: () => Promise<void>;
     /** [TRANSACTIONS NOT IMPLEMENTED] Commits the current knex transaction */
-    commitTransaction: () => Promise<void>;
+    // commitTransaction: () => Promise<void>;
     /** [TRANSACTIONS NOT IMPLEMENTED] Performs a rollback of the current knex transaction */
-    rollbackTransaction: () => Promise<void>;
+    // rollbackTransaction: () => Promise<void>;
     /** Looks for a value based on the provided id_field in the model */
-    findOneById: (lookup?: T[keyof T]) => Promise<T[]>;
+    findOneById?: (lookup?: T[keyof T]) => Promise<T[]>;
     /** Returns all the values in the provided table */
-    findAll: () => Promise<T[]>;
+    findAll?: () => Promise<T[]>;
     /** Inserts one value in the provided table */
     create?: (value?: Partial<T>) => Promise<T>;
     /** Deletes one value based on the provided id_field */

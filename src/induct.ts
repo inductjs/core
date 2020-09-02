@@ -3,16 +3,14 @@ import {
     InductModelFactory,
     GenericModelFactory,
     HandlerFunction,
-    IModel,
 } from "./types/model-schema";
-import {InductModel} from "./gen-model";
+import {InductModel} from "./base-model";
 import {IControllerResult, ControllerResult} from "./controller-result";
-import {inductModelFactory} from "./gen-model-factory";
+import {inductModelFactory} from "./model-factory";
 import {StatusCode} from "./types/http-schema";
 import {RequestHandler, Request, Response, Router} from "express";
 import {AzureFunction, Context, HttpRequest} from "@azure/functions";
 import {HttpResponse, HttpMethod} from "azure-functions-ts-essentials";
-import {InductControllerOpts} from "./types/controller-schema";
 import knex from "knex";
 
 export interface InductConstructorOpts<T> {
@@ -33,9 +31,9 @@ export interface InductConstructorOpts<T> {
     /** Array of field names that are returned in lookup controllers */
     fieldsList?: Array<keyof T>;
     /** [NOT IMPLEMENTED] Array of field names that can be used as a lookup field */
-    additionalLookupFields?: Array<keyof T>;
+    // additionalLookupFields?: Array<keyof T>;
     /** [NOT IMPLEMENTED]  Custom model factory function */
-    modelFactory?: InductModelFactory<T> | GenericModelFactory<T>;
+    // modelFactory?: InductModelFactory<T> | GenericModelFactory<T>;
 }
 
 export class Induct<T> {
@@ -50,7 +48,6 @@ export class Induct<T> {
     private validate: boolean;
 
     private modelFactory: InductModelFactory<T>;
-    private lookupFields: Array<keyof T>;
 
     constructor(args: InductConstructorOpts<T>) {
         this.connection = args.connection;
@@ -59,16 +56,12 @@ export class Induct<T> {
         this.tableName = args.tableName;
         this.idParam = args.idParam || "id";
 
-        this.lookupFields = [
-            args.idField,
-            ...(args.additionalLookupFields ?? []),
-        ];
         this.fieldsList = args.fieldsList;
 
         this.validate = args.validate;
         this.all = args.all;
 
-        this.modelFactory = inductModelFactory<T>(this.lookupFields);
+        this.modelFactory = inductModelFactory<T>();
     }
 
     private _getModelOptions(

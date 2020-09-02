@@ -1,5 +1,5 @@
 import {InductModelOpts, InductModelFactory} from "./types/model-schema";
-import {InductModel} from "./gen-model";
+import {InductModel} from "./base-model";
 import {ValidationError} from "./types/error-schema";
 
 /**

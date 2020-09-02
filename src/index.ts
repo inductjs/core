@@ -9,17 +9,13 @@ export {
     InductModelFactory,
     InductModelFunction,
     InductModelOpts,
-    IModel,
+    IInductModel,
     ValidationResult,
 } from "./types/model-schema";
-export {InductModel} from "./gen-model";
-export {Model as InductBaseModel} from "./base-model";
+export {InductModel} from "./base-model";
 export {IControllerResult, ControllerResult} from "./controller-result";
 
-// export {createLookupHandler} from "./gen-lookup-controller";
-// export {createModController} from "./gen-mod-controller";
-export {inductModelFactory} from "./gen-model-factory";
-// export {createAzureFunctionsRouter} from "./gen-functions-router";
+export {inductModelFactory} from "./model-factory";
 
 import {Induct} from "./induct";
 export {InductConstructorOpts} from "./induct";
