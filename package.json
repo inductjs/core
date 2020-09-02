@@ -1,10 +1,13 @@
 {
-    "name": "@induct/core",
+    "name": "@yeseh/induct-core",
     "version": "0.2.5",
     "main": "dist/index.js",
     "module": "dist/index.es.js",
     "types": "dist/index.d.ts",
     "description": "NodeJS API generator",
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com/"
+    },
     "scripts": {
         "test": "jest",
         "tets:coverage": "npm run test",

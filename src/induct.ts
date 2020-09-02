@@ -3,7 +3,6 @@ import {
     InductModelFactory,
     GenericModelFactory,
     HandlerFunction,
-    IModel,
 } from "./types/model-schema";
 import {InductModel} from "./gen-model";
 import {IControllerResult, ControllerResult} from "./controller-result";
@@ -12,7 +11,6 @@ import {StatusCode} from "./types/http-schema";
 import {RequestHandler, Request, Response, Router} from "express";
 import {AzureFunction, Context, HttpRequest} from "@azure/functions";
 import {HttpResponse, HttpMethod} from "azure-functions-ts-essentials";
-import {InductControllerOpts} from "./types/controller-schema";
 import knex from "knex";
 
 export interface InductConstructorOpts<T> {
