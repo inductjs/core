@@ -8,7 +8,7 @@ export type InductModelFactory<T> = (
 ) => Promise<InductModel<T>>;
 
 export type GenericModelFactory<T> = (
-    ...args: any[]
+    ...args: unknown[]
 ) => Promise<unknown> | unknown;
 
 export type InductModelFunction<T> = () => Promise<
