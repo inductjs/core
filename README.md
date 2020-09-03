@@ -11,7 +11,7 @@ Induct uses [Knex](https://knexjs.org/) to query databases, and therefore only s
 
 Install Induct Core as a dependency of your project:
 
-> npm install @induct/core --save
+> npm install @yeseh/induct-core --save
 
 ### Define a schema
 
