@@ -1,50 +1,32 @@
-import {InductModelOpts, InductModelFactory} from "./types/model-schema";
+import {InductModelOpts} from "./types/model-schema";
 import {InductModel} from "./base-model";
 import {ValidationError} from "./types/error-schema";
 
 /**
- * Creates a factory function which returns a promise that resolves to an instance of the supplied model class.
- * The returned function is used as an input for Induct's controller factories. Takes a type parameter of a schema class.
- *
- * @param valProps array of property names that can be used by the model to lookup data (ex. user_id).
- * Used to check if a valid lookup field is supplied.
- * @example
- * const modelFactory = createModelFactory(['user_id', 'username'])
+ * Returns a promise that resolves to an instance of an InductModel (or extention therof).
  */
-export const inductModelFactory = <T>(
-    valProps: Array<keyof T>
-): InductModelFactory<T> => {
-    const modelFactory = async (
-        values: T,
-        opts: InductModelOpts<T>
-    ): Promise<InductModel<T>> => {
-        try {
-            const {all, validate} = opts;
+export const inductModelFactory = async <
+    T,
+    R extends InductModel<T> | InductModel<T>
+>(
+    values: T,
+    opts: InductModelOpts<T>,
+    ...args: any[]
+): Promise<R | InductModel<T>> => {
+    const {validate} = opts;
 
-            // Check if a possible lookup value is present
-            const lookupVal = values
-                ? valProps.filter((prop) => !!values[prop])
-                : [];
+    // Create model
+    const modelInstance: R | InductModel<T> = opts.customModel
+        ? new opts.customModel(values, opts, args) // eslint-disable-line new-cap
+        : new InductModel(values, opts);
 
-            // Throw if no possible lookup field is supplied
-            if (valProps && lookupVal.length === 0 && !all) {
-                throw new TypeError("Lookup field or bulk option unspecified");
-            }
-
-            // Create and return model\
-            const model = new InductModel<T>(values, opts);
-
-            if (validate) {
-                const errors = await model.validate();
-                if (errors.length > 0) {
-                    throw new ValidationError(`Schema validation failed`);
-                }
-            }
-
-            return model;
-        } catch (e) {
-            console.log(e); // eslint-disable-line no-console
+    // Validate incoming data
+    if (validate) {
+        const errors = await modelInstance.validate();
+        if (errors.length > 0) {
+            throw new ValidationError(`Schema validation failed`);
         }
-    };
-    return modelFactory;
+    }
+
+    return modelInstance;
 };

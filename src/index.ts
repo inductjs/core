@@ -1,5 +1,5 @@
 export {
-    InductController,
+    Controller as InductController,
     InductControllerOpts,
     InductControllerBase,
 } from "./types/controller-schema";

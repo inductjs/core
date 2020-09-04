@@ -2,18 +2,40 @@ import knex from "knex";
 import {InductModel} from "../base-model";
 import {ValidationError} from "class-validator";
 
-export type InductModelFactory<T> = (
+export type ModelFactory<T> = (
     values: T | T[],
     args: InductModelOpts<T>
 ) => Promise<InductModel<T>>;
 
-export type GenericModelFactory<T> = (
-    ...args: any[]
-) => Promise<unknown> | unknown;
-
-export type InductModelFunction<T> = () => Promise<
+export type ModelFunction<T> = () => Promise<
     T | T[] | number | ValidationResult<T>
 >;
+
+export type ModelConstructor<T> = new (
+    val: T,
+    opts: InductModelOpts<T>,
+    ...args: any[]
+) => InductModel<T>;
+
+/** Mark types that do not match the condition type (2nd parameter) as 'never' */
+type SubType<Base, Condition> = Pick<
+    Base,
+    {
+        [Key in keyof Base]: Base[Key] extends Condition ? Key : never;
+    }[keyof Base]
+>;
+
+class Test {
+    constructor(public greeting: string = "Hello") {}
+
+    greet(): string {
+        return this.greeting;
+    }
+}
+
+type FunctionOfInductModel<T> = keyof SubType<InductModel<T>, Function>;
+
+export type SchemaConstructor<T> = new (val: T) => T;
 
 /** String type that lists the possible functions contained in the model. Used to provide typing to the parameters of generation functions */
 export type BaseModelFunction =
@@ -50,6 +72,8 @@ export interface InductModelOpts<T> {
     validate?: boolean;
     /** [NOT IMPLEMENTED] Array of field names that can be used as a lookup. For each entry in this array, a GET route is generated. */
     fields?: Array<keyof T>;
+    /** Custom model class */
+    customModel?: ModelConstructor<T>;
 }
 
 export interface IInductModel<T> {

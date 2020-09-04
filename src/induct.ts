@@ -1,8 +1,9 @@
 import {
     InductModelOpts,
-    InductModelFactory,
-    GenericModelFactory,
-    HandlerFunction,
+    ModelFactory,
+    SchemaConstructor,
+    ModelConstructor,
+    FunctionName,
 } from "./types/model-schema";
 import {InductModel} from "./base-model";
 import {IControllerResult, ControllerResult} from "./controller-result";
@@ -13,41 +14,23 @@ import {AzureFunction, Context, HttpRequest} from "@azure/functions";
 import {HttpResponse, HttpMethod} from "azure-functions-ts-essentials";
 import knex from "knex";
 
-export interface InductConstructorOpts<T> {
-    /** KnexJS database connection object */
-    connection: knex;
-    /** Schema class for typesafety and validation */
-    schema: new (val: T) => T;
-    /** Name of ID field to use for lookups */
-    idField: keyof T;
-    /** Name of the table to query */
-    tableName: string;
+export interface InductConstructorOpts<T> extends InductModelOpts<T> {
     /** url parameter for resource ID's. Default = "id" */
     idParam?: string;
-    /** Set to true for bulk operations accross the whole table, skipping individual validation  */
-    all?: boolean;
-    /** Set to true to validate input data on instantiation */
-    validate?: boolean; // Validation in MOD CONTROLLER instead of MODEL????
-    /** Array of field names that are returned in lookup controllers */
-    fieldsList?: Array<keyof T>;
-    /** [NOT IMPLEMENTED] Array of field names that can be used as a lookup field */
-    // additionalLookupFields?: Array<keyof T>;
-    /** [NOT IMPLEMENTED]  Custom model factory function */
-    // modelFactory?: InductModelFactory<T> | GenericModelFactory<T>;
 }
 
 export class Induct<T> {
     private connection: knex;
-    private schema: new (val: T) => T;
     private idField: keyof T;
     private idParam: string;
     private fieldsList: Array<keyof T>;
     private tableName: string;
-
-    private all: boolean;
     private validate: boolean;
 
-    private modelFactory: InductModelFactory<T>;
+    private schema: SchemaConstructor<T>;
+    private _model: ModelConstructor<T>;
+
+    private modelFactory: ModelFactory<T>;
 
     constructor(args: InductConstructorOpts<T>) {
         this.connection = args.connection;
@@ -56,39 +39,41 @@ export class Induct<T> {
         this.tableName = args.tableName;
         this.idParam = args.idParam || "id";
 
-        this.fieldsList = args.fieldsList;
+        this.fieldsList = args.fields;
 
         this.validate = args.validate;
-        this.all = args.all;
+        this._model = args.customModel;
 
-        this.modelFactory = inductModelFactory<T>();
+        this.modelFactory = inductModelFactory;
     }
 
-    private _getModelOptions(
+    private _copyOpts(
         overrides: Partial<InductModelOpts<T>> = {}
     ): InductModelOpts<T> {
         const overrideEntries = Object.entries(overrides);
 
+        // Get existing options in the instance
         const {
-            all,
             validate,
             fieldsList,
             schema,
             connection,
             tableName,
             idField,
+            _model,
         } = this;
 
         const opts = {
-            all,
             validate,
             fields: fieldsList,
             schema,
             connection,
             tableName,
             idField,
+            customModel: _model,
         };
 
+        // Override options
         for (const [key, value] of overrideEntries) {
             opts[key] = value;
         }
@@ -97,30 +82,40 @@ export class Induct<T> {
     }
 
     async model(data: T, opts?: InductModelOpts<T>): Promise<InductModel<T>> {
-        const modelOpts = this._getModelOptions(opts);
-        const factory = inductModelFactory([this.idField]);
+        try {
+            const modelOpts = this._copyOpts(opts);
 
-        const model = await factory(data, modelOpts);
+            const model = await inductModelFactory(data, modelOpts);
 
-        return model;
-    }
-
-    handler(
-        modelFn: HandlerFunction,
-        opts?: Partial<InductModelOpts<T>>
-    ): RequestHandler {
-        if (modelFn.indexOf("find") !== -1) {
-            return this.lookupHandler(modelFn, opts);
-        } else {
-            return this.modifyHandler(modelFn, opts);
+            return model;
+        } catch (e) {
+            console.log(e); // eslint-disable-line no-console
         }
     }
 
-    private lookupHandler(
-        modelFn: HandlerFunction,
+    handler<R extends InductModel<T>>(
+        modelFn: FunctionName<R>,
         opts?: Partial<InductModelOpts<T>>
     ): RequestHandler {
-        const modelOpts = this._getModelOptions(opts);
+        const fn = modelFn.toString();
+
+        try {
+            if (modelFn.toString().indexOf("find") !== -1) {
+                return this.lookupHandler(fn, opts);
+            } else {
+                return this.modifyHandler(fn, opts);
+            }
+        } catch (e) {
+            console.log(e); // eslint-disable-line no-console
+        }
+    }
+
+    private lookupHandler<R extends InductModel<T>>(
+        modelFn: FunctionName<R>,
+        opts?: Partial<InductModelOpts<T>>
+    ): RequestHandler {
+        const modelOpts = this._copyOpts(opts);
+        const fn = modelFn.toString();
 
         return async (req: Request, res: Response): Promise<Response> => {
             let result: IControllerResult<T>;
@@ -141,7 +136,7 @@ export class Induct<T> {
                     }).send();
                 }
 
-                if (typeof model[modelFn] !== "function") {
+                if (typeof model[fn] !== "function") {
                     throw new TypeError(
                         `${modelFn} is not a function of the supplied model`
                     );
@@ -177,11 +172,11 @@ export class Induct<T> {
         };
     }
 
-    private modifyHandler(
-        modelFn: HandlerFunction,
+    private modifyHandler<R extends InductModel<T>>(
+        modelFn: FunctionName<R>,
         opts?: Partial<InductModelOpts<T>>
     ): RequestHandler {
-        const modelOpts = this._getModelOptions(opts);
+        const modelOpts = this._copyOpts(opts);
 
         return async (req: Request, res: Response): Promise<Response> => {
             let result: IControllerResult<T>;
@@ -202,38 +197,38 @@ export class Induct<T> {
                     }).send();
                 }
 
-                if (typeof model[modelFn] !== "function") {
+                if (model[modelFn] === "function") {
+                    const modified = await model[modelFn]();
+
+                    if (!modified) {
+                        const failStatus =
+                            modelFn === "create"
+                                ? StatusCode.BAD_REQUEST
+                                : StatusCode.NOT_FOUND;
+
+                        result = {
+                            res,
+                            status: failStatus,
+                        };
+                    } else {
+                        let sucStatus: StatusCode = StatusCode.OK;
+
+                        if (modelFn === "create") {
+                            sucStatus = StatusCode.CREATED;
+                        } else if (modelFn === "delete") {
+                            sucStatus = StatusCode.NO_CONTENT;
+                        }
+
+                        result = {
+                            res,
+                            status: sucStatus,
+                            data: modified,
+                        };
+                    }
+                } else {
                     throw new TypeError(
                         `${modelFn} is not a function of the supplied model`
                     );
-                }
-
-                const modified = await model[modelFn]();
-
-                if (!modified) {
-                    const failStatus =
-                        modelFn === "create"
-                            ? StatusCode.BAD_REQUEST
-                            : StatusCode.NOT_FOUND;
-
-                    result = {
-                        res,
-                        status: failStatus,
-                    };
-                } else {
-                    let sucStatus: StatusCode = StatusCode.OK;
-
-                    if (modelFn === "create") {
-                        sucStatus = StatusCode.CREATED;
-                    } else if (modelFn === "delete") {
-                        sucStatus = StatusCode.NO_CONTENT;
-                    }
-
-                    result = {
-                        res,
-                        status: sucStatus,
-                        data: modified,
-                    };
                 }
             } catch (e) {
                 result = {
@@ -242,6 +237,7 @@ export class Induct<T> {
                     error: e,
                 };
             }
+
             return new ControllerResult(result).send();
         };
     }
@@ -249,7 +245,7 @@ export class Induct<T> {
     public azureFunctionsRouter(
         opts?: Partial<InductModelOpts<T>>
     ): AzureFunction {
-        const modelOpts = this._getModelOptions(opts);
+        const modelOpts = this._copyOpts(opts);
 
         return async (
             context: Context,
@@ -313,7 +309,7 @@ export class Induct<T> {
     public router(): Router {
         const router = Router(); // eslint-disable-line new-cap
 
-        router.get("/", this.lookupHandler("findAll", {all: true}));
+        router.get("/", this.lookupHandler("findAll"));
 
         router.post("/", this.modifyHandler("create", {validate: true}));
         router.patch("/:id", this.modifyHandler("update", {validate: true}));
