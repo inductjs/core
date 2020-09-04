@@ -10,7 +10,7 @@
     },
     "scripts": {
         "test": "jest",
-        "tets:coverage": "npm run test",
+        "test:cov": "jest --coverage",
         "lint": "eslint \"src/**/*.ts\" --fix && prettier --write \"src/**/*.ts\"",
         "build": "npm run lint && rollup -c",
         "watch": "rollup -cw",
@@ -42,6 +42,7 @@
     "devDependencies": {
         "@azure/functions": "^1.2.2",
         "@types/express": "^4.17.7",
+        "@types/jest": "^26.0.13",
         "@types/knex": "^0.16.1",
         "@types/node": "^14.0.1",
         "@types/rimraf": "^3.0.0",
@@ -50,8 +51,9 @@
         "@yeseh/prettier-config": "^1.1.2",
         "chalk": "^4.0.0",
         "eslint": "^7.5.0",
-        "jest": "^26.2.2",
+        "jest": "^26.4.2",
         "knex": "^0.21.2",
+        "mock-knex": "^0.4.9",
         "prettier": "^2.0.5",
         "prettier-eslint": "^9.0.1",
         "prompt": "^1.0.0",
@@ -59,7 +61,7 @@
         "rimraf": "^3.0.2",
         "rollup": "^2.10.0",
         "rollup-plugin-typescript2": "^0.27.1",
-        "ts-jest": "^26.1.4",
+        "ts-jest": "^26.3.0",
         "ts-node": "^8.10.1",
         "typescript": "^3.9.2"
     },

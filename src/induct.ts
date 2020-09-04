@@ -1,54 +1,42 @@
 import {
     InductModelOpts,
-    InductModelFactory,
-    GenericModelFactory,
-    HandlerFunction,
+    ModelFactory,
+    SchemaConstructor,
+    ModelConstructor,
+    FunctionOfInductModel,
 } from "./types/model-schema";
-import {InductModel} from "./gen-model";
+import {InductModel} from "./base-model";
 import {IControllerResult, ControllerResult} from "./controller-result";
-import {inductModelFactory} from "./gen-model-factory";
+import {inductModelFactory} from "./model-factory";
 import {StatusCode} from "./types/http-schema";
 import {RequestHandler, Request, Response, Router} from "express";
 import {AzureFunction, Context, HttpRequest} from "@azure/functions";
 import {HttpResponse, HttpMethod} from "azure-functions-ts-essentials";
 import knex from "knex";
 
-export interface InductConstructorOpts<T> {
-    /** KnexJS database connection object */
-    connection: knex;
-    /** Schema class for typesafety and validation */
-    schema: new (val: T) => T;
-    /** Name of ID field to use for lookups */
-    idField: keyof T;
-    /** Name of the table to query */
-    tableName: string;
+export interface InductConstructorOpts<T> extends InductModelOpts<T> {
     /** url parameter for resource ID's. Default = "id" */
     idParam?: string;
-    /** Set to true for bulk operations accross the whole table, skipping individual validation  */
-    all?: boolean;
-    /** Set to true to validate input data on instantiation */
-    validate?: boolean; // Validation in MOD CONTROLLER instead of MODEL????
-    /** Array of field names that are returned in lookup controllers */
-    fieldsList?: Array<keyof T>;
-    /** [NOT IMPLEMENTED] Array of field names that can be used as a lookup field */
-    additionalLookupFields?: Array<keyof T>;
-    /** [NOT IMPLEMENTED]  Custom model factory function */
-    modelFactory?: InductModelFactory<T> | GenericModelFactory<T>;
+    /** Additional method names to support for creating POST,PATCH,DELETE handlers */
+    additionalModifyFunctions?: string[];
+    /** Additional method names to support for creating GET handlers */
+    additionalLookupFunctions?: string[];
 }
 
 export class Induct<T> {
-    private connection: knex;
-    private schema: new (val: T) => T;
-    private idField: keyof T;
-    private idParam: string;
-    private fieldsList: Array<keyof T>;
-    private tableName: string;
+    protected connection: knex;
+    protected idField: keyof T;
+    protected idParam: string;
+    protected fieldsList: Array<keyof T>;
+    protected tableName: string;
+    protected validate: boolean;
+    protected modifyFunctions: string[];
+    protected lookupFunctions: string[];
 
-    private all: boolean;
-    private validate: boolean;
+    protected schema: SchemaConstructor<T>;
+    protected _model: ModelConstructor<T>;
 
-    private modelFactory: InductModelFactory<T>;
-    private lookupFields: Array<keyof T>;
+    protected modelFactory: ModelFactory<T>;
 
     constructor(args: InductConstructorOpts<T>) {
         this.connection = args.connection;
@@ -57,43 +45,53 @@ export class Induct<T> {
         this.tableName = args.tableName;
         this.idParam = args.idParam || "id";
 
-        this.lookupFields = [
-            args.idField,
-            ...(args.additionalLookupFields ?? []),
-        ];
-        this.fieldsList = args.fieldsList;
+        this.fieldsList = args.fields;
 
         this.validate = args.validate;
-        this.all = args.all;
+        this._model = args.customModel;
 
-        this.modelFactory = inductModelFactory<T>(this.lookupFields);
+        this.modifyFunctions = [
+            "update",
+            "create",
+            "delete",
+            ...(args.additionalModifyFunctions || []),
+        ];
+        this.lookupFunctions = [
+            "findOneById",
+            "findAll",
+            ...(args.additionalLookupFunctions || []),
+        ];
+
+        this.modelFactory = inductModelFactory;
     }
 
-    private _getModelOptions(
+    private _copyOpts(
         overrides: Partial<InductModelOpts<T>> = {}
     ): InductModelOpts<T> {
         const overrideEntries = Object.entries(overrides);
 
+        // Get existing options in the instance
         const {
-            all,
             validate,
             fieldsList,
             schema,
             connection,
             tableName,
             idField,
+            _model,
         } = this;
 
         const opts = {
-            all,
             validate,
             fields: fieldsList,
             schema,
             connection,
             tableName,
             idField,
+            customModel: _model,
         };
 
+        // Override options
         for (const [key, value] of overrideEntries) {
             opts[key] = value;
         }
@@ -101,20 +99,27 @@ export class Induct<T> {
         return opts;
     }
 
-    async model(data: T, opts?: InductModelOpts<T>): Promise<InductModel<T>> {
-        const modelOpts = this._getModelOptions(opts);
-        const factory = inductModelFactory([this.idField]);
+    async model(
+        data: T,
+        opts?: InductModelOpts<T>
+    ): Promise<InductModel<T>> | null {
+        try {
+            const modelOpts = this._copyOpts(opts);
 
-        const model = await factory(data, modelOpts);
+            const model = await this.modelFactory(data, modelOpts);
 
-        return model;
+            return model;
+        } catch (e) {
+            console.log(e); //eslint-disable-line
+            return null;
+        }
     }
 
     handler(
-        modelFn: HandlerFunction,
+        modelFn: FunctionOfInductModel<T>,
         opts?: Partial<InductModelOpts<T>>
     ): RequestHandler {
-        if (modelFn.indexOf("find") !== -1) {
+        if (this.lookupFunctions.includes(modelFn)) {
             return this.lookupHandler(modelFn, opts);
         } else {
             return this.modifyHandler(modelFn, opts);
@@ -122,17 +127,23 @@ export class Induct<T> {
     }
 
     private lookupHandler(
-        modelFn: HandlerFunction,
+        modelFn: string,
         opts?: Partial<InductModelOpts<T>>
     ): RequestHandler {
-        const modelOpts = this._getModelOptions(opts);
+        if (!this.lookupFunctions.includes(modelFn)) {
+            throw new TypeError(
+                `${modelFn} is not supported as a lookup method`
+            );
+        }
+
+        const modelOpts = this._copyOpts(opts);
 
         return async (req: Request, res: Response): Promise<Response> => {
             let result: IControllerResult<T>;
 
             const values = {...req.body};
 
-            if (modelFn === "findOneById") {
+            if (req.params[this.idParam]) {
                 values[this.idField] = req.params.id;
             }
 
@@ -146,13 +157,9 @@ export class Induct<T> {
                     }).send();
                 }
 
-                if (typeof model[modelFn] !== "function") {
-                    throw new TypeError(
-                        `${modelFn} is not a function of the supplied model`
-                    );
-                }
+                const fn = model[modelFn];
 
-                const lookup = (await model[modelFn]()) as Array<T>;
+                const lookup = (await fn()) as Array<T>;
 
                 if (lookup.length == 0) {
                     result = {
@@ -183,18 +190,23 @@ export class Induct<T> {
     }
 
     private modifyHandler(
-        modelFn: HandlerFunction,
+        modelFn: string,
         opts?: Partial<InductModelOpts<T>>
     ): RequestHandler {
-        const modelOpts = this._getModelOptions(opts);
+        const modelOpts = this._copyOpts(opts);
+        if (!this.modifyFunctions.includes(modelFn)) {
+            throw new TypeError(
+                `${modelFn} is not supported as a modify method`
+            );
+        }
 
         return async (req: Request, res: Response): Promise<Response> => {
             let result: IControllerResult<T>;
 
             const values = {...req.body};
 
-            if (modelFn === "update" || modelFn === "delete") {
-                values[this.idField] = req.params[this.idParam];
+            if (req.params[this.idParam]) {
+                values[this.idField] = req.params.id;
             }
 
             try {
@@ -207,13 +219,9 @@ export class Induct<T> {
                     }).send();
                 }
 
-                if (typeof model[modelFn] !== "function") {
-                    throw new TypeError(
-                        `${modelFn} is not a function of the supplied model`
-                    );
-                }
+                const fn = model[modelFn];
 
-                const modified = await model[modelFn]();
+                const modified = await fn();
 
                 if (!modified) {
                     const failStatus =
@@ -247,6 +255,7 @@ export class Induct<T> {
                     error: e,
                 };
             }
+
             return new ControllerResult(result).send();
         };
     }
@@ -254,7 +263,7 @@ export class Induct<T> {
     public azureFunctionsRouter(
         opts?: Partial<InductModelOpts<T>>
     ): AzureFunction {
-        const modelOpts = this._getModelOptions(opts);
+        const modelOpts = this._copyOpts(opts);
 
         return async (
             context: Context,
@@ -279,12 +288,20 @@ export class Induct<T> {
                             result = id
                                 ? await Model.findOneById()
                                 : await Model.findAll();
-                            res = {status: 200, body: result};
+
+                            if (Array.isArray(result) && result.length === 1) {
+                                res = {status: 200, body: result[0]};
+                            } else {
+                                res = {status: 200, body: result};
+                            }
+
                             break;
 
                         case HttpMethod.Post:
                             result = await Model.create();
-                            res = {status: 201, body: result};
+                            res = !result
+                                ? {status: 400, body: "Bad request"}
+                                : {status: 201, body: result};
                             break;
 
                         case HttpMethod.Patch:
@@ -310,22 +327,23 @@ export class Induct<T> {
                 res = {status: 500, body: `${e.name}`};
             }
 
-            if (!res) return {status: 400, body: `Bad request`};
-            else return res;
+            return res;
         };
     }
 
     public router(): Router {
         const router = Router(); // eslint-disable-line new-cap
 
-        router.get("/", this.lookupHandler("findAll", {all: true}));
+        router.get("/", this.handler("findAll"));
 
-        router.post("/", this.modifyHandler("create", {validate: true}));
-        router.patch("/:id", this.modifyHandler("update", {validate: true}));
+        router.post("/", this.handler("create", {validate: true}));
+        router.patch("/:id", this.handler("update", {validate: true}));
 
-        router.get("/:id", this.lookupHandler("findOneById"));
-        router.delete("/:id", this.modifyHandler("delete"));
+        router.get("/:id", this.handler("findOneById"));
+        router.delete("/:id", this.handler("delete"));
 
         return router;
     }
 }
+
+export default Induct;

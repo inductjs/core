@@ -1,19 +1,33 @@
 import knex from "knex";
-import {InductModel} from "../gen-model";
+import {InductModel} from "../base-model";
 import {ValidationError} from "class-validator";
 
-export type InductModelFactory<T> = (
-    values: T | T[],
+export type ModelFactory<T> = (
+    values: T,
     args: InductModelOpts<T>
 ) => Promise<InductModel<T>>;
 
-export type GenericModelFactory<T> = (
-    ...args: unknown[]
-) => Promise<unknown> | unknown;
-
-export type InductModelFunction<T> = () => Promise<
+export type ModelFunction<T> = () => Promise<
     T | T[] | number | ValidationResult<T>
 >;
+
+export type ModelConstructor<T> = new (
+    val: T,
+    opts: InductModelOpts<T>,
+    ...args: unknown[]
+) => InductModel<T>;
+
+/** Mark types that do not match the condition type (2nd parameter) as 'never' */
+type SubType<Base, Condition> = Pick<
+    Base,
+    {
+        [Key in keyof Base]: Base[Key] extends Condition ? Key : never;
+    }[keyof Base]
+>;
+
+export type FunctionOfInductModel<T> = keyof SubType<InductModel<T>, Function>;
+
+export type SchemaConstructor<T> = new (val: T) => T;
 
 /** String type that lists the possible functions contained in the model. Used to provide typing to the parameters of generation functions */
 export type BaseModelFunction =
@@ -50,16 +64,18 @@ export interface InductModelOpts<T> {
     validate?: boolean;
     /** [NOT IMPLEMENTED] Array of field names that can be used as a lookup. For each entry in this array, a GET route is generated. */
     fields?: Array<keyof T>;
+    /** Custom model class */
+    customModel?: ModelConstructor<T>;
 }
 
-export interface IModel<T> {
+export interface IInductModel<T> {
     /** Access the current open transaction to query the database */
     trx: knex.Transaction;
     /** True if the validation function has run on this model instance */
     validated: boolean;
     /** The options provided to the model on instantiation */
     options: InductModelOpts<T>;
-    /** Name of the table that this model should expose. Should include the table schema if applicable. */
+    /** Name of the table/view that this model should expose. Should include the table schema if applicable. */
     table_name: string;
     /** Field used as the id URL parameter to perform requests on */
     id_field: keyof T;
@@ -67,17 +83,17 @@ export interface IModel<T> {
     model: T;
 
     /** [TRANSACTIONS NOT IMPLEMENTED] Starts a knex transaction and stores this in the class instance */
-    startTransaction: () => Promise<knex.Transaction>;
+    // startTransaction: () => Promise<knex.Transaction>;
     /** [TRANSACTIONS NOT IMPLEMENTED] Destroys the current knex transaction */
-    destroyConnection: () => Promise<void>;
+    // destroyConnection: () => Promise<void>;
     /** [TRANSACTIONS NOT IMPLEMENTED] Commits the current knex transaction */
-    commitTransaction: () => Promise<void>;
+    // commitTransaction: () => Promise<void>;
     /** [TRANSACTIONS NOT IMPLEMENTED] Performs a rollback of the current knex transaction */
-    rollbackTransaction: () => Promise<void>;
+    // rollbackTransaction: () => Promise<void>;
     /** Looks for a value based on the provided id_field in the model */
-    findOneById: (lookup?: T[keyof T]) => Promise<T[]>;
+    findOneById?: (lookup?: T[keyof T]) => Promise<T[]>;
     /** Returns all the values in the provided table */
-    findAll: () => Promise<T[]>;
+    findAll?: () => Promise<T[]>;
     /** Inserts one value in the provided table */
     create?: (value?: Partial<T>) => Promise<T>;
     /** Deletes one value based on the provided id_field */
