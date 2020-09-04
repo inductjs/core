@@ -3,7 +3,7 @@ import {InductModel} from "../base-model";
 import {ValidationError} from "class-validator";
 
 export type ModelFactory<T> = (
-    values: T | T[],
+    values: T,
     args: InductModelOpts<T>
 ) => Promise<InductModel<T>>;
 
@@ -25,15 +25,7 @@ type SubType<Base, Condition> = Pick<
     }[keyof Base]
 >;
 
-class Test {
-    constructor(public greeting: string = "Hello") {}
-
-    greet(): string {
-        return this.greeting;
-    }
-}
-
-type FunctionOfInductModel<T> = keyof SubType<InductModel<T>, Function>;
+export type FunctionOfInductModel<T> = keyof SubType<InductModel<T>, Function>;
 
 export type SchemaConstructor<T> = new (val: T) => T;
 

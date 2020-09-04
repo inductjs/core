@@ -194,3 +194,5 @@ export class InductModel<T> implements IInductModel<T> {
         return validate(this._model);
     }
 }
+
+export default InductModel;

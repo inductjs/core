@@ -6,8 +6,6 @@ export {
 export {ValidationError, QueryError} from "./types/error-schema";
 export {StatusCode} from "./types/http-schema";
 export {
-    InductModelFactory,
-    InductModelFunction,
     InductModelOpts,
     IInductModel,
     ValidationResult,

@@ -22,7 +22,7 @@ export interface IControllerResult<T> {
     redirect?: (location: string) => void;
 }
 
-class ControllerResult<T> implements IControllerResult<T> {
+export class ControllerResult<T> implements IControllerResult<T> {
     public readonly status: StatusCode;
     public readonly data: T | T[] | T[keyof T] | number;
     public readonly info: string;
@@ -48,4 +48,4 @@ class ControllerResult<T> implements IControllerResult<T> {
     }
 }
 
-export {ControllerResult};
+export default ControllerResult;
