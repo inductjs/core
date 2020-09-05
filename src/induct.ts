@@ -86,7 +86,6 @@ export class Induct<T> {
 
             return model;
         } catch (e) {
-            console.log(e); //eslint-disable-line
             return null;
         }
     }

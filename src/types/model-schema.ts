@@ -26,6 +26,7 @@ type SubType<Base, Condition> = Pick<
 >;
 
 export type FunctionOfInductModel<T> = keyof SubType<InductModel<T>, Function>;
+export type FunctionOfModel<T> = keyof SubType<T, Function>;
 
 export type SchemaConstructor<T> = new (val: T) => T;
 

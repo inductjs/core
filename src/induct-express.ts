@@ -1,7 +1,7 @@
 import Induct, {InductConstructorOpts} from "./induct";
-import {InductModelOpts} from "./types/model-schema";
+import {FunctionOfModel, InductModelOpts} from "./types/model-schema";
 import {StatusCode} from "./types/http-schema";
-import {RequestHandler, Request, Response, Router} from "express";
+import e, {RequestHandler, Request, Response, Router} from "express";
 import {IControllerResult, ControllerResult} from "./controller-result";
 
 export interface InductExpressConstructorOpts<T>
@@ -45,29 +45,38 @@ export class InductExpress<T> extends Induct<T> {
         return router;
     }
 
+    registerModelFunction<T>(
+        type: "lookup" | "modify",
+        functionName: FunctionOfModel<T>
+    ): void {
+        if (type === "lookup") {
+            this.lookupFunctions.push(functionName as string);
+        } else if (type === "modify") {
+            this.modifyFunctions.push(functionName as string);
+        }
+    }
+
     handler(
         modelFn: string,
         opts?: Partial<InductModelOpts<T>>
     ): RequestHandler {
+        const modelOpts = this._copyOpts(opts);
+
         if (this.lookupFunctions.includes(modelFn)) {
-            return this.lookupHandler(modelFn, opts);
+            return this.lookupHandler(modelFn, modelOpts);
+        } else if (this.modifyFunctions.includes(modelFn)) {
+            return this.modifyHandler(modelFn, modelOpts);
         } else {
-            return this.modifyHandler(modelFn, opts);
+            throw new TypeError(
+                `${modelFn} is not registered as a handler method`
+            );
         }
     }
 
     private lookupHandler(
         modelFn: string,
-        opts?: Partial<InductModelOpts<T>>
+        opts?: InductModelOpts<T>
     ): RequestHandler {
-        if (!this.lookupFunctions.includes(modelFn)) {
-            throw new TypeError(
-                `${modelFn} is not registered as a lookup method`
-            );
-        }
-
-        const modelOpts = this._copyOpts(opts);
-
         return async (req: Request, res: Response): Promise<Response> => {
             let result: IControllerResult<T>;
 
@@ -78,7 +87,7 @@ export class InductExpress<T> extends Induct<T> {
             }
 
             try {
-                const model = await this.modelFactory(values, modelOpts);
+                const model = await this.modelFactory(values, opts);
 
                 if (!model) {
                     return new ControllerResult({
@@ -89,15 +98,19 @@ export class InductExpress<T> extends Induct<T> {
 
                 const fn = model[modelFn];
 
-                const lookup = (await fn()) as Array<T>;
+                const lookup = await fn();
 
-                if (lookup.length == 0) {
+                if (!lookup || (Array.isArray(lookup) && lookup.length == 0)) {
                     result = {
                         res,
                         status: StatusCode.NOT_FOUND,
                     };
                 } else {
-                    const data = lookup.length === 1 ? lookup[0] : lookup;
+                    let data;
+
+                    if (Array.isArray(lookup) && lookup.length == 1) {
+                        data = lookup[0];
+                    } else data = lookup;
 
                     result = {
                         res,
@@ -121,15 +134,8 @@ export class InductExpress<T> extends Induct<T> {
 
     private modifyHandler(
         modelFn: string,
-        opts?: Partial<InductModelOpts<T>>
+        opts?: InductModelOpts<T>
     ): RequestHandler {
-        const modelOpts = this._copyOpts(opts);
-        if (!this.modifyFunctions.includes(modelFn)) {
-            throw new TypeError(
-                `${modelFn} is not registered as a modify method`
-            );
-        }
-
         return async (req: Request, res: Response): Promise<Response> => {
             let result: IControllerResult<T>;
 
@@ -140,7 +146,7 @@ export class InductExpress<T> extends Induct<T> {
             }
 
             try {
-                const model = await this.modelFactory(values, modelOpts);
+                const model = await this.modelFactory(values, opts);
 
                 if (!model) {
                     return new ControllerResult({
