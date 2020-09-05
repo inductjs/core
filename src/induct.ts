@@ -3,7 +3,6 @@ import {
     ModelFactory,
     SchemaConstructor,
     ModelConstructor,
-    FunctionOfInductModel,
 } from "./types/model-schema";
 import {InductModel} from "./base-model";
 import {IControllerResult, ControllerResult} from "./controller-result";
@@ -116,7 +115,7 @@ export class Induct<T> {
     }
 
     handler(
-        modelFn: FunctionOfInductModel<T>,
+        modelFn: string,
         opts?: Partial<InductModelOpts<T>>
     ): RequestHandler {
         if (this.lookupFunctions.includes(modelFn)) {
@@ -132,7 +131,7 @@ export class Induct<T> {
     ): RequestHandler {
         if (!this.lookupFunctions.includes(modelFn)) {
             throw new TypeError(
-                `${modelFn} is not supported as a lookup method`
+                `${modelFn} is not registered as a lookup method`
             );
         }
 
@@ -196,7 +195,7 @@ export class Induct<T> {
         const modelOpts = this._copyOpts(opts);
         if (!this.modifyFunctions.includes(modelFn)) {
             throw new TypeError(
-                `${modelFn} is not supported as a modify method`
+                `${modelFn} is not registered as a modify method`
             );
         }
 
