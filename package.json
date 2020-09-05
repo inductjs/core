@@ -12,7 +12,7 @@
         "test": "jest",
         "test:cov": "jest --coverage",
         "lint": "eslint \"src/**/*.ts\" --fix && prettier --write \"src/**/*.ts\"",
-        "build": "npm run lint && rollup -c",
+        "build": "npm run lint && rollup -c && rm -rf dist/index.d.ts",
         "watch": "rollup -cw",
         "prepublishOnly": "npm run build"
     },
