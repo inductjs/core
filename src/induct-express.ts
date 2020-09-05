@@ -1,7 +1,7 @@
 import Induct, {InductConstructorOpts} from "./induct";
 import {FunctionOfModel, InductModelOpts} from "./types/model-schema";
 import {StatusCode} from "./types/http-schema";
-import e, {RequestHandler, Request, Response, Router} from "express";
+import {RequestHandler, Request, Response, Router} from "express";
 import {IControllerResult, ControllerResult} from "./controller-result";
 
 export interface InductExpressConstructorOpts<T>
