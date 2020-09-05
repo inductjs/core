@@ -2,10 +2,9 @@
 
 # Induct
 
-Induct provides abstractions over ExpressJS in order to quickly create REST APIs from an SQL Database for prototyping purposes. 
+Induct provides abstractions over ExpressJS in order to quickly create REST APIs from an SQL Database for prototyping purposes. Usage with typescript is fully supported and encouraged!
 
-
-Induct uses [Knex](https://knexjs.org/) to query databases, and therefore only supports databases supported by Knex.
+Induct uses [Knex](https://knexjs.org/) to query databases, and therefore will only support databases supported by Knex.
 
 ## Getting Started
 
@@ -18,7 +17,7 @@ Install Induct Core as a dependency of your project:
 Define a class to provide Induct with type information. Class-validator decorators are supported for incoming schema validation.
 
 ```typescript
-// schema.ts
+// schema.js
 export class UserSchema {
     @IsUUID()
     uuid: string;
@@ -28,20 +27,18 @@ export class UserSchema {
     age: number;
 
     constructor(val: UserSchema) {
-        this.uuid = val.uuid;
-        this.name = val.name;
-        this.age = val.age;
+        Object.assign(this, val);
     }
 }
 ```
 
-### Create a router
+### Create an express router
 
 Initialize Induct and provide a database object, an object schema, the table to query, and the field to use as ID parameter.
 
-```typescript
-// router.ts
-const induct = new Induct({
+```javascript
+// router.js
+const induct = new InductExpress({
     connection: knex, // Knex connection object to your database
     schema: UserSchema,
     tableName: "dbo.users",
@@ -55,18 +52,18 @@ export const inductRouter = induct.router();
 
 This method will create an express router with the following routes:
 
-- GET / retrieve all records in the table
-- GET /:idParam retrieve one record
-- POST / create one record
-- PATCH /:idParam update one record
-- DELETE /:idParam delete one record
+-   GET / retrieve all records in the table
+-   GET /:idParam retrieve one record
+-   POST / create one record
+-   PATCH /:idParam update one record
+-   DELETE /:idParam delete one record
 
 ### Setup a server
 
 Finally, create an express entry point as usual, and bring in the created router:
 
-```typescript
-// index.ts
+```javascript
+// index.js
 import {createServer} from "http";
 import express from "express";
 import {inductRouter} from "./router";
@@ -82,6 +79,34 @@ const server = createServer(app);
 server.listen(4000, () => console.log(`Server is listening on port 4000`));
 ```
 
+## Azure functions router
+
+The InductAzure class exposes a generic router for Azure HTTP trigger functions. The index.js of your function could look like this:
+
+```javascript
+// index.js
+import {InductAzure} from "@yeseh/induct-core";
+
+const induct = new InductAzure({
+    connection: db,
+    schema: UserSchema,
+    idField: "user_uuid",
+    tableName: "SalesLT.Customer",
+});
+
+const main = async function (context, req) {
+    let res;
+
+    const router = induct.azureFunctionsRouter(opts);
+
+    res = await router(context, req);
+
+    context.res = res;
+};
+
+export default main;
+```
+
 ## Other usage options
 
 Induct exposes several levels of abstraction. The getting started example highlights the quickest way to expose a full table as a REST API, but the individual building blocks can be used separately too.
@@ -93,16 +118,19 @@ You can create generic express route handlers for InductModel methods using the 
 ```typescript
 const router = express.Router();
 
-router.get("/", induct.handler("findAll", {all: true}));
+router.get("/", induct.handler("findAll"));
+// Second parameter of induct.handler accepts additional options that override class instance options
 router.post(`/`, induct.handler("create", {validate: true}));
 
 router.get(`/:${induct.idParam}`, induct.handler("findOneById"));
-router.patch(`/:${induct.idParam}`,induct.handler("update", {validate: true}));
+router.patch(`/:${induct.idParam}`, induct.handler("update", {validate: true}));
 router.delete(`/:${induct.idParam}`, induct.handler("update"));
 ```
+
 These handlers use the generic InductModel methods to query your database.
 
 ### Use InductModel in custom route handler
+
 You can use Inducts generic model class in your own route handlers as follows:
 
 ```typescript
@@ -115,10 +143,7 @@ const induct = new Induct({
 });
 
 // Create your custom route handler
-export const routeHandler = async (
-    req: Request,
-    res: Response
-): Promise<Response> => {
+export const routeHandler = async (req, res) => {
     // Get a model instance and lookup using the id parameter
     const model = await induct.model({uuid: req.params.id});
     const result = await model.findOneById();
@@ -131,11 +156,72 @@ export const routeHandler = async (
 
 ### Using custom models
 
-Not supported yet, hopefully in a future version.
+Lets say I want to create a GET route that returns the current version of the product catalog, and a PATCH route that can update the version.
+So we create a custom model that extends from InductModel, and add our `getCatalogVersion` and `updateCatalogVersion` methods:
 
-## Example Application
+```javascript
+export class ProductModel extends InductModel {
+    catalogVersion = "1.0"
 
-An full example application can be found [here](https://github.com/Yeseh/induct-core-test).
+    constructor(val,opts) {
+        super(val, opts);
+    }
+
+    getCatalogVersion() {
+        return this.catalogVersion;
+    }
+
+    updateCatalogVersion(version): {
+        this.catalogVersion = version;
+        return `Catalog version updated to: ${this.catalogVersion}`;
+    }
+}
+```
+
+Next we can instantiate Induct, and register our methods for use in the generic handlers:
+
+```javascript
+const induct = new InductExpress({
+    connection: knex,
+    schema: UserSchema,
+    tableName: "dbo.users",
+    idField: "uuid",
+    // Provide your custom model constructor
+    customModel: ProductModel,
+    // Register custom functions
+    additionalLookupFunctions: ["getCatalogVersion"],
+    additionalModifyFunctions: ["updateCatalogVersion"],
+});
+
+// Create a router as normal
+const router = induct.router();
+
+// Add additional handlers
+router.get("/catalogVersion", induct.handler("getCatalogVersion"))
+router.patch("/catalogVersion", induct.handler("updateCatalogVersion))
+
+export { router };
+```
+
+Alternatively you can use the `registerModelFunction` method, which accepts your custom model as a type parameter to help your IDE with autocompletion:
+
+```typescript
+induct.registerModelFunction<ProductModel>("lookup", "getCatalogVersion");
+induct.registerModelFunction<ProductModel>("lookup", "getCatalogVersion");
+```
+
+## Example
+
+A complete example can be found [here](https://github.com/Yeseh/induct-core-test).
+
+# Contributing
+
+Contributions are welcome! If you want to contribute, please follow these steps:
+
+1. Create an issue with the `suggestion` label, and explain your suggestion in as much detail as possible;
+2. Fork the repository once your suggestion is approved;
+3. Work on your suggestion, make sure you add tests if applicable, and all tests are passing;
+4. Open a pull request to the `staging` branch;
 
 # License
 
