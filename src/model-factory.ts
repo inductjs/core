@@ -5,7 +5,7 @@ import {ValidationError} from "./types/error-schema";
 /**
  * Returns a promise that resolves to an instance of an InductModel (or extention therof).
  */
-export const inductModelFactory = async <T>(
+export const modelFactory = async <T>(
     values: T,
     opts: InductModelOpts<T>,
     ...args: unknown[]

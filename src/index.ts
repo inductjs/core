@@ -12,10 +12,18 @@ export {
 } from "./types/model-schema";
 export {InductModel} from "./base-model";
 export {IControllerResult, ControllerResult} from "./controller-result";
-
-export {inductModelFactory} from "./model-factory";
-
-import {Induct} from "./induct";
 export {InductConstructorOpts} from "./induct";
 
-export default Induct;
+import {Induct} from "./induct";
+import {InductExpress} from "./induct-express";
+import {InductAzure} from "./induct-azure";
+import {modelFactory} from "./model-factory";
+
+export {Induct, InductExpress, InductAzure, modelFactory};
+
+export default {
+    Induct,
+    InductExpress,
+    InductAzure,
+    modelFactory,
+};
