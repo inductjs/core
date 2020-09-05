@@ -1,6 +1,6 @@
 {
     "name": "@yeseh/induct-core",
-    "version": "0.2.10",
+    "version": "0.2.11",
     "main": "dist/index.js",
     "module": "dist/index.es.js",
     "types": "dist/index.d.ts",
@@ -12,9 +12,10 @@
         "test": "jest",
         "test:cov": "jest --coverage",
         "lint": "eslint \"src/**/*.ts\" --fix && prettier --write \"src/**/*.ts\"",
-        "build": "npm run lint && rollup -c",
+        "build": "npm run lint && npm test && rollup -c",
         "watch": "rollup -cw",
-        "prepublishOnly": "npm run build"
+        "prepublishOnly": "npm run build",
+        "git:amend": "git add -A && git commit --amend"
     },
     "prettier": "@yeseh/prettier-config",
     "repository": {

@@ -78,7 +78,7 @@ export class Induct<T> {
     async model(
         data: T,
         opts?: InductModelOpts<T>
-    ): Promise<InductModel<T>> | null {
+    ): Promise<InductModel<T> | null> {
         try {
             const modelOpts = this._copyOpts(opts);
 

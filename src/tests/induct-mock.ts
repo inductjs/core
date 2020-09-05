@@ -29,11 +29,11 @@ export interface TestInduct<T> {
         modelFn: FunctionOfInductModel<T>,
         opts?: Partial<InductModelOpts<T>>
     ) => RequestHandler;
-    lookupHandler: (
+    queryHandler: (
         modelFn: string,
         opts?: Partial<InductModelOpts<T>>
     ) => RequestHandler;
-    modifyHandler: (
+    mutationHandler: (
         modelFn: string,
         opts?: Partial<InductModelOpts<T>>
     ) => RequestHandler;

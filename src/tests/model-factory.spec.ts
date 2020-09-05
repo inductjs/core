@@ -1,4 +1,4 @@
-import {describe, it} from "@jest/globals";
+import { describe, it } from "@jest/globals";
 import {
     MockCustomModel,
     mockData1,
@@ -7,9 +7,8 @@ import {
     mockOptsCustomModel,
     mockOptsValidation,
 } from "./mocks";
-import {modelFactory} from "../model-factory";
+import { modelFactory } from "../model-factory";
 import InductModel from "../base-model";
-import {ValidationError} from "../types/error-schema";
 
 jest.mock("./mockDb.ts", () => {
     const mknex = {};
@@ -39,7 +38,7 @@ describe("Induct Model Factory", () => {
         try {
             await modelFactory(mockInvalidData1, mockOptsValidation);
         } catch (e) {
-            expect(e).toBeInstanceOf(ValidationError);
+            expect(e).toBeInstanceOf(Error);
             expect(e.message).toEqual("Schema validation failed");
         }
     });

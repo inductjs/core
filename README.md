@@ -156,7 +156,7 @@ export const routeHandler = async (req, res) => {
 
 ### Using custom models
 
-Lets say I want to create a GET route that returns the current version of the product catalog, and a PATCH route that can update the version.
+Lets say we want to create a GET route that returns the current version of the product catalog, and a PATCH route that can update the version.
 So we create a custom model that extends from InductModel, and add our `getCatalogVersion` and `updateCatalogVersion` methods:
 
 ```javascript
@@ -189,25 +189,33 @@ const induct = new InductExpress({
     // Provide your custom model constructor
     customModel: ProductModel,
     // Register custom functions
-    additionalLookupFunctions: ["getCatalogVersion"],
-    additionalModifyFunctions: ["updateCatalogVersion"],
+    queries: ["getCatalogVersion"],
+    mutations: ["updateCatalogVersion"],
 });
 
 // Create a router as normal
 const router = induct.router();
 
 // Add additional handlers
-router.get("/catalogVersion", induct.handler("getCatalogVersion"))
-router.patch("/catalogVersion", induct.handler("updateCatalogVersion))
+router.get("/catalogVersion", induct.handler("getCatalogVersion"));
+router.patch("/catalogVersion", induct.handler("updateCatalogVersion"));
 
-export { router };
+export {router};
 ```
 
 Alternatively you can use the `registerModelFunction` method, which accepts your custom model as a type parameter to help your IDE with autocompletion:
 
 ```typescript
-induct.registerModelFunction<ProductModel>("lookup", "getCatalogVersion");
-induct.registerModelFunction<ProductModel>("lookup", "getCatalogVersion");
+import {FunctionType} from "@yeseh/induct-core";
+
+induct.registerModelFunction<ProductModel>(
+    FunctionType.Query,
+    "getCatalogVersion"
+);
+induct.registerModelFunction<ProductModel>(
+    FunctionType.Mutation,
+    "updateCatalogVersion"
+);
 ```
 
 ## Example
@@ -219,9 +227,9 @@ A complete example can be found [here](https://github.com/Yeseh/induct-core-test
 Contributions are welcome! If you want to contribute, please follow these steps:
 
 1. Create an issue with the `suggestion` label, and explain your suggestion in as much detail as possible;
-2. Fork the repository once your suggestion is approved;
+2. Once your suggestion is approved, fork the repository;
 3. Work on your suggestion, make sure you add tests if applicable, and all tests are passing;
-4. Open a pull request to the `staging` branch;
+4. Open a pull request to the `staging` (default) branch;
 
 # License
 

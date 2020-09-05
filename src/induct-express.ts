@@ -1,34 +1,34 @@
 import Induct, {InductConstructorOpts} from "./induct";
-import {FunctionOfModel, InductModelOpts} from "./types/model-schema";
-import {StatusCode} from "./types/http-schema";
+import {
+    FunctionOfModel,
+    FunctionOfInductModel,
+    InductModelOpts,
+    FunctionType,
+} from "./types/model-schema";
 import {RequestHandler, Request, Response, Router} from "express";
 import {IControllerResult, ControllerResult} from "./controller-result";
+import {HttpStatusCode} from "azure-functions-ts-essentials";
 
-export interface InductExpressConstructorOpts<T>
-    extends InductConstructorOpts<T> {
+export interface ExpressConstructorOpts<T> extends InductConstructorOpts<T> {
     /** Additional method names to support for creating POST,PATCH,DELETE handlers */
-    additionalModifyFunctions?: string[];
+    mutations?: string[];
     /** Additional method names to support for creating GET handlers */
-    additionalLookupFunctions?: string[];
+    queries?: string[];
 }
 
 export class InductExpress<T> extends Induct<T> {
-    protected modifyFunctions: string[];
-    protected lookupFunctions: string[];
+    protected mutations: string[];
+    protected queries: string[];
 
-    constructor(args: InductExpressConstructorOpts<T>) {
+    constructor(args: ExpressConstructorOpts<T>) {
         super(args);
-        this.modifyFunctions = [
+        this.mutations = [
             "update",
             "create",
             "delete",
-            ...(args.additionalModifyFunctions || []),
+            ...(args.mutations || []),
         ];
-        this.lookupFunctions = [
-            "findOneById",
-            "findAll",
-            ...(args.additionalLookupFunctions || []),
-        ];
+        this.queries = ["findOneById", "findAll", ...(args.queries || [])];
     }
 
     public router(): Router {
@@ -45,27 +45,27 @@ export class InductExpress<T> extends Induct<T> {
         return router;
     }
 
-    registerModelFunction<T>(
-        type: "lookup" | "modify",
-        functionName: FunctionOfModel<T>
+    registerModelFunction<M>(
+        type: FunctionType,
+        functionName: FunctionOfModel<M>
     ): void {
-        if (type === "lookup") {
-            this.lookupFunctions.push(functionName as string);
-        } else if (type === "modify") {
-            this.modifyFunctions.push(functionName as string);
+        if (type === FunctionType.Query) {
+            this.queries.push(functionName as string);
+        } else if (type === FunctionType.Mutation) {
+            this.mutations.push(functionName as string);
         }
     }
 
-    handler(
-        modelFn: string,
+    handler<M>(
+        modelFn: FunctionOfInductModel<T> | FunctionOfModel<M>,
         opts?: Partial<InductModelOpts<T>>
     ): RequestHandler {
         const modelOpts = this._copyOpts(opts);
 
-        if (this.lookupFunctions.includes(modelFn)) {
-            return this.lookupHandler(modelFn, modelOpts);
-        } else if (this.modifyFunctions.includes(modelFn)) {
-            return this.modifyHandler(modelFn, modelOpts);
+        if (this.queries.includes(modelFn as string)) {
+            return this.queryHandler(modelFn as string, modelOpts);
+        } else if (this.mutations.includes(modelFn as string)) {
+            return this.mutationHandler(modelFn as string, modelOpts);
         } else {
             throw new TypeError(
                 `${modelFn} is not registered as a handler method`
@@ -73,7 +73,7 @@ export class InductExpress<T> extends Induct<T> {
         }
     }
 
-    private lookupHandler(
+    private queryHandler(
         modelFn: string,
         opts?: InductModelOpts<T>
     ): RequestHandler {
@@ -92,7 +92,7 @@ export class InductExpress<T> extends Induct<T> {
                 if (!model) {
                     return new ControllerResult({
                         res,
-                        status: StatusCode.BAD_REQUEST,
+                        status: HttpStatusCode.BadRequest,
                     }).send();
                 }
 
@@ -103,7 +103,7 @@ export class InductExpress<T> extends Induct<T> {
                 if (!lookup || (Array.isArray(lookup) && lookup.length == 0)) {
                     result = {
                         res,
-                        status: StatusCode.NOT_FOUND,
+                        status: HttpStatusCode.NotFound,
                     };
                 } else {
                     let data;
@@ -114,14 +114,14 @@ export class InductExpress<T> extends Induct<T> {
 
                     result = {
                         res,
-                        status: StatusCode.OK,
+                        status: HttpStatusCode.OK,
                         data,
                     };
                 }
             } catch (e) {
                 result = {
                     res,
-                    status: StatusCode.INTERNAL_SERVER_ERROR,
+                    status: HttpStatusCode.InternalServerError,
                     error: e,
                 };
             }
@@ -132,7 +132,7 @@ export class InductExpress<T> extends Induct<T> {
         };
     }
 
-    private modifyHandler(
+    private mutationHandler(
         modelFn: string,
         opts?: InductModelOpts<T>
     ): RequestHandler {
@@ -151,7 +151,7 @@ export class InductExpress<T> extends Induct<T> {
                 if (!model) {
                     return new ControllerResult({
                         res,
-                        status: StatusCode.BAD_REQUEST,
+                        status: HttpStatusCode.BadRequest,
                     }).send();
                 }
 
@@ -162,20 +162,20 @@ export class InductExpress<T> extends Induct<T> {
                 if (!modified) {
                     const failStatus =
                         modelFn === "create"
-                            ? StatusCode.BAD_REQUEST
-                            : StatusCode.NOT_FOUND;
+                            ? HttpStatusCode.BadRequest
+                            : HttpStatusCode.NotFound;
 
                     result = {
                         res,
                         status: failStatus,
                     };
                 } else {
-                    let sucStatus: StatusCode = StatusCode.OK;
+                    let sucStatus: HttpStatusCode = HttpStatusCode.OK;
 
                     if (modelFn === "create") {
-                        sucStatus = StatusCode.CREATED;
+                        sucStatus = HttpStatusCode.Created;
                     } else if (modelFn === "delete") {
-                        sucStatus = StatusCode.NO_CONTENT;
+                        sucStatus = HttpStatusCode.NoContent;
                     }
 
                     result = {
@@ -187,7 +187,7 @@ export class InductExpress<T> extends Induct<T> {
             } catch (e) {
                 result = {
                     res,
-                    status: StatusCode.INTERNAL_SERVER_ERROR,
+                    status: HttpStatusCode.InternalServerError,
                     error: e,
                 };
             }

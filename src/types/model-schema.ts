@@ -2,6 +2,11 @@ import knex from "knex";
 import {InductModel} from "../base-model";
 import {ValidationError} from "class-validator";
 
+export enum FunctionType {
+    Query = "query",
+    Mutation = "mutation",
+}
+
 export type ModelFactory<T> = (
     values: T,
     args: InductModelOpts<T>

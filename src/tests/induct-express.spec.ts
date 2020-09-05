@@ -3,7 +3,7 @@ import {InductExpress} from "../induct-express";
 import {mockOpts1, MockSchema, mockRequest, mockResponse} from "./mocks";
 import {TestInduct} from "./induct-mock";
 import ControllerResult, {IControllerResult} from "../controller-result";
-import {StatusCode} from "../types/http-schema";
+import {HttpStatusCode as StatusCode} from "azure-functions-ts-essentials";
 
 jest.mock("../controller-result");
 
@@ -24,7 +24,7 @@ describe("InductExpress", () => {
         } catch (e) {
             expect(e).toBeInstanceOf(TypeError);
             expect(e.message).toEqual(
-                "test is not registered as a modify method"
+                "test is not registered as a handler method"
             );
         }
     });
@@ -34,8 +34,8 @@ describe("InductExpress", () => {
             MockSchema
         >;
 
-        induct.lookupHandler = jest.fn();
-        induct.modifyHandler = jest.fn();
+        induct.queryHandler = jest.fn();
+        induct.mutationHandler = jest.fn();
 
         induct.handler("findOneById");
         induct.handler("findAll");
@@ -43,8 +43,8 @@ describe("InductExpress", () => {
         induct.handler("update");
         induct.handler("delete");
 
-        expect(induct.lookupHandler).toHaveBeenCalledTimes(2);
-        expect(induct.modifyHandler).toHaveBeenCalledTimes(3);
+        expect(induct.queryHandler).toHaveBeenCalledTimes(2);
+        expect(induct.mutationHandler).toHaveBeenCalledTimes(3);
     });
 
     it("instance should expose a method 'router'", () => {
@@ -84,13 +84,13 @@ describe("InductExpress", () => {
         expect(router.stack).toHaveLength(5);
     });
 
-    describe("lookupHandler", () => {
+    describe("queryHandler", () => {
         it("should return a function", () => {
             const induct = (new InductExpress(
                 mockOpts1
             ) as unknown) as TestInduct<MockSchema>;
 
-            const handler = induct.lookupHandler("findAll");
+            const handler = induct.queryHandler("findAll");
 
             expect(typeof handler).toEqual("function");
         });
@@ -100,11 +100,11 @@ describe("InductExpress", () => {
                 const induct = (new InductExpress(
                     mockOpts1
                 ) as unknown) as TestInduct<MockSchema>;
-                induct.lookupHandler("test" as any);
+                induct.queryHandler("test" as any);
             } catch (e) {
                 expect(e).toBeInstanceOf(TypeError);
                 expect(e.message).toEqual(
-                    "test is not registered as a lookup method"
+                    "test is not registered as a handler method"
                 );
             }
         });
@@ -141,7 +141,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.lookupHandler("findOneById");
+            const handler = induct.queryHandler("findOneById");
 
             await handler(req, res, next);
 
@@ -180,7 +180,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.lookupHandler("findAll");
+            const handler = induct.queryHandler("findAll");
 
             await handler(req, res, next);
 
@@ -205,7 +205,7 @@ describe("InductExpress", () => {
 
             const expected = {
                 res,
-                status: StatusCode.NOT_FOUND,
+                status: StatusCode.NotFound,
             };
 
             jest.mock("../controller-result.ts", () => {
@@ -218,7 +218,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.lookupHandler("findAll");
+            const handler = induct.queryHandler("findAll");
 
             await handler(req, res, next);
 
@@ -239,7 +239,7 @@ describe("InductExpress", () => {
 
             const expected = {
                 res,
-                status: StatusCode.BAD_REQUEST,
+                status: StatusCode.BadRequest,
             };
 
             jest.mock("../controller-result.ts", () => {
@@ -252,7 +252,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.lookupHandler("findAll");
+            const handler = induct.queryHandler("findAll");
 
             await handler(req, res, next);
 
@@ -281,7 +281,7 @@ describe("InductExpress", () => {
             const expected = {
                 res,
                 error,
-                status: StatusCode.INTERNAL_SERVER_ERROR,
+                status: StatusCode.InternalServerError,
             };
 
             jest.mock("../controller-result.ts", () => {
@@ -294,7 +294,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.lookupHandler("findAll");
+            const handler = induct.queryHandler("findAll");
 
             await handler(req, res, next);
 
@@ -303,13 +303,13 @@ describe("InductExpress", () => {
         });
     });
 
-    describe("modifyHandler", () => {
+    describe("mutationHandler", () => {
         it("should return a function", () => {
             const induct = (new InductExpress(
                 mockOpts1
             ) as unknown) as TestInduct<MockSchema>;
 
-            const handler = induct.modifyHandler("delete");
+            const handler = induct.mutationHandler("delete");
 
             expect(typeof handler).toEqual("function");
         });
@@ -319,11 +319,11 @@ describe("InductExpress", () => {
                 const induct = (new InductExpress(
                     mockOpts1
                 ) as unknown) as TestInduct<MockSchema>;
-                induct.modifyHandler("test" as any);
+                induct.mutationHandler("test" as any);
             } catch (e) {
                 expect(e).toBeInstanceOf(TypeError);
                 expect(e.message).toEqual(
-                    "test is not registered as a modify method"
+                    "test is not registered as a handler method"
                 );
             }
         });
@@ -341,7 +341,7 @@ describe("InductExpress", () => {
 
             const expected = {
                 res,
-                status: StatusCode.BAD_REQUEST,
+                status: StatusCode.BadRequest,
             };
 
             jest.mock("../controller-result.ts", () => {
@@ -354,7 +354,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.modifyHandler("create");
+            const handler = induct.mutationHandler("create");
 
             await handler(req, res, next);
 
@@ -379,7 +379,7 @@ describe("InductExpress", () => {
 
             const expected = {
                 res,
-                status: StatusCode.CREATED,
+                status: StatusCode.Created,
                 data: "test",
             };
 
@@ -393,7 +393,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.modifyHandler("create");
+            const handler = induct.mutationHandler("create");
 
             await handler(req, res, next);
 
@@ -418,7 +418,7 @@ describe("InductExpress", () => {
 
             const expected = {
                 res,
-                status: StatusCode.BAD_REQUEST,
+                status: StatusCode.BadRequest,
             };
 
             jest.mock("../controller-result.ts", () => {
@@ -431,7 +431,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.modifyHandler("create");
+            const handler = induct.mutationHandler("create");
 
             await handler(req, res, next);
 
@@ -471,7 +471,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.modifyHandler("update");
+            const handler = induct.mutationHandler("update");
 
             await handler(req, res, next);
 
@@ -496,7 +496,7 @@ describe("InductExpress", () => {
 
             const expected = {
                 res,
-                status: StatusCode.NOT_FOUND,
+                status: StatusCode.NotFound,
             };
 
             jest.mock("../controller-result.ts", () => {
@@ -509,7 +509,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.modifyHandler("update");
+            const handler = induct.mutationHandler("update");
 
             await handler(req, res, next);
 
@@ -534,7 +534,7 @@ describe("InductExpress", () => {
 
             const expected = {
                 res,
-                status: StatusCode.NO_CONTENT,
+                status: StatusCode.NoContent,
                 data: "test",
             };
 
@@ -548,7 +548,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.modifyHandler("delete");
+            const handler = induct.mutationHandler("delete");
 
             await handler(req, res, next);
 
@@ -573,7 +573,7 @@ describe("InductExpress", () => {
 
             const expected = {
                 res,
-                status: StatusCode.NOT_FOUND,
+                status: StatusCode.NotFound,
             };
 
             jest.mock("../controller-result.ts", () => {
@@ -586,7 +586,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.modifyHandler("delete");
+            const handler = induct.mutationHandler("delete");
 
             await handler(req, res, next);
 
@@ -615,7 +615,7 @@ describe("InductExpress", () => {
             const expected = {
                 res,
                 error,
-                status: StatusCode.INTERNAL_SERVER_ERROR,
+                status: StatusCode.InternalServerError,
             };
 
             jest.mock("../controller-result.ts", () => {
@@ -628,7 +628,7 @@ describe("InductExpress", () => {
                     );
             });
 
-            const handler = induct.modifyHandler("create");
+            const handler = induct.mutationHandler("create");
 
             await handler(req, res, next);
 

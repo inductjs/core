@@ -1,10 +1,10 @@
-import {StatusCode} from "./types/http-schema";
+import {HttpStatusCode} from "azure-functions-ts-essentials";
 import {ValidationError} from "./types/error-schema";
 import {Response} from "express";
 
 export interface IControllerResult<T> {
     /** HTTP Status code as integer */
-    status: StatusCode;
+    status: HttpStatusCode;
     /** Express response object */
     res: Response;
     /** Data to be returned as the response body */
@@ -23,7 +23,7 @@ export interface IControllerResult<T> {
 }
 
 export class ControllerResult<T> implements IControllerResult<T> {
-    public readonly status: StatusCode;
+    public readonly status: HttpStatusCode;
     public readonly data: T | T[] | T[keyof T] | number;
     public readonly info: string;
     public readonly error: Error;
