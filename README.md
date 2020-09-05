@@ -161,9 +161,9 @@ So we create a custom model that extends from InductModel, and add our `getCatal
 
 ```javascript
 export class ProductModel extends InductModel {
-    catalogVersion = "1.0"
+    catalogVersion = "1.0";
 
-    constructor(val,opts) {
+    constructor(val, opts) {
         super(val, opts);
     }
 
@@ -171,7 +171,7 @@ export class ProductModel extends InductModel {
         return this.catalogVersion;
     }
 
-    updateCatalogVersion(version): {
+    updateCatalogVersion(version) {
         this.catalogVersion = version;
         return `Catalog version updated to: ${this.catalogVersion}`;
     }
