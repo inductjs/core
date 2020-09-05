@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any  */
+/* eslint-disable no-invalid-this */
 import knex from "knex";
 import {IInductModel, InductModelOpts} from "./types/model-schema";
 import {validate, ValidationError} from "class-validator";
@@ -125,7 +126,7 @@ export class InductModel<T> implements IInductModel<T> {
         return exists.length > 0;
     }
 
-    async findAll(): Promise<T[]> {
+    public findAll = async (): Promise<T[]> => {
         try {
             const result = await this._qb.select(this.fields);
 
@@ -133,13 +134,13 @@ export class InductModel<T> implements IInductModel<T> {
         } catch (e) {
             throw new QueryError(`InductModel.findAll failed with error ${e}`);
         }
-    }
+    };
 
-    async findOneById(lookup?: T[keyof T]): Promise<T[]> {
+    public findOneById = async (lookup?: T[keyof T]): Promise<T[]> => {
         try {
             const lookupValue = lookup ?? this._model[this._id_field];
 
-            const result = this._qb
+            const result = await this._qb
                 .select(this.fields)
                 .where(this._id_field, lookupValue);
 
@@ -149,9 +150,9 @@ export class InductModel<T> implements IInductModel<T> {
                 `InductModel.findOneById failed with error ${e}`
             );
         }
-    }
+    };
 
-    async create(value?: Partial<T>): Promise<T> {
+    public create = async (value?: Partial<T>): Promise<T> => {
         try {
             const insertedValue = value ?? this._model;
 
@@ -161,9 +162,9 @@ export class InductModel<T> implements IInductModel<T> {
         } catch (e) {
             throw new QueryError(`InductModel.create failed with error ${e}`);
         }
-    }
+    };
 
-    async update(value?: Partial<T>): Promise<number> {
+    public update = async (value?: Partial<T>): Promise<number> => {
         try {
             const updatedVal = value ?? this._model;
             const lookupVal = this._model[this._id_field];
@@ -176,9 +177,9 @@ export class InductModel<T> implements IInductModel<T> {
         } catch (e) {
             throw new QueryError(`InductModel.update failed with error ${e}`);
         }
-    }
+    };
 
-    async delete(lookup?: T[keyof T]): Promise<T[keyof T]> {
+    public delete = async (lookup?: T[keyof T]): Promise<T[keyof T]> => {
         try {
             const lookupVal = lookup ?? this._model[this._id_field];
 
@@ -188,11 +189,11 @@ export class InductModel<T> implements IInductModel<T> {
         } catch (e) {
             throw new QueryError(`InductModel.delete failed with error ${e}`);
         }
-    }
+    };
 
-    public async validate(): Promise<ValidationError[]> {
+    public validate = async (): Promise<ValidationError[]> => {
         return validate(this._model);
-    }
+    };
 }
 
 export default InductModel;
