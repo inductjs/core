@@ -99,10 +99,13 @@ export class InductExpress<T> extends Induct<T> {
                 const model = await this.modelFactory(values, opts);
 
                 if (!model) {
-                    return new ControllerResult({
-                        res,
-                        status: HttpStatusCode.BadRequest,
-                    }).send();
+                    return new ControllerResult(
+                        {
+                            res,
+                            status: HttpStatusCode.BadRequest,
+                        },
+                        this.resultOpts
+                    ).send();
                 }
 
                 const fn = model[modelFn];
@@ -161,10 +164,13 @@ export class InductExpress<T> extends Induct<T> {
                 const model = await this.modelFactory(values, opts);
 
                 if (!model) {
-                    return new ControllerResult({
-                        res,
-                        status: HttpStatusCode.BadRequest,
-                    }).send();
+                    return new ControllerResult(
+                        {
+                            res,
+                            status: HttpStatusCode.BadRequest,
+                        },
+                        this.resultOpts
+                    ).send();
                 }
 
                 const fn = model[modelFn];

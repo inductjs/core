@@ -146,7 +146,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
 
         it("result should return status 200 with data when called with 'findAll'", async () => {
@@ -185,7 +185,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
 
         it("result should return status 404 if no data can be found", async () => {
@@ -223,7 +223,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
 
         it("result should return status 400 if model creation fails", async () => {
@@ -257,7 +257,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
 
         it("result should return status 500 status on other error", async () => {
@@ -299,7 +299,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
     });
 
@@ -359,7 +359,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
 
         it("result should return status 201 with data when called with 'create'", async () => {
@@ -398,7 +398,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
 
         it("result should return status 400 if creation fails when called with 'create'", async () => {
@@ -436,7 +436,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
 
         it("result should return status 200 with data when called with 'update'", async () => {
@@ -476,7 +476,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
 
         it("result should return status 400 if updating fails when called with 'update'", async () => {
@@ -514,7 +514,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
 
         it("result should return 204 status when called with 'delete'", async () => {
@@ -553,7 +553,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
 
         it("result should return status 404 if no data can be found when called with 'delete'", async () => {
@@ -591,7 +591,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
 
         it("result should return status 500 status on other error", async () => {
@@ -633,7 +633,7 @@ describe("InductExpress", () => {
             await handler(req, res, next);
 
             expect(ControllerResult).toHaveBeenCalledTimes(1);
-            expect(ControllerResult).toHaveBeenCalledWith(expected);
+            expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
     });
 });
