@@ -8,6 +8,9 @@ export {
     InductModelOpts,
     IInductModel,
     ValidationResult,
+    FunctionOfModel,
+    FunctionType,
+    FunctionOfInductModel,
 } from "./types/model-schema";
 export {InductModel} from "./base-model";
 export {IControllerResult, ControllerResult} from "./controller-result";

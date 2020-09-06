@@ -1,4 +1,4 @@
-import { describe, it } from "@jest/globals";
+import {describe, it} from "@jest/globals";
 import {
     MockCustomModel,
     mockData1,
@@ -7,7 +7,7 @@ import {
     mockOptsCustomModel,
     mockOptsValidation,
 } from "./mocks";
-import { modelFactory } from "../model-factory";
+import {modelFactory} from "../model-factory";
 import InductModel from "../base-model";
 
 jest.mock("./mockDb.ts", () => {
