@@ -9,7 +9,8 @@ export enum FunctionType {
 
 export type ModelFactory<T> = (
     values: T,
-    args: InductModelOpts<T>
+    opts: InductModelOpts<T>,
+    ...args: unknown[]
 ) => Promise<InductModel<T>>;
 
 export type ModelFunction<T> = () => Promise<

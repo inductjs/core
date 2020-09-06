@@ -77,12 +77,13 @@ export class Induct<T> {
 
     async model(
         data: T,
-        opts?: InductModelOpts<T>
+        opts?: InductModelOpts<T>,
+        ...args: unknown[]
     ): Promise<InductModel<T> | null> {
         try {
             const modelOpts = this._copyOpts(opts);
 
-            const model = await this.modelFactory(data, modelOpts);
+            const model = await this.modelFactory(data, modelOpts, ...args);
 
             return model;
         } catch (e) {

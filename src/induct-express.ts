@@ -6,7 +6,11 @@ import {
     FunctionType,
 } from "./types/model-schema";
 import {RequestHandler, Request, Response, Router} from "express";
-import {IControllerResult, ControllerResult} from "./controller-result";
+import {
+    IControllerResult,
+    ControllerResult,
+    ControllerResultOpts,
+} from "./controller-result";
 import {HttpStatusCode} from "azure-functions-ts-essentials";
 
 export interface ExpressConstructorOpts<T> extends InductConstructorOpts<T> {
@@ -14,11 +18,14 @@ export interface ExpressConstructorOpts<T> extends InductConstructorOpts<T> {
     mutations?: string[];
     /** Additional method names to support for creating GET handlers */
     queries?: string[];
+    /** Options to determine the output of the controller result and format of the response body */
+    resultOpts?: ControllerResultOpts;
 }
 
 export class InductExpress<T> extends Induct<T> {
-    protected mutations: string[];
-    protected queries: string[];
+    private mutations: string[];
+    private queries: string[];
+    private resultOpts: ControllerResultOpts;
 
     constructor(args: ExpressConstructorOpts<T>) {
         super(args);
@@ -29,6 +36,8 @@ export class InductExpress<T> extends Induct<T> {
             ...(args.mutations || []),
         ];
         this.queries = ["findOneById", "findAll", ...(args.queries || [])];
+
+        this.resultOpts = args.resultOpts;
     }
 
     public router(): Router {
@@ -83,7 +92,7 @@ export class InductExpress<T> extends Induct<T> {
             const values = {...req.body};
 
             if (req.params[this.idParam]) {
-                values[this.idField] = req.params.id;
+                values[this.idField] = req.params[this.idParam];
             }
 
             try {
@@ -126,7 +135,10 @@ export class InductExpress<T> extends Induct<T> {
                 };
             }
 
-            const controllerResult = new ControllerResult(result);
+            const controllerResult = new ControllerResult(
+                result,
+                this.resultOpts
+            );
 
             return controllerResult.send();
         };
@@ -192,7 +204,7 @@ export class InductExpress<T> extends Induct<T> {
                 };
             }
 
-            return new ControllerResult(result).send();
+            return new ControllerResult(result, this.resultOpts).send();
         };
     }
 }

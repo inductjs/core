@@ -161,20 +161,18 @@ So we create a custom model that extends from InductModel, and add our `getCatal
 
 ```javascript
 export class ProductModel extends InductModel {
-    catalogVersion = "1.0";
-
     constructor(val, opts) {
         super(val, opts);
     }
 
-    getCatalogVersion() {
-        return this.catalogVersion;
-    }
+    getCatalogVersion = () => {
+        return "1.0";
+    };
 
-    updateCatalogVersion(version) {
-        this.catalogVersion = version;
-        return `Catalog version updated to: ${this.catalogVersion}`;
-    }
+    updateCatalogVersion = () => {
+        // The values from the request body are stored in this.model
+        return `Catalog version updated to: ${this.model.CatalogVersion}`;
+    };
 }
 ```
 
@@ -197,10 +195,16 @@ const induct = new InductExpress({
 const router = induct.router();
 
 // Add additional handlers
-router.get("/catalogVersion", induct.handler("getCatalogVersion"));
-router.patch("/catalogVersion", induct.handler("updateCatalogVersion"));
+router.get("/catalog/version", induct.handler("getCatalogVersion"));
+router.patch("/catalog/version", induct.handler("updateCatalogVersion"));
 
 export {router};
+
+/*
+NOTE: When using extra custom handlers in addition to induct.router, take into account that routes have already been mounted to /:id
+This can lead to situations where the wrong handler is executed
+Because of this we first add /catalog to the path to prevent route conflicts
+*/
 ```
 
 Alternatively you can use the `registerModelFunction` method, which accepts your custom model as a type parameter to help your IDE with autocompletion:

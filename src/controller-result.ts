@@ -22,6 +22,11 @@ export interface IControllerResult<T> {
     redirect?: (location: string) => void;
 }
 
+export interface ControllerResultOpts {
+    /** enables full error messages in response body */
+    debug: boolean;
+}
+
 export class ControllerResult<T> implements IControllerResult<T> {
     public readonly status: HttpStatusCode;
     public readonly data: T | T[] | T[keyof T] | number;
@@ -30,15 +35,18 @@ export class ControllerResult<T> implements IControllerResult<T> {
     public readonly res: Response;
     public readonly validationErrors: ValidationError[];
 
-    constructor(result: IControllerResult<T>) {
+    private opts: ControllerResultOpts;
+
+    constructor(result: IControllerResult<T>, opts?: ControllerResultOpts) {
         Object.assign(this, result);
+        this.opts = opts;
     }
 
     public send(): Response {
         return this.res.status(this.status).json({
             data: this.data,
             info: this.info,
-            error: this.error?.name,
+            error: this.opts.debug ? this.error.message : this.error?.name,
             validationErrors: this.validationErrors,
         });
     }
