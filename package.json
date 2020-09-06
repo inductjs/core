@@ -1,6 +1,6 @@
 {
     "name": "@yeseh/induct-core",
-    "version": "0.2.14",
+    "version": "0.2.15",
     "main": "dist/index.js",
     "module": "dist/index.es.js",
     "types": "dist/index.d.ts",
