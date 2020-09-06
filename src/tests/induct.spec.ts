@@ -1,17 +1,17 @@
 /* eslint-disable */
 import {describe, it} from "@jest/globals";
 import Induct from "../induct";
-import {TestInduct} from "./induct-mock";
+import {TestInduct} from "./data/induct-mock";
 import {
     mockData1,
     mockOpts1,
     mockOptsOver,
     MockSchema,
     mockInvalidData1,
-} from "./mocks";
+} from "./data/mocks";
 import InductModel from "../base-model";
 
-jest.mock("./mockDb.ts", () => {
+jest.mock("./data/mockDb.ts", () => {
     const mknex = {};
     return jest.fn(() => mknex);
 });

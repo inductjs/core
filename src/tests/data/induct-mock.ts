@@ -4,8 +4,8 @@ import {
     SchemaConstructor,
     ModelConstructor,
     FunctionOfInductModel,
-} from "../types/model-schema";
-import {InductModel} from "../base-model";
+} from "../../types/model-schema";
+import {InductModel} from "../../base-model";
 import {RequestHandler, Router} from "express";
 import {AzureFunction} from "@azure/functions";
 import knex from "knex";

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-function-return-type*/
 import {InductAzure} from "../induct-azure";
-import {mockOpts1, MockSchema, mockAzReq, mockAzContext} from "./mocks";
-import {TestInduct} from "./induct-mock";
+import {mockOpts1, MockSchema, mockAzReq, mockAzContext} from "./data/mocks";
+import {TestInduct} from "./data/induct-mock";
 import {HttpMethod} from "azure-functions-ts-essentials";
 
 describe("InductAzure", () => {

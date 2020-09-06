@@ -6,11 +6,11 @@ import {
     mockOpts1,
     mockOptsCustomModel,
     mockOptsValidation,
-} from "./mocks";
+} from "./data/mocks";
 import {modelFactory} from "../model-factory";
 import InductModel from "../base-model";
 
-jest.mock("./mockDb.ts", () => {
+jest.mock("./data/mockDb.ts", () => {
     const mknex = {};
     return jest.fn(() => mknex);
 });

@@ -1,7 +1,7 @@
 /* eslint-disable new-cap */
 /* istanbul-ignore */
-import {InductModel} from "../base-model";
-import {InductModelOpts} from "../types/model-schema";
+import {InductModel} from "../../base-model";
+import {InductModelOpts} from "../../types/model-schema";
 import {IsInt, IsString} from "class-validator";
 import {Response, Request} from "express";
 import mdb from "./mockDb";

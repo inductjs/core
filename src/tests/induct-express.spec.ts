@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-function-return-type*/
 import {InductExpress} from "../induct-express";
-import {mockOpts1, MockSchema, mockRequest, mockResponse} from "./mocks";
-import {TestInduct} from "./induct-mock";
+import {mockOpts1, MockSchema, mockRequest, mockResponse} from "./data/mocks";
+import {TestInduct} from "./data/induct-mock";
 import ControllerResult, {IControllerResult} from "../controller-result";
 import {HttpStatusCode as StatusCode} from "azure-functions-ts-essentials";
 
