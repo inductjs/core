@@ -77,7 +77,7 @@ export class InductExpress<T> extends Induct<T> {
             return this.mutationHandler(modelFn as string, modelOpts);
         } else {
             throw new TypeError(
-                `${modelFn} is not registered as a handler method`
+                `${modelFn} is not registered as a model function. Please use Induct.registerModelFunction(FunctionType.<type>, ${modelFn}) first.`
             );
         }
     }
@@ -109,6 +109,10 @@ export class InductExpress<T> extends Induct<T> {
                 }
 
                 const fn = model[modelFn];
+
+                if (typeof fn !== "function") {
+                    throw new TypeError(`'${modelFn}' is not a function`);
+                }
 
                 const lookup = await fn();
 
@@ -174,6 +178,10 @@ export class InductExpress<T> extends Induct<T> {
                 }
 
                 const fn = model[modelFn];
+
+                if (typeof fn !== "function") {
+                    throw new TypeError(`'${modelFn}' is not a function`);
+                }
 
                 const modified = await fn();
 

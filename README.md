@@ -2,9 +2,13 @@
 
 # Induct
 
-Induct provides abstractions over ExpressJS in order to quickly create REST APIs from an SQL Database for prototyping purposes. Usage with typescript is fully supported and encouraged!
+Induct provides abstractions over ExpressJS in order to quickly create REST APIs from an existing SQL Database for prototyping purposes. Usage with typescript is fully supported and encouraged!
 
 Induct uses [Knex](https://knexjs.org/) to query databases, and therefore will only support databases supported by Knex.
+
+Currently supported databases are:
+-   Microsoft SQL Server
+-   MySQL
 
 ## Getting Started
 
@@ -171,6 +175,7 @@ export class ProductModel extends InductModel {
 
     updateCatalogVersion = () => {
         // The values from the request body are stored in this.model
+        // So this.model.CatalogVersion is equivalent to req.body.CatalogVersion
         return `Catalog version updated to: ${this.model.CatalogVersion}`;
     };
 }

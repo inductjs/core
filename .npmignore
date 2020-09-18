@@ -5,3 +5,4 @@ src/
 *.config.js
 tests/
 coverage/
+.yarn

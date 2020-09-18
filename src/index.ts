@@ -20,6 +20,7 @@ import {Induct} from "./induct";
 import {InductExpress} from "./induct-express";
 import {InductAzure} from "./induct-azure";
 import {modelFactory} from "./model-factory";
+export {metaHandler} from "./meta-handler";
 
 export {Induct, InductExpress, InductAzure, modelFactory};
 

@@ -23,9 +23,6 @@ describe("InductExpress", () => {
             induct.handler("test" as any);
         } catch (e) {
             expect(e).toBeInstanceOf(TypeError);
-            expect(e.message).toEqual(
-                "test is not registered as a handler method"
-            );
         }
     });
 
@@ -103,9 +100,6 @@ describe("InductExpress", () => {
                 induct.queryHandler("test" as any);
             } catch (e) {
                 expect(e).toBeInstanceOf(TypeError);
-                expect(e.message).toEqual(
-                    "test is not registered as a handler method"
-                );
             }
         });
 
@@ -322,9 +316,6 @@ describe("InductExpress", () => {
                 induct.mutationHandler("test" as any);
             } catch (e) {
                 expect(e).toBeInstanceOf(TypeError);
-                expect(e.message).toEqual(
-                    "test is not registered as a handler method"
-                );
             }
         });
 
