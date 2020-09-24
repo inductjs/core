@@ -15,6 +15,7 @@ export {
 export {InductModel} from "./base-model";
 export {IControllerResult, ControllerResult} from "./controller-result";
 export {InductConstructorOpts} from "./induct";
+export {ok, badRequest, noContent, internalError, conflict, notFound, created} from "./result-helpers";
 
 import {Induct} from "./induct";
 import {InductExpress} from "./induct-express";

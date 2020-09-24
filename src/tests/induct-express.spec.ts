@@ -526,7 +526,6 @@ describe("InductExpress", () => {
             const expected = {
                 res,
                 status: StatusCode.NoContent,
-                data: "test",
             };
 
             jest.mock("../controller-result.ts", () => {

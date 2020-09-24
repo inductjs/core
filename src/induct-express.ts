@@ -7,11 +7,9 @@ import {
 } from "./types/model-schema";
 import {RequestHandler, Request, Response, Router} from "express";
 import {
-    IControllerResult,
-    ControllerResult,
     ControllerResultOpts,
 } from "./controller-result";
-import {HttpStatusCode} from "azure-functions-ts-essentials";
+import {ok, badRequest, noContent, internalError, notFound, created} from "./result-helpers";
 
 export interface ExpressConstructorOpts<T> extends InductConstructorOpts<T> {
     /** Additional method names to support for creating POST,PATCH,DELETE handlers */
@@ -77,7 +75,7 @@ export class InductExpress<T> extends Induct<T> {
             return this.mutationHandler(modelFn as string, modelOpts);
         } else {
             throw new TypeError(
-                `${modelFn} is not registered as a model function. Please use Induct.registerModelFunction(FunctionType.<type>, ${modelFn}) first.`
+                `${modelFn} is not registered as a model function. Please use registerModelFunction first.`
             );
         }
     }
@@ -87,8 +85,6 @@ export class InductExpress<T> extends Induct<T> {
         opts?: InductModelOpts<T>
     ): RequestHandler {
         return async (req: Request, res: Response): Promise<Response> => {
-            let result: IControllerResult<T>;
-
             const values = {...req.body};
 
             if (req.params[this.idParam]) {
@@ -99,13 +95,7 @@ export class InductExpress<T> extends Induct<T> {
                 const model = await this.modelFactory(values, opts);
 
                 if (!model) {
-                    return new ControllerResult(
-                        {
-                            res,
-                            status: HttpStatusCode.BadRequest,
-                        },
-                        this.resultOpts
-                    ).send();
+                    return badRequest(res, this.resultOpts);
                 }
 
                 const fn = model[modelFn];
@@ -117,37 +107,17 @@ export class InductExpress<T> extends Induct<T> {
                 const lookup = await fn();
 
                 if (!lookup || (Array.isArray(lookup) && lookup.length == 0)) {
-                    result = {
-                        res,
-                        status: HttpStatusCode.NotFound,
-                    };
-                } else {
-                    let data;
-
-                    if (Array.isArray(lookup) && lookup.length == 1) {
-                        data = lookup[0];
-                    } else data = lookup;
-
-                    result = {
-                        res,
-                        status: HttpStatusCode.OK,
-                        data,
-                    };
+                    return notFound(res, this.resultOpts);
                 }
+
+                const data = (Array.isArray(lookup) && lookup.length == 1)
+                    ? lookup[0]
+                    : lookup;
+
+                return ok(res, data, this.resultOpts);
             } catch (e) {
-                result = {
-                    res,
-                    status: HttpStatusCode.InternalServerError,
-                    error: e,
-                };
+                return internalError(res, e);
             }
-
-            const controllerResult = new ControllerResult(
-                result,
-                this.resultOpts
-            );
-
-            return controllerResult.send();
         };
     }
 
@@ -156,8 +126,6 @@ export class InductExpress<T> extends Induct<T> {
         opts?: InductModelOpts<T>
     ): RequestHandler {
         return async (req: Request, res: Response): Promise<Response> => {
-            let result: IControllerResult<T>;
-
             const values = {...req.body};
 
             if (req.params[this.idParam]) {
@@ -168,13 +136,7 @@ export class InductExpress<T> extends Induct<T> {
                 const model = await this.modelFactory(values, opts);
 
                 if (!model) {
-                    return new ControllerResult(
-                        {
-                            res,
-                            status: HttpStatusCode.BadRequest,
-                        },
-                        this.resultOpts
-                    ).send();
+                    return badRequest(res, this.resultOpts);
                 }
 
                 const fn = model[modelFn];
@@ -186,39 +148,23 @@ export class InductExpress<T> extends Induct<T> {
                 const modified = await fn();
 
                 if (!modified) {
-                    const failStatus =
-                        modelFn === "create"
-                            ? HttpStatusCode.BadRequest
-                            : HttpStatusCode.NotFound;
-
-                    result = {
-                        res,
-                        status: failStatus,
-                    };
-                } else {
-                    let sucStatus: HttpStatusCode = HttpStatusCode.OK;
-
                     if (modelFn === "create") {
-                        sucStatus = HttpStatusCode.Created;
-                    } else if (modelFn === "delete") {
-                        sucStatus = HttpStatusCode.NoContent;
+                        return badRequest(res, this.resultOpts);
                     }
 
-                    result = {
-                        res,
-                        status: sucStatus,
-                        data: modified,
-                    };
+                    return notFound(res, this.resultOpts);
                 }
-            } catch (e) {
-                result = {
-                    res,
-                    status: HttpStatusCode.InternalServerError,
-                    error: e,
-                };
-            }
 
-            return new ControllerResult(result, this.resultOpts).send();
+                if (modelFn === "create") {
+                    return created(res, modified, this.resultOpts);
+                } else if (modelFn === "delete") {
+                    return noContent(res, this.resultOpts);
+                }
+
+                return ok(res, modified, this.resultOpts);
+            } catch (e) {
+                return internalError(res, e, this.resultOpts);
+            }
         };
     }
 }
