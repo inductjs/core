@@ -74,7 +74,7 @@ import {inductRouter} from "./router";
 import bodyParser from "body-parser";
 
 const app = express();
-app.use(bodyParser.json({limit: "50mb"})); // Make sure you are using body parser!
+app.use(bodyParser.json()); // Make sure you are using body parser!
 
 app.use("/users", inductRouter);
 
