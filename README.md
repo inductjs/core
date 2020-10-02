@@ -231,15 +231,6 @@ induct.registerModelFunction<ProductModel>(
 
 A complete example can be found [here](https://github.com/Yeseh/induct-core-test).
 
-# Contributing
-
-Contributions are welcome! If you want to contribute, please follow these steps:
-
-1. Create an issue with the `suggestion` label, and explain your suggestion in as much detail as possible;
-2. Once your suggestion is approved, fork the repository;
-3. Work on your suggestion, make sure you add tests if applicable, and all tests are passing;
-4. Open a pull request to the `staging` (default) branch;
-
 # License
 
 MIT
