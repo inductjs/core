@@ -64,6 +64,7 @@
         "rollup-plugin-typescript2": "^0.27.1",
         "ts-jest": "^26.3.0",
         "ts-node": "^8.10.1",
+        "ts-transformer-keys": "^0.4.2",
         "typescript": "^3.9.2"
     },
     "dependencies": {

@@ -1,5 +1,5 @@
 import {HttpStatusCode} from "azure-functions-ts-essentials";
-import {ValidationError} from "./types/error-schema";
+import {ValidationError} from "../types/error-schema";
 import {Response} from "express";
 
 export interface IControllerResult<T> {

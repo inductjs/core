@@ -1,8 +1,15 @@
-import ControllerResult, { IControllerResult, ControllerResultOpts } from "./controller-result";
+import ControllerResult, {
+    IControllerResult,
+    ControllerResultOpts,
+} from "./express/controller-result";
 import {HttpStatusCode} from "azure-functions-ts-essentials";
 import {Response} from "express";
 
-export const ok = <T>(res: Response, data?: T, opts?: ControllerResultOpts ): Response => {
+export const ok = <T>(
+    res: Response,
+    data?: T,
+    opts?: ControllerResultOpts
+): Response => {
     const result: IControllerResult<T> = {
         res,
         status: HttpStatusCode.OK,
@@ -12,7 +19,10 @@ export const ok = <T>(res: Response, data?: T, opts?: ControllerResultOpts ): Re
     return new ControllerResult(result, opts).send();
 };
 
-export const badRequest = <T>(res: Response, opts?: ControllerResultOpts): Response => {
+export const badRequest = <T>(
+    res: Response,
+    opts?: ControllerResultOpts
+): Response => {
     const result: IControllerResult<T> = {
         res,
         status: HttpStatusCode.BadRequest,
@@ -21,7 +31,10 @@ export const badRequest = <T>(res: Response, opts?: ControllerResultOpts): Respo
     return new ControllerResult(result, opts).send();
 };
 
-export const notFound = <T>(res: Response, opts?: ControllerResultOpts): Response => {
+export const notFound = <T>(
+    res: Response,
+    opts?: ControllerResultOpts
+): Response => {
     const result: IControllerResult<T> = {
         res,
         status: HttpStatusCode.NotFound,
@@ -30,7 +43,10 @@ export const notFound = <T>(res: Response, opts?: ControllerResultOpts): Respons
     return new ControllerResult(result, opts).send();
 };
 
-export const noContent = <T>(res: Response, opts?: ControllerResultOpts): Response => {
+export const noContent = <T>(
+    res: Response,
+    opts?: ControllerResultOpts
+): Response => {
     const result: IControllerResult<T> = {
         res,
         status: HttpStatusCode.NoContent,
@@ -39,7 +55,11 @@ export const noContent = <T>(res: Response, opts?: ControllerResultOpts): Respon
     return new ControllerResult(result, opts).send();
 };
 
-export const created = <T>(res: Response, data?: T, opts?: ControllerResultOpts): Response => {
+export const created = <T>(
+    res: Response,
+    data?: T,
+    opts?: ControllerResultOpts
+): Response => {
     const result: IControllerResult<T> = {
         res,
         status: HttpStatusCode.Created,
@@ -49,7 +69,11 @@ export const created = <T>(res: Response, data?: T, opts?: ControllerResultOpts)
     return new ControllerResult(result, opts).send();
 };
 
-export const internalError = <T>(res: Response, error?: Error, opts?: ControllerResultOpts): Response => {
+export const internalError = <T>(
+    res: Response,
+    error?: Error,
+    opts?: ControllerResultOpts
+): Response => {
     const result: IControllerResult<T> = {
         res,
         status: HttpStatusCode.InternalServerError,
@@ -59,7 +83,10 @@ export const internalError = <T>(res: Response, error?: Error, opts?: Controller
     return new ControllerResult(result, opts).send();
 };
 
-export const conflict = <T>(res: Response, opts?: ControllerResultOpts): Response => {
+export const conflict = <T>(
+    res: Response,
+    opts?: ControllerResultOpts
+): Response => {
     const result: IControllerResult<T> = {
         res,
         status: HttpStatusCode.Conflict,
@@ -67,4 +94,3 @@ export const conflict = <T>(res: Response, opts?: ControllerResultOpts): Respons
 
     return new ControllerResult(result, opts).send();
 };
-

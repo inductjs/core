@@ -1,7 +1,7 @@
-import Induct from "./induct";
+import Induct from "../induct";
 import {AzureFunction, Context, HttpRequest} from "@azure/functions";
 import {HttpResponse, HttpMethod} from "azure-functions-ts-essentials";
-import {InductModelOpts} from "./types/model-schema";
+import {InductModelOpts} from "../types/model-schema";
 
 export class InductAzure<T> extends Induct<T> {
     public azureFunctionsRouter(

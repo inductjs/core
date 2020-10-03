@@ -20,6 +20,7 @@ export const modelFactory = async <T>(
     // Validate incoming data
     if (validate) {
         const errors = await modelInstance.validate();
+
         if (errors.length > 0) {
             throw new ValidationError(`Schema validation failed`);
         }
