@@ -50,6 +50,14 @@ export class InductModel<T> implements IInductModel<T> {
 
     public fields: Array<keyof T> | string;
 
+    public static baseFunctions = [
+        "findAll",
+        "findOneById",
+        "create",
+        "update",
+        "delete",
+    ];
+
     constructor(values: T, opts: InductModelOpts<T>) {
         if (values) this._model = new opts.schema(values); // eslint-disable-line new-cap
         this._table_name = opts.tableName;
@@ -57,6 +65,12 @@ export class InductModel<T> implements IInductModel<T> {
         this._id_field = opts.idField;
         this.fields = opts.fields ?? "*";
         this._qb = this._con(this._table_name);
+
+        this.findAll = this.findAll.bind(this);
+        this.findOneById = this.findOneById.bind(this);
+        this.create = this.create.bind(this);
+        this.update = this.update.bind(this);
+        this.delete = this.update.bind(this);
     }
 
     get validated(): boolean {
@@ -126,7 +140,7 @@ export class InductModel<T> implements IInductModel<T> {
         return exists.length > 0;
     }
 
-    public findAll = async (): Promise<T[]> => {
+    public async findAll(): Promise<T[]> {
         try {
             const result = await this._qb.select(this.fields);
 
@@ -134,9 +148,9 @@ export class InductModel<T> implements IInductModel<T> {
         } catch (e) {
             throw new QueryError(`InductModel.findAll failed with error ${e}`);
         }
-    };
+    }
 
-    public findOneById = async (lookup?: T[keyof T]): Promise<T[]> => {
+    public async findOneById(lookup?: T[keyof T]): Promise<T[]> {
         try {
             const lookupValue = lookup ?? this._model[this._id_field];
 
@@ -150,9 +164,9 @@ export class InductModel<T> implements IInductModel<T> {
                 `InductModel.findOneById failed with error ${e}`
             );
         }
-    };
+    }
 
-    public create = async (value?: Partial<T>): Promise<T> => {
+    public async create(value?: Partial<T>): Promise<T> {
         try {
             const insertedValue = value ?? this._model;
 
@@ -162,9 +176,9 @@ export class InductModel<T> implements IInductModel<T> {
         } catch (e) {
             throw new QueryError(`InductModel.create failed with error ${e}`);
         }
-    };
+    }
 
-    public update = async (value?: Partial<T>): Promise<number> => {
+    public async update(value?: Partial<T>): Promise<number> {
         try {
             const updatedVal = value ?? this._model;
             const lookupVal = this._model[this._id_field];
@@ -177,9 +191,9 @@ export class InductModel<T> implements IInductModel<T> {
         } catch (e) {
             throw new QueryError(`InductModel.update failed with error ${e}`);
         }
-    };
+    }
 
-    public delete = async (lookup?: T[keyof T]): Promise<T[keyof T]> => {
+    public async delete(lookup?: T[keyof T]): Promise<T[keyof T]> {
         try {
             const lookupVal = lookup ?? this._model[this._id_field];
 
@@ -189,11 +203,11 @@ export class InductModel<T> implements IInductModel<T> {
         } catch (e) {
             throw new QueryError(`InductModel.delete failed with error ${e}`);
         }
-    };
+    }
 
-    public validate = async (): Promise<ValidationError[]> => {
+    public async validate(): Promise<ValidationError[]> {
         return validate(this._model);
-    };
+    }
 }
 
 export default InductModel;

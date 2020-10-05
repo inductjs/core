@@ -15,8 +15,7 @@ import {
     internalError,
     notFound,
     created,
-} from "../result-helpers";
-import {keys} from "ts-transformer-keys";
+} from "./result-helpers";
 
 export interface ExpressConstructorOpts<T> extends InductConstructorOpts<T> {
     /** Options to determine the output of the controller result and format of the response body */
@@ -33,17 +32,12 @@ export class InductExpress<T> extends Induct<T> {
     }
 
     public router(): Router {
-        const router = Router(); // eslint-disable-line new-cap
-
-        router.get("/", this.query("findAll"));
-
-        router.post("/", this.mutation("create", {validate: true}));
-        router.patch("/:id", this.mutation("update", {validate: true}));
-
-        router.get("/:id", this.query("findOneById"));
-        router.delete("/:id", this.mutation("delete"));
-
-        return router;
+        return Router() // eslint-disable-line new-cap
+            .get("/", this.query("findAll"))
+            .post("/", this.mutation("create", {validate: true}))
+            .patch("/:id", this.mutation("update", {validate: true}))
+            .get("/:id", this.query("findOneById"))
+            .delete("/:id", this.mutation("delete"));
     }
 
     query<M>(
@@ -68,15 +62,19 @@ export class InductExpress<T> extends Induct<T> {
         modelFn: string,
         opts?: InductModelOpts<T>
     ): RequestHandler {
-        this._checkModelFunction(modelFn, opts.customModel);
+        this._checkModelFunction(modelFn, opts?.customModel);
 
         return async (req: Request, res: Response): Promise<Response> => {
-            const values = this._valuesFromRequest(req)
+            const values = this._valuesFromRequest(req);
 
             try {
-                const result = await this._executeModel(values, modelFn, opts)
+                const result = await this._executeModel(values, modelFn, opts);
 
                 if (!result || (Array.isArray(result) && result.length == 0)) {
+                    if (result === null) {
+                        return badRequest(res, this.resultOpts);
+                    }
+
                     return notFound(res, this.resultOpts);
                 }
 
@@ -95,19 +93,22 @@ export class InductExpress<T> extends Induct<T> {
     private _createMutationHandler(
         modelFn: string,
         opts?: InductModelOpts<T>
-    ): RequestHandler {            
-        this._checkModelFunction(modelFn, opts.customModel)
+    ): RequestHandler {
+        this._checkModelFunction(modelFn, opts?.customModel);
 
-        return async (req: Request, res: Response): Promise<Response> => {                
-            const values = this._valuesFromRequest(req)
-            
+        return async (req: Request, res: Response): Promise<Response> => {
+            const values = this._valuesFromRequest(req);
+
             try {
                 const result = await this._executeModel(values, modelFn, opts);
+
 
                 if (!result) {
                     if (result === null || modelFn === "create") {
                         return badRequest(res, this.resultOpts);
                     }
+
+                    if (result === null) console.log("oeps");
 
                     return notFound(res, this.resultOpts);
                 }
@@ -129,26 +130,26 @@ export class InductExpress<T> extends Induct<T> {
 
     private _checkModelFunction(
         modelFn: string,
-        customModel: ModelConstructor<T>,
-    ){
-        const targetProp = customModel
+        customModel: ModelConstructor<T>
+    ): boolean {
+        const modelFunction = customModel
             ? customModel.prototype[modelFn]
-            : keys<InductModel<T>>();
+            : InductModel.prototype[modelFn];
 
-        if (typeof targetProp !== "function") {
+        if (typeof modelFunction !== "function") {
             throw new TypeError(
                 `${modelFn} is not a function in the supplied model`
             );
         }
-        
+
         return true;
     }
 
     private async _executeModel(
-        values: any,
+        values: T,
         modelFn: string,
         opts: InductModelOpts<T>
-    ) {
+    ): Promise<T | T[] | number | string> {
         const model = await this.modelFactory(values, opts);
 
         if (!model) {
@@ -162,7 +163,7 @@ export class InductExpress<T> extends Induct<T> {
         return result;
     }
 
-    private async _valuesFromRequest(req: Request) {
+    private _valuesFromRequest(req: Request): T {
         const values = {...req.body};
 
         if (req.params[this.idParam]) {

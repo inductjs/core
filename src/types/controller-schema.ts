@@ -1,6 +1,6 @@
 import {Request, Response, NextFunction} from "express";
 import {ModelFactory, BaseModelFunction, InductModelOpts} from "./model-schema";
-import {ControllerResult} from "../controller-result";
+import {ControllerResult} from "../express/controller-result";
 
 export type Controller<T> = (
     response: Response,

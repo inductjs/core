@@ -16,8 +16,6 @@ jest.mock("./data/mockDb.ts", () => {
     return jest.fn(() => mknex);
 });
 
-jest.mock("../controller-result");
-
 describe("Induct", () => {
     it("copyOpts should correctly override class properties", () => {
         const induct = (new Induct(mockOpts1) as unknown) as TestInduct<

@@ -13,7 +13,7 @@ export const modelFactory = async <T>(
     const {validate} = opts;
 
     // Create model
-    const modelInstance: InductModel<T> = opts.customModel
+    const modelInstance: InductModel<T> = opts?.customModel
         ? new opts.customModel(values, opts, ...args) // eslint-disable-line new-cap
         : new InductModel(values, opts);
 

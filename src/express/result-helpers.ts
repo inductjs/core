@@ -1,7 +1,7 @@
 import ControllerResult, {
     IControllerResult,
     ControllerResultOpts,
-} from "./express/controller-result";
+} from "./controller-result";
 import {HttpStatusCode} from "azure-functions-ts-essentials";
 import {Response} from "express";
 
