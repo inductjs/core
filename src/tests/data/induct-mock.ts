@@ -25,15 +25,19 @@ export interface TestInduct<T> {
 
     _copyOpts: (overrides: Partial<InductModelOpts<T>>) => InductModelOpts<T>;
     model: (data: T, opts?: InductModelOpts<T>) => Promise<InductModel<T>>;
-    handler: (
+    mutation: (
         modelFn: FunctionOfInductModel<T>,
         opts?: Partial<InductModelOpts<T>>
     ) => RequestHandler;
-    queryHandler: (
+    query: (
+        modelFn: FunctionOfInductModel<T>,
+        opts?: Partial<InductModelOpts<T>>
+    ) => RequestHandler;
+    _createQueryHandler: (
         modelFn: string,
         opts?: Partial<InductModelOpts<T>>
     ) => RequestHandler;
-    mutationHandler: (
+    _createMutationHandler: (
         modelFn: string,
         opts?: Partial<InductModelOpts<T>>
     ) => RequestHandler;

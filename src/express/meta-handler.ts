@@ -1,5 +1,5 @@
 import {Express, Request, Response, Handler} from "express";
-import {Route, ApplicationMetadata} from "./types/express-meta-schema";
+import {Route, ApplicationMetadata} from "../types/express-meta-schema";
 
 const regExpToPath = (pattern: string): string => {
     const startIdx = pattern.indexOf("/");

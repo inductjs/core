@@ -13,13 +13,14 @@ export const modelFactory = async <T>(
     const {validate} = opts;
 
     // Create model
-    const modelInstance: InductModel<T> = opts.customModel
+    const modelInstance: InductModel<T> = opts?.customModel
         ? new opts.customModel(values, opts, ...args) // eslint-disable-line new-cap
         : new InductModel(values, opts);
 
     // Validate incoming data
     if (validate) {
         const errors = await modelInstance.validate();
+
         if (errors.length > 0) {
             throw new ValidationError(`Schema validation failed`);
         }

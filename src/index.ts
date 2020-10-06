@@ -13,21 +13,30 @@ export {
     FunctionOfInductModel,
 } from "./types/model-schema";
 export {InductModel} from "./base-model";
-export {IControllerResult, ControllerResult} from "./controller-result";
+export {IControllerResult, ControllerResult} from "./express/controller-result";
 export {InductConstructorOpts} from "./induct";
-export {ok, badRequest, noContent, internalError, conflict, notFound, created} from "./result-helpers";
+export {
+    ok,
+    badRequest,
+    noContent,
+    internalError,
+    conflict,
+    notFound,
+    created,
+} from "./express/result-helpers";
 
 import {Induct} from "./induct";
-import {InductExpress} from "./induct-express";
-import {InductAzure} from "./induct-azure";
+import {InductExpress} from "./express/induct-express";
+import {InductAzure} from "./azure/induct-azure";
 import {modelFactory} from "./model-factory";
-export {metaHandler} from "./meta-handler";
+import {metaHandler} from "./express/meta-handler";
 
-export {Induct, InductExpress, InductAzure, modelFactory};
+export {Induct, InductExpress, InductAzure, modelFactory, metaHandler};
 
 export default {
     Induct,
     InductExpress,
     InductAzure,
     modelFactory,
+    metaHandler,
 };

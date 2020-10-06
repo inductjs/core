@@ -14,5 +14,6 @@
     },
     "lib": ["es2015", "es2019", "dom"],
     "include": ["src/**/*"],
-    "exclude": ["node_modules", "**/*.spec.ts", "src/tests/**/*", "coverage"]
+    "exclude": ["node_modules", "**/*.spec.ts", "src/tests/**/*", "coverage"],
+    
 }

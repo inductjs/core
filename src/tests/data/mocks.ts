@@ -7,6 +7,13 @@ import {Response, Request} from "express";
 import mdb from "./mockDb";
 import {HttpRequest, Context} from "@azure/functions";
 
+export class TestError extends Error {
+    constructor(msg: string) {
+        super(msg);
+        this.name = "TestError";
+    }
+}
+
 export const mockRequest = (): Request => {
     const req = {} as Request;
     req.params = {};
@@ -65,6 +72,7 @@ export const mockResponse = (): Response => {
     res.status = jest.fn().mockReturnValue(res);
     res.json = jest.fn().mockReturnValue(res);
     res.cookie = jest.fn().mockReturnValue(res);
+    res.redirect = jest.fn().mockReturnValue(res);
 
     return res;
 };
