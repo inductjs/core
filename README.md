@@ -32,7 +32,7 @@ export class UserSchema {
     age: number;
 
     constructor(val: UserSchema) {
-        Object.assign(this, val);
+        Object.assign(this, {...val});
     }
 }
 ```
