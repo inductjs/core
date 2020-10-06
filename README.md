@@ -124,13 +124,17 @@ You can create generic express route handlers for InductModel methods using the 
 ```javascript
 const router = express.Router();
 
-router.get("/", induct.handler("findAll"));
+router.get("/", induct.query("findAll"));
 // Second parameter of induct.handler accepts additional options that override class instance options
-router.post(`/`, induct.handler("create", {validate: true}));
+router.post(`/`, induct.mutation("create", {validate: true}));
 
-router.get(`/:${induct.idParam}`, induct.handler("findOneById"));
-router.patch(`/:${induct.idParam}`, induct.handler("update", {validate: true}));
-router.delete(`/:${induct.idParam}`, induct.handler("update"));
+router.get(`/:${induct.idParam}`, induct.query("findOneById"));
+
+router.patch(
+    `/:${induct.idParam}`,
+    induct.mutation("update", {validate: true})
+);
+router.delete(`/:${induct.idParam}`, induct.mutation("delete"));
 ```
 
 These handlers use the generic InductModel methods to query your database.
@@ -189,10 +193,11 @@ A couple of things to take into account when using custom models:
 
 1. Returning _NULL_ from a model method will result in a `400 BAD_REQUEST` response. Unless this is intended, return a non-null value such as an empty string or array from the model function.
 2. Using arrow functions as class methods is \***\*NOT SUPPORTED\*\***. Using arrow functions causes these methods to not be bound to the prototype of the custom model, which Induct needs for some runtime validations. Make sure to use ordinary method syntax, and bind methods that need to use the class' _this_ context.
+3. You can provide the `query` and `mutation` with your custom model as a type parameter, which will extend the method names typescript will accept with all the methods of your custom model.
 
 Next we can instantiate Induct, and register our methods for use in the generic handlers:
 
-```javascript
+```typescript
 const induct = new InductExpress({
     connection: knex,
     schema: UserSchema,
@@ -205,9 +210,13 @@ const induct = new InductExpress({
 // Create a router as normal
 const router = induct.router();
 
-// Add additional handlers
-router.get("/catalog/version", induct.query("getCatalogVersion"));
-router.patch("/catalog/version", induct.mutation("updateCatalogVersion"));
+// Add additional handlers.
+router.get("/catalog/version", induct.query<ProductModel>("getCatalogVersion"));
+
+router.patch(
+    "/catalog/version",
+    induct.mutation<ProductModel>("updateCatalogVersion")
+);
 
 export {router};
 ```

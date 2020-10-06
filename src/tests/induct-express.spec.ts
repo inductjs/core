@@ -2,7 +2,9 @@
 import {InductExpress} from "../express/induct-express";
 import {mockOpts1, MockSchema, mockRequest, mockResponse} from "./data/mocks";
 import {TestInduct} from "./data/induct-mock";
-import ControllerResult, {IControllerResult} from "../express/controller-result";
+import ControllerResult, {
+    IControllerResult,
+} from "../express/controller-result";
 import {HttpStatusCode as StatusCode} from "azure-functions-ts-essentials";
 
 jest.mock("../express/controller-result");
@@ -73,8 +75,12 @@ describe("InductExpress", () => {
 
         expect(induct.query).toHaveBeenCalledTimes(2);
         expect(induct.mutation).toHaveBeenCalledTimes(3);
-        expect(induct.mutation).toHaveBeenCalledWith("create", {validate: true});
-        expect(induct.mutation).toHaveBeenCalledWith("update", {validate: true});
+        expect(induct.mutation).toHaveBeenCalledWith("create", {
+            validate: true,
+        });
+        expect(induct.mutation).toHaveBeenCalledWith("update", {
+            validate: true,
+        });
         expect(induct.query).toHaveBeenCalledWith("findOneById");
         expect(induct.query).toHaveBeenCalledWith("findAll");
         expect(induct.mutation).toHaveBeenCalledWith("delete");

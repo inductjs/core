@@ -1,6 +1,6 @@
-import { HttpStatusCode } from "azure-functions-ts-essentials";
+import {HttpStatusCode} from "azure-functions-ts-essentials";
 import ControllerResult from "../express/controller-result";
-import { mockResponse, TestError } from "./data/mocks";
+import {mockResponse, TestError} from "./data/mocks";
 
 const mockResult1 = {
     status: HttpStatusCode.OK,
@@ -53,7 +53,9 @@ describe("controller-result", () => {
 
         new ControllerResult(mockResult2).send();
 
-        expect(res.status).toHaveBeenCalledWith(HttpStatusCode.InternalServerError);
+        expect(res.status).toHaveBeenCalledWith(
+            HttpStatusCode.InternalServerError
+        );
         expect(res.json).toHaveBeenCalledWith({
             data: undefined,
             info: undefined,
@@ -68,7 +70,9 @@ describe("controller-result", () => {
 
         new ControllerResult(mockResult2, {debug: true}).send();
 
-        expect(res.status).toHaveBeenCalledWith(HttpStatusCode.InternalServerError);
+        expect(res.status).toHaveBeenCalledWith(
+            HttpStatusCode.InternalServerError
+        );
         expect(res.json).toHaveBeenCalledWith({
             data: undefined,
             info: undefined,

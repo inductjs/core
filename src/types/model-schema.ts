@@ -31,10 +31,27 @@ type SubType<Base, Condition> = Pick<
     }[keyof Base]
 >;
 
-export type FunctionOfInductModel<T> = keyof SubType<InductModel<T>, Function>;
-export type FunctionOfModel<T> = keyof SubType<T, Function>;
+export type FunctionOfInductModel<T> = keyof Omit<
+    SubType<InductModel<T>, Function>,
+    InternalFunctions
+>;
+export type FunctionOfModel<T> = keyof Omit<
+    SubType<T, Function>,
+    InternalFunctions
+>;
 
 export type SchemaConstructor<T> = new (val: T) => T;
+
+export type InternalFunctions =
+    | "commitTransaction"
+    | "destroyConnection"
+    | "startTransaction"
+    | "rollbackTransaction"
+    | "validate"
+    | "con"
+    | "trx"
+    | "get"
+    | "set";
 
 /** String type that lists the possible functions contained in the model. Used to provide typing to the parameters of generation functions */
 export type BaseModelFunction =

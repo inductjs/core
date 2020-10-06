@@ -102,7 +102,6 @@ export class InductExpress<T> extends Induct<T> {
             try {
                 const result = await this._executeModel(values, modelFn, opts);
 
-
                 if (!result) {
                     if (result === null || modelFn === "create") {
                         return badRequest(res, this.resultOpts);
