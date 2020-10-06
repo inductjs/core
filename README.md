@@ -7,6 +7,7 @@ Induct provides abstractions over ExpressJS in order to quickly create REST APIs
 Induct uses [Knex](https://knexjs.org/) to query databases, and therefore will only support databases supported by Knex.
 
 Currently supported databases are:
+
 -   Microsoft SQL Server
 -   MySQL
 
@@ -42,13 +43,13 @@ Initialize Induct and provide a database object, an object schema, the table to 
 
 ```javascript
 // router.js
+import {InductExpress} from "@yeseh/induct-core";
+
 const induct = new InductExpress({
     connection: knex, // Knex connection object to your database
     schema: UserSchema,
     tableName: "dbo.users",
     idField: "uuid",
-    idParam: "user_uuid", // OPTIONAL: custom param name for the id field
-    fieldsList: ["uuid", "name"], // OPTIONAL: limit fields retrieved
 });
 
 export const inductRouter = induct.router();
@@ -70,17 +71,18 @@ Finally, create an express entry point as usual, and bring in the created router
 // index.js
 import {createServer} from "http";
 import express from "express";
-import {inductRouter} from "./router";
 import bodyParser from "body-parser";
 
-const app = express();
-app.use(bodyParser.json()); // Make sure you are using body parser!
+import {inductRouter} from "./router";
 
+const app = express();
+
+app.use(bodyParser.json()); // Make sure you are using body parser!
 app.use("/users", inductRouter);
 
 const server = createServer(app);
 
-server.listen(4000, () => console.log(`Server is listening on port 4000`));
+server.listen(3000, () => console.log(`Server is listening on port 3000`));
 ```
 
 ## Azure functions router
@@ -117,9 +119,9 @@ Induct exposes several levels of abstraction. The getting started example highli
 
 ### Generic route handlers
 
-You can create generic express route handlers for InductModel methods using the induct.handler() method:
+You can create generic express route handlers for InductModel methods using the `query` (for GET requests) and `mutation` (for POST, PATCH, DELETE requests) method:
 
-```typescript
+```javascript
 const router = express.Router();
 
 router.get("/", induct.handler("findAll"));
@@ -137,7 +139,7 @@ These handlers use the generic InductModel methods to query your database.
 
 You can use Inducts generic model class in your own route handlers as follows:
 
-```typescript
+```javascript
 // Create an Induct instance
 const induct = new Induct({
     connection: knex, // Knex connection object to your database
@@ -167,19 +169,26 @@ So we create a custom model that extends from InductModel, and add our `getCatal
 export class ProductModel extends InductModel {
     constructor(val, opts) {
         super(val, opts);
+
+        this.updateCatalogVersion = this.updateCatalogVersion.bind(this);
     }
 
-    getCatalogVersion = () => {
+    getCatalogVersion() {
         return "1.0";
-    };
+    }
 
-    updateCatalogVersion = () => {
+    updateCatalogVersion() {
         // The values from the request body are stored in this.model
         // So this.model.CatalogVersion is equivalent to req.body.CatalogVersion
         return `Catalog version updated to: ${this.model.CatalogVersion}`;
-    };
+    }
 }
 ```
+
+A couple of things to take into account when using custom models:
+
+1. Returning _NULL_ from a model method will result in a `400 BAD_REQUEST` response. Unless this is intended, return a non-null value such as an empty string or array from the model function.
+2. Using arrow functions as class methods is \***\*NOT SUPPORTED\*\***. Using arrow functions causes these methods to not be bound to the prototype of the custom model, which Induct needs for some runtime validations. Make sure to use ordinary method syntax, and bind methods that need to use the class' _this_ context.
 
 Next we can instantiate Induct, and register our methods for use in the generic handlers:
 
@@ -191,41 +200,20 @@ const induct = new InductExpress({
     idField: "uuid",
     // Provide your custom model constructor
     customModel: ProductModel,
-    // Register custom functions
-    queries: ["getCatalogVersion"],
-    mutations: ["updateCatalogVersion"],
 });
 
 // Create a router as normal
 const router = induct.router();
 
 // Add additional handlers
-router.get("/catalog/version", induct.handler("getCatalogVersion"));
-router.patch("/catalog/version", induct.handler("updateCatalogVersion"));
+router.get("/catalog/version", induct.query("getCatalogVersion"));
+router.patch("/catalog/version", induct.mutation("updateCatalogVersion"));
 
 export {router};
-
-/*
-NOTE: When using extra custom handlers in addition to induct.router, take into account that routes have already been mounted to /:id
-This can lead to situations where the wrong handler is executed
-Because of this we first add /catalog to the path to prevent route conflicts
-*/
 ```
 
-Alternatively you can use the `registerModelFunction` method, which accepts your custom model as a type parameter to help your IDE with autocompletion:
-
-```typescript
-import {FunctionType} from "@yeseh/induct-core";
-
-induct.registerModelFunction<ProductModel>(
-    FunctionType.Query,
-    "getCatalogVersion"
-);
-induct.registerModelFunction<ProductModel>(
-    FunctionType.Mutation,
-    "updateCatalogVersion"
-);
-```
+**NOTE:** When using extra custom handlers in addition to induct.router, take into account that routes have already been mounted to /:id
+This can potentially lead to conflicting paths.
 
 ## Example
 

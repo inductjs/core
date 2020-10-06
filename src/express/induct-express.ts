@@ -108,8 +108,6 @@ export class InductExpress<T> extends Induct<T> {
                         return badRequest(res, this.resultOpts);
                     }
 
-                    if (result === null) console.log("oeps");
-
                     return notFound(res, this.resultOpts);
                 }
 
