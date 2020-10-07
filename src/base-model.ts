@@ -1,16 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any  */
+/* eslint-disable no-invalid-this */
 import knex from "knex";
-import {IModel, InductModelOpts} from "./types/model-schema";
+import {IInductModel, InductModelOpts} from "./types/model-schema";
 import {validate, ValidationError} from "class-validator";
+import {QueryError} from "./types/error-schema";
 
 /**
  * Base class for CRUD operation APIs. Takes a generic type parameter based on
  */
-export abstract class Model<T> implements IModel<T> {
+export class InductModel<T> implements IInductModel<T> {
     /**
      * Tenant database connection object.
      */
     protected _con: knex;
+    /**
+     * Query builder object created from the provided connection and table name
+     */
+    protected _qb: knex.QueryBuilder;
     /**
      * Table name to do queries on
      */
@@ -44,12 +50,27 @@ export abstract class Model<T> implements IModel<T> {
 
     public fields: Array<keyof T> | string;
 
+    public static baseFunctions = [
+        "findAll",
+        "findOneById",
+        "create",
+        "update",
+        "delete",
+    ];
+
     constructor(values: T, opts: InductModelOpts<T>) {
         if (values) this._model = new opts.schema(values); // eslint-disable-line new-cap
         this._table_name = opts.tableName;
         this._con = opts.connection;
         this._id_field = opts.idField;
         this.fields = opts.fields ?? "*";
+        this._qb = this._con(this._table_name);
+
+        this.findAll = this.findAll.bind(this);
+        this.findOneById = this.findOneById.bind(this);
+        this.create = this.create.bind(this);
+        this.update = this.update.bind(this);
+        this.delete = this.update.bind(this);
     }
 
     get validated(): boolean {
@@ -81,9 +102,9 @@ export abstract class Model<T> implements IModel<T> {
     }
 
     public async destroyConnection(): Promise<void> {
-        await this._con.destroy();
+        await this._trx.destroy();
     }
-    /** Creates a new database transaction and sets this transaction to the model instance */
+
     public async startTransaction(): Promise<knex.Transaction> {
         if (this._trx) await this._trx.destroy();
 
@@ -100,12 +121,10 @@ export abstract class Model<T> implements IModel<T> {
         this._trx.rollback();
     }
 
-    /** Typed property getter of model data */
     public get<K extends keyof T>(prop: K): T[K] {
         return this._model[prop];
     }
 
-    /** Typed property setter of model data */
     public set<K extends keyof T>(prop: K, value: T[K]): void {
         this._model[prop] = value;
     }
@@ -120,32 +139,75 @@ export abstract class Model<T> implements IModel<T> {
 
         return exists.length > 0;
     }
-    /**
-     * Use the resource unique identifier to lookup one value.
-     * Returns an array to validate results in the controller.
-     */
-    public abstract async findOneById(lookup?: T[keyof T]): Promise<T[]>;
 
-    /**
-     * Returns an array of objects of the model's type
-     */
-    public abstract async findAll(): Promise<T[]>;
-    /**
-     * Abstract update method. Requires resource specific implementation
-     */
-    public abstract async update(value?: Partial<T>): Promise<T | number>;
-    /**
-     * Inserts the data stored in the class instance into the resource table
-     */
-    public abstract async create(value?: Partial<T>): Promise<T>;
-    /**
-     * Deletes the specified entry from the resource table. Returns an amount of deleted rows.
-     */
-    public abstract async delete(lookup?: T[keyof T]): Promise<T[keyof T]>;
-    /**
-     * Returns a validated JSON representation of the class properties;
-     */
+    public async findAll(): Promise<T[]> {
+        try {
+            const result = await this._qb.select(this.fields);
+
+            return result;
+        } catch (e) {
+            throw new QueryError(`InductModel.findAll failed with error ${e}`);
+        }
+    }
+
+    public async findOneById(lookup?: T[keyof T]): Promise<T[]> {
+        try {
+            const lookupValue = lookup ?? this._model[this._id_field];
+
+            const result = await this._qb
+                .select(this.fields)
+                .where(this._id_field, lookupValue);
+
+            return result;
+        } catch (e) {
+            throw new QueryError(
+                `InductModel.findOneById failed with error ${e}`
+            );
+        }
+    }
+
+    public async create(value?: Partial<T>): Promise<T> {
+        try {
+            const insertedValue = value ?? this._model;
+
+            await this._qb.insert(insertedValue);
+
+            return this._model;
+        } catch (e) {
+            throw new QueryError(`InductModel.create failed with error ${e}`);
+        }
+    }
+
+    public async update(value?: Partial<T>): Promise<number> {
+        try {
+            const updatedVal = value ?? this._model;
+            const lookupVal = this._model[this._id_field];
+
+            const result = await this._qb
+                .update(updatedVal)
+                .where(this._id_field, lookupVal);
+
+            return result;
+        } catch (e) {
+            throw new QueryError(`InductModel.update failed with error ${e}`);
+        }
+    }
+
+    public async delete(lookup?: T[keyof T]): Promise<T[keyof T]> {
+        try {
+            const lookupVal = lookup ?? this._model[this._id_field];
+
+            await this._qb.where(this._id_field, lookupVal).del();
+
+            return lookupVal;
+        } catch (e) {
+            throw new QueryError(`InductModel.delete failed with error ${e}`);
+        }
+    }
+
     public async validate(): Promise<ValidationError[]> {
         return validate(this._model);
     }
 }
+
+export default InductModel;

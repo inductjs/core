@@ -1,10 +1,17 @@
 // rollup.config.js
 import typescript from "rollup-plugin-typescript2";
 import pkg from "./package.json";
+import keysTransformer from "ts-transformer-keys/transformer";
 
 export default {
     input: "src/index.ts",
-    plugins: [typescript({tsconfig: "./tsconfig.json"})],
+    plugins: [typescript({
+      tsconfig: "./tsconfig.json",
+      transformers: [(service) => ({
+        before: [keysTransformer(service.getProgram())],
+        after: [],
+      })],
+    })],
     output: [
       {
         file: pkg.main,

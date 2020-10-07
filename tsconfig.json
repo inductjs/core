@@ -2,7 +2,7 @@
     "compilerOptions": {
         "module": "ES2015",
         "esModuleInterop": true,
-        "target": "es2015",
+        "target": "es5",
         "moduleResolution": "node",
         "experimentalDecorators": true,
         "allowJs": true,
@@ -12,8 +12,8 @@
         "outDir": "./dist",
         "resolveJsonModule": true
     },
-    "lib": ["es2019", "dom"],
+    "lib": ["es2015", "es2019", "dom"],
     "include": ["src/**/*"],
-    "exclude": ["node_modules", "**/*.{spec,test}.ts"]
-  }
-  
+    "exclude": ["node_modules", "**/*.spec.ts", "src/tests/**/*", "coverage"],
+    
+}

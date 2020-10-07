@@ -1,27 +1,42 @@
 export {
-    InductController,
+    Controller as InductController,
     InductControllerOpts,
     InductControllerBase,
 } from "./types/controller-schema";
 export {ValidationError, QueryError} from "./types/error-schema";
-export {StatusCode} from "./types/http-schema";
 export {
-    InductModelFactory,
-    InductModelFunction,
     InductModelOpts,
-    IModel,
+    IInductModel,
     ValidationResult,
+    FunctionOfModel,
+    FunctionType,
+    FunctionOfInductModel,
 } from "./types/model-schema";
-export {InductModel} from "./gen-model";
-export {Model as InductBaseModel} from "./base-model";
-export {IControllerResult, ControllerResult} from "./controller-result";
-
-// export {createLookupHandler} from "./gen-lookup-controller";
-// export {createModController} from "./gen-mod-controller";
-export {createModelFactory} from "./gen-model-factory";
-// export {createAzureFunctionsRouter} from "./gen-functions-router";
+export {InductModel} from "./base-model";
+export {IControllerResult, ControllerResult} from "./express/controller-result";
+export {InductConstructorOpts} from "./induct";
+export {
+    ok,
+    badRequest,
+    noContent,
+    internalError,
+    conflict,
+    notFound,
+    created,
+} from "./express/result-helpers";
 
 import {Induct} from "./induct";
-export {InductConstructorOpts} from "./induct";
+import {InductExpress} from "./express/induct-express";
+import {InductAzure} from "./azure/induct-azure";
+import {modelFactory} from "./model-factory";
+import {metaHandler} from "./express/meta-handler";
 
-export default Induct;
+export {Induct, InductExpress, InductAzure, modelFactory, metaHandler};
+
+export default {
+    Induct,
+    InductExpress,
+    InductAzure,
+    modelFactory,
+    metaHandler,
+};
