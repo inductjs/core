@@ -23,13 +23,12 @@ import {
 import {ValidationError} from "./types/error-schema";
 import {Context, HttpRequest, AzureFunction} from "@azure/functions";
 import {HttpMethod, HttpResponse} from "azure-functions-ts-essentials";
-import MongoModelBase from "./mongo-model-base";
-import { mongoose } from "@typegoose/typegoose";
+import {mongoose} from "@typegoose/typegoose";
 import Knex from "knex";
 
 export abstract class Induct<T, M extends InductModel<T>> {
-    protected _idField: keyof T;
     protected _idParam: string;
+    protected _idField: keyof T | keyof (T & {_id: string})
     protected _fields: Array<keyof T>;
     protected _validate: boolean;
     protected _resultOpts: ControllerResultOpts;
@@ -38,7 +37,6 @@ export abstract class Induct<T, M extends InductModel<T>> {
     protected _db: Knex | mongoose.Connection;
 
     constructor(args: BaseOpts<T>) {
-        this._idField = args.idField;
         this._idParam = args.idParam || "id";
         this._fields = args.fields;
         this._validate = args.validate;
@@ -242,9 +240,7 @@ export abstract class Induct<T, M extends InductModel<T>> {
     ): InductModelOpts<T> {
         const entries = Object.entries(overrides);
 
-        const thisCopy = Object.assign({}, this) as any;
-
-        if (this._baseModel == MongoModelBase) console.log(thisCopy);
+        const thisCopy = JSON.parse(JSON.stringify(this)); // eslint-disable-line @typescript-eslint/no-explicit-any
 
         const opts = {
             schema: thisCopy._schema,

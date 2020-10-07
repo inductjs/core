@@ -8,7 +8,6 @@ import {
     mockOptsOver,
     mockData1,
     mockInvalidData1,
-    mockMongoOpts,
     mockOptsCustomModel,
     mockOptsValidation,
     MockSQLModel,
@@ -19,8 +18,8 @@ import ControllerResult, {
 } from "../express/controller-result";
 import {HttpStatusCode as StatusCode} from "azure-functions-ts-essentials";
 import {InductSQLOpts} from "../types/induct";
-import {MongoModelBase, SqlModelBase} from "..";
-import {InductMongo} from "../induct-mongo";
+import {SqlAdapter} from "../adapters/sql-adapter";
+// import {InductMongo} from "../induct-mongo";
 
 jest.mock("../express/controller-result");
 
@@ -47,13 +46,13 @@ describe("Induct Base", () => {
                 MockSchema
             >;
 
-            const mongo = (new InductMongo(mockMongoOpts) as unknown) as TestInduct<MockSchema>;
+            // const mongo = (new InductMongo(mockMongoOpts) as unknown) as TestInduct<MockSchema>;
 
             const modelsql = await sql.model(mockData1);
-            const modelmongo = await mongo.model(mockData1);
+            // const modelmongo = await mongo.model(mockData1);
 
-            expect(modelsql).toBeInstanceOf(SqlModelBase);
-            expect(modelmongo).toBeInstanceOf(MongoModelBase);
+            expect(modelsql).toBeInstanceOf(SqlAdapter);
+            // expect(modelmongo).toBeInstanceOf(MongoModelBase);
         });
 
         it("model method should return null when model factory fails", async () => {
@@ -138,7 +137,7 @@ describe("Induct Base", () => {
 
             const model = await induct._modelFactory(mockData1, mockSqlOpts);
 
-            expect(model).toBeInstanceOf(SqlModelBase);
+            expect(model).toBeInstanceOf(SqlAdapter);
         });
 
         it("Should return an instance of the custom model if one is provided", async () => {
@@ -164,7 +163,7 @@ describe("Induct Base", () => {
                 mockOptsValidation
             );
 
-            expect(model).toBeInstanceOf(SqlModelBase);
+            expect(model).toBeInstanceOf(SqlAdapter);
         });
 
         it("Should throw when data is invalid and validation option is enabled", async () => {

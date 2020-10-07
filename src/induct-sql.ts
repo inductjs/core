@@ -1,9 +1,9 @@
 import {InductSQLOpts} from "./types/induct";
 import {Induct} from "./induct-base";
-import SqlModelBase from "./sql-model-base";
+import SqlAdapter from "./adapters/sql-adapter";
 import Knex from "knex";
 
-export class InductSQL<T> extends Induct<T, SqlModelBase<T>> {
+export class InductSQL<T> extends Induct<T, SqlAdapter<T>> {
     protected _db: Knex;
     protected _tableName: string;
 
@@ -13,6 +13,6 @@ export class InductSQL<T> extends Induct<T, SqlModelBase<T>> {
         this._db = opts.db;
         this._tableName = opts.tableName;
 
-        this._baseModel = SqlModelBase;
+        this._baseModel = SqlAdapter;
     }
 }

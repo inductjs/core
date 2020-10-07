@@ -1,15 +1,18 @@
-import {MongoModelBase} from "./mongo-model-base";
+import {MongoAdapter} from "./adapters/mongo-adapter";
 import {InductMongoOpts} from "./types/induct";
 import {Induct} from "./induct-base";
-import {getModelForClass, mongoose} from "@typegoose/typegoose";
+import {getModelForClass} from "@typegoose/typegoose";
 
-export class InductMongo<T> extends Induct<T, MongoModelBase<T>> {
+export class InductMongo<T> extends Induct<T, MongoAdapter<T>> {
+    protected _idField: keyof (T & {_id: string});
+
     constructor(opts: InductMongoOpts<T>) {
         super(opts);
 
-        this._baseModel = MongoModelBase;
+        this._baseModel = MongoAdapter;
         this._schema = opts.schema;
         this._db = opts.db;
+        this._idField = opts.idField ?? "_id";
     }
 
     public getMongoModel(

@@ -1,21 +1,15 @@
 import knex from "knex";
-import {ModelConstructor, IInductSqlModel, Constructor, TypegooseModel} from "./model-schema";
-import {Router} from "express";
+import {ModelConstructor, Constructor} from "./model-schema";
+import mongoose from "mongoose";
 import {ControllerResultOpts} from "../express/controller-result";
-import {SqlModelBase} from "../sql-model-base";
-import {MongoModelBase} from "../mongo-model-base";
-import { mongoose } from "@typegoose/typegoose";
+import {SqlAdapter} from "../adapters/sql-adapter";
+import {MongoAdapter} from "../adapters/mongo-adapter";
 
-mongoose.connection
-
-
-export type InductModel<T> = SqlModelBase<T> | MongoModelBase<T>;
+export type InductModel<T> = SqlAdapter<T> | MongoAdapter<T>;
 export type InductModelOpts<T> = InductSQLOpts<T> | InductMongoOpts<T>;
+export type SchemaConstructor<T> = new (val: T) => T;
 
 export interface BaseOpts<T> {
-    /** Field used as the id URL parameter to perform requests on */
-    idField: keyof T;
-
     schema: Constructor<T>;
     /** Constructor function for the model used to perform database queries */
     customModel?: ModelConstructor<T>;
@@ -28,24 +22,13 @@ export interface BaseOpts<T> {
     /** Maximum amount of records returned */
     limit?: number;
 
-    
-
     resultOpts?: ControllerResultOpts;
 }
 
-export interface IInductBase<T> extends BaseOpts<T> {
-    /** Creates a copy of InductBaseOpts stored in the instance. Takes options to locally override */
-    getModel: (
-        data: T,
-        opts?: BaseOpts<T>,
-        ...args: unknown[]
-    ) => Promise<IInductSqlModel<T> | null>;
-    router: () => Router;
-    // query: () =>
-}
-
 export interface InductSQLOpts<T> extends BaseOpts<T> {
-    schema: Constructor<T>;
+    /** Field used as the id URL parameter to perform requests on */
+    idField: keyof T;
+    schema: SchemaConstructor<T>;
     db: knex;
     tableName: string;
 }
@@ -54,6 +37,7 @@ export interface InductSQLOpts<T> extends BaseOpts<T> {
 export interface InductMongoOpts<T> extends BaseOpts<T> {
     db: mongoose.Connection;
     schema: Constructor<T>;
+    idField?: keyof (T & {_id?: string});
 }
 
 export type OverridableProps =

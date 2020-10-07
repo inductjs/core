@@ -1,8 +1,6 @@
-import knex from "knex";
 import {ValidationError} from "class-validator";
-import {BaseOpts, InductModel, InductModelOpts} from "./induct";
+import {InductModel, InductModelOpts} from "./induct";
 import {getModelForClass} from "@typegoose/typegoose";
-import SqlModelBase from "../sql-model-base";
 
 export enum FunctionType {
     Query = "query",

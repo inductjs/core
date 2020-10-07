@@ -1,4 +1,5 @@
 /* eslint-disable new-cap */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* istanbul-ignore */
 import {
     InductModelOpts,
@@ -94,9 +95,9 @@ export class MockSchema {
 }
 
 const mockMongoCon = {
-    connection: () => "hallo",
-    model: (one: any, two: any) => "model"
-}
+    connection: (): string => "hallo",
+    model: (one: any, two: any): string => "model",
+};
 
 export class MockSQLModel extends SqlModelBase<MockSchema> {
     constructor(

@@ -1,4 +1,4 @@
-import {blue, green, magenta} from "chalk";
+import {green, magenta} from "chalk";
 import path from "path";
 import bodyParser from "body-parser";
 import fs from "fs";
@@ -31,7 +31,6 @@ export class InductServer {
     constructor() {
         this._app = express();
         this.port = process.env.PORT || 3000;
-
 
         this.config();
         // this.setStatic();
@@ -81,14 +80,13 @@ export class InductServer {
     }
 
     mountRoutes = async (dirName?: string): Promise<void> => {
-        const folder = "../../../mongo-test/routes";// dirName ?? "routes";
+        const folder = dirName ?? "routers";
+        const dir = path.join(process.cwd(), folder);
 
-        const testPath = path.join(__dirname, folder);
-
-        const files = fs.readdirSync(testPath);
+        const files = fs.readdirSync(dir);
 
         for (const file of files) {
-            const fullName = path.join(testPath, file);
+            const fullName = path.join(dir, file);
 
             const stat = fs.lstatSync(fullName);
 
@@ -96,7 +94,10 @@ export class InductServer {
 
             if (stat.isDirectory()) {
                 this.mountRoutes(fullName);
-            } else if (fileName.indexOf("-router.js")) {
+            } else if (
+                fileName.indexOf("-router.js") ||
+                fileName.indexOf("-router.ts")
+            ) {
                 const route = `/${fileName.split("-")[0]}`;
 
                 const module = await import(fullName);
@@ -104,9 +105,9 @@ export class InductServer {
                 this._app.use(route, module.router);
 
                 console.log(magenta(`[route] mounted ${route}`));
-            };
+            }
         }
-    }
+    };
 
     /**
      * @class Server
@@ -117,7 +118,9 @@ export class InductServer {
         try {
             this._app.listen(this.port, () =>
                 console.log(
-                    green(`[info] HTTP server is listening on port ${this.port}`)
+                    green(
+                        `[info] HTTP server is listening on port ${this.port}`
+                    )
                 )
             );
         } catch (e) {
@@ -126,7 +129,7 @@ export class InductServer {
     }
 }
 
-export const createServer = async () => {
+export const createServer = async (): Promise<InductServer> => {
     const server = new InductServer();
 
     await server.mountRoutes();

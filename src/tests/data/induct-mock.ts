@@ -1,5 +1,4 @@
 import {
-    ModelConstructor,
     FunctionOfInductModel,
     ModelFactory,
     Constructor,

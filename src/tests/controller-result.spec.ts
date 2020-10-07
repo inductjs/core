@@ -73,14 +73,14 @@ describe("controller-result", () => {
         expect(res.status).toHaveBeenCalledWith(
             HttpStatusCode.InternalServerError
         );
-        
+
         expect(res.json).toHaveBeenCalledWith({
             data: undefined,
             info: undefined,
             error: {
                 message: mockResult2.error.message,
                 name: mockResult2.error.name,
-                stack: mockResult2.error.stack
+                stack: mockResult2.error.stack,
             },
             validationErrors: undefined,
         });

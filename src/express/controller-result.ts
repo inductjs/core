@@ -47,7 +47,11 @@ export class ControllerResult<T> implements IControllerResult<T> {
             data: this.data,
             info: this.info,
             error: this.opts?.debug
-                ? {name: this.error?.name, message: this.error?.message, stack: this.error?.stack}
+                ? {
+                      name: this.error?.name,
+                      message: this.error?.message,
+                      stack: this.error?.stack,
+                  }
                 : this.error?.name,
             validationErrors: this.validationErrors,
         };

@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any  */
 /* eslint-disable no-invalid-this */
 import knex from "knex";
-import {IInductSqlModel, Constructor} from "./types/model-schema";
 import {validate, ValidationError} from "class-validator";
-import {BaseOpts, InductSQLOpts} from "./types/induct";
-import {QueryError} from "./types/error-schema";
+import {BaseOpts, InductSQLOpts} from "../types/induct";
+import {QueryError} from "../types/error-schema";
+import InductAdapter from "./abstract-adapter";
 
 /**
  * Base class for CRUD operation APIs. Takes a generic type parameter based on
  */
-export class SqlModelBase<T> implements IInductSqlModel<T> {
+export class SqlAdapter<T> extends InductAdapter<T> {
     protected _con: knex;
     protected _qb: knex.QueryBuilder;
     protected _tableName: string;
@@ -22,6 +22,8 @@ export class SqlModelBase<T> implements IInductSqlModel<T> {
     protected _fields: Array<keyof T> | string;
 
     constructor(values: T, opts: InductSQLOpts<T>) {
+        super();
+
         if (values) this._data = new opts.schema(values); // eslint-disable-line new-cap
 
         this._tableName = opts.tableName;
@@ -29,15 +31,6 @@ export class SqlModelBase<T> implements IInductSqlModel<T> {
         this._idField = opts.idField;
         this._fields = opts.fields ?? "*";
         this._qb = this._con(this._tableName);
-
-        this.findAll = this.findAll.bind(this);
-        this.findOneById = this.findOneById.bind(this);
-        this.create = this.create.bind(this);
-        this.update = this.update.bind(this);
-        this.delete = this.update.bind(this);
-        this.get = this.get.bind(this);
-        this.set = this.set.bind(this);
-        this.exists = this.exists.bind(this);
     }
 
     // public async destroyConnection(): Promise<void> {
@@ -161,4 +154,4 @@ export class SqlModelBase<T> implements IInductSqlModel<T> {
     }
 }
 
-export default SqlModelBase;
+export default SqlAdapter;
