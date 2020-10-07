@@ -1,11 +1,15 @@
 import knex from "knex";
-import {InductModel} from "../base-model";
 import {ValidationError} from "class-validator";
+import {BaseOpts, InductModel, InductModelOpts} from "./induct";
+import {getModelForClass} from "@typegoose/typegoose";
+import SqlModelBase from "../sql-model-base";
 
 export enum FunctionType {
     Query = "query",
     Mutation = "mutation",
 }
+
+export type Constructor<T> = new (...any: any[]) => T;
 
 export type ModelFactory<T> = (
     values: T,
@@ -17,11 +21,7 @@ export type ModelFunction<T> = () => Promise<
     T | T[] | number | ValidationResult<T>
 >;
 
-export type ModelConstructor<T> = new (
-    val: T,
-    opts: InductModelOpts<T>,
-    ...args: unknown[]
-) => InductModel<T>;
+export type ModelConstructor<T> = new (...any: any[]) => InductModel<T>;
 
 /** Mark types that do not match the condition type (2nd parameter) as 'never' */
 type SubType<Base, Condition> = Pick<
@@ -40,8 +40,6 @@ export type FunctionOfModel<T> = keyof Omit<
     InternalFunctions
 >;
 
-export type SchemaConstructor<T> = new (val: T) => T;
-
 export type InternalFunctions =
     | "commitTransaction"
     | "destroyConnection"
@@ -53,59 +51,9 @@ export type InternalFunctions =
     | "get"
     | "set";
 
-/** String type that lists the possible functions contained in the model. Used to provide typing to the parameters of generation functions */
-export type BaseModelFunction =
-    | "commitTransaction"
-    | "create"
-    | "delete"
-    | "destroyConnection"
-    | "startTransaction"
-    | "rollbackTransaction"
-    | "findOneById"
-    | "findAll"
-    | "update"
-    | "validate";
+export type TypegooseModel = ReturnType<typeof getModelForClass>;
 
-export type HandlerFunction =
-    | "findAll"
-    | "findOneById"
-    | "create"
-    | "delete"
-    | "update";
-
-export interface InductModelOpts<T> {
-    /** Knex database connection object for the model to use */
-    connection: knex;
-    /** Class that defines the object schema for this model */
-    schema: new (values: T) => T;
-    /** Name of the table that this model should expose. Should include the table schema if applicable. */
-    tableName: string;
-    /** Field used as the id URL parameter to perform requests on */
-    idField: keyof T;
-    /** Set to true for bulk operations accross the whole table, skipping individual schema validation.  */
-    all?: boolean;
-    /** Set to true to validate input data on model instantiation */
-    validate?: boolean;
-    /** [NOT IMPLEMENTED] Array of field names that can be used as a lookup. For each entry in this array, a GET route is generated. */
-    fields?: Array<keyof T>;
-    /** Custom model class */
-    customModel?: ModelConstructor<T>;
-}
-
-export interface IInductModel<T> {
-    /** Access the current open transaction to query the database */
-    trx: knex.Transaction;
-    /** True if the validation function has run on this model instance */
-    validated: boolean;
-    /** The options provided to the model on instantiation */
-    options: InductModelOpts<T>;
-    /** Name of the table/view that this model should expose. Should include the table schema if applicable. */
-    table_name: string;
-    /** Field used as the id URL parameter to perform requests on */
-    id_field: keyof T;
-    /** The actual data stored in the model */
-    model: T;
-
+export interface IInductSqlModel<T> {
     /** [TRANSACTIONS NOT IMPLEMENTED] Starts a knex transaction and stores this in the class instance */
     // startTransaction: () => Promise<knex.Transaction>;
     /** [TRANSACTIONS NOT IMPLEMENTED] Destroys the current knex transaction */

@@ -1,0 +1,24 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "",
+    "FUNCTIONS_WORKER_RUNTIME": "node"
+  },
+  "functionTimeout": "00:10:00",
+  "http": {
+    "routePrefix": "api/vehicle",
+    "maxOutstandingRequests": 20,
+    "maxConcurrentRequests": 10,
+    "dynamicThrottlesEnabled": false
+  },
+  "logger": {
+    "categoryFilter": {
+      "defaultLevel": "Information",
+      "categoryLevels": {
+        "Host": "Error",
+        "Function": "Error",
+        "Host.Aggregator": "Information"
+      }
+    }
+  }
+}

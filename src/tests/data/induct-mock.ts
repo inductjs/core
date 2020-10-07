@@ -1,27 +1,26 @@
 import {
-    InductModelOpts,
-    ModelFactory,
-    SchemaConstructor,
     ModelConstructor,
     FunctionOfInductModel,
+    ModelFactory,
+    Constructor,
 } from "../../types/model-schema";
-import {InductModel} from "../../base-model";
+import {InductModelOpts, InductModel} from "../../types/induct";
 import {RequestHandler, Router} from "express";
 import {AzureFunction} from "@azure/functions";
 import knex from "knex";
 
 export interface TestInduct<T> {
-    connection: knex;
-    idField: keyof T;
-    idParam: string;
-    fieldsList: Array<keyof T>;
-    tableName: string;
-    validate: boolean;
+    _connection: knex;
+    _idField: keyof T;
+    _idParam: string;
+    _fieldsList: Array<keyof T>;
+    _tableName: string;
+    _validate: boolean;
 
-    schema: SchemaConstructor<T>;
-    _model: ModelConstructor<T>;
+    _schema: Constructor<T>;
+    _model: Constructor<T>;
 
-    modelFactory: ModelFactory<T>;
+    _modelFactory: ModelFactory<T>;
 
     _copyOpts: (overrides: Partial<InductModelOpts<T>>) => InductModelOpts<T>;
     model: (data: T, opts?: InductModelOpts<T>) => Promise<InductModel<T>>;
@@ -41,6 +40,6 @@ export interface TestInduct<T> {
         modelFn: string,
         opts?: Partial<InductModelOpts<T>>
     ) => RequestHandler;
-    azureFunctionsRouter(opts?: Partial<InductModelOpts<T>>): AzureFunction;
+    azureHttpTrigger(opts?: Partial<InductModelOpts<T>>): AzureFunction;
     router: () => Router;
 }

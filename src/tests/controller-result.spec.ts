@@ -1,6 +1,6 @@
 import {HttpStatusCode} from "azure-functions-ts-essentials";
 import ControllerResult from "../express/controller-result";
-import {mockResponse, TestError} from "./data/mocks";
+import {mockResponse, TestError} from "./data/fixtures";
 
 const mockResult1 = {
     status: HttpStatusCode.OK,
@@ -73,10 +73,15 @@ describe("controller-result", () => {
         expect(res.status).toHaveBeenCalledWith(
             HttpStatusCode.InternalServerError
         );
+        
         expect(res.json).toHaveBeenCalledWith({
             data: undefined,
             info: undefined,
-            error: mockResult2.error.message,
+            error: {
+                message: mockResult2.error.message,
+                name: mockResult2.error.name,
+                stack: mockResult2.error.stack
+            },
             validationErrors: undefined,
         });
     });

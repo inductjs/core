@@ -43,7 +43,7 @@ Initialize Induct and provide a database object, an object schema, the table to 
 
 ```javascript
 // router.js
-import {InductExpress} from "@yeseh/induct-core";
+import {InductExpress} from "@inductjs/core";
 
 const induct = new InductExpress({
     connection: knex, // Knex connection object to your database
@@ -91,7 +91,7 @@ The InductAzure class exposes a generic router for Azure HTTP trigger functions.
 
 ```javascript
 // index.js
-import {InductAzure} from "@yeseh/induct-core";
+import {InductAzure} from "@inductjs/core";
 
 const induct = new InductAzure({
     connection: db,

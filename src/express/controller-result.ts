@@ -43,12 +43,16 @@ export class ControllerResult<T> implements IControllerResult<T> {
     }
 
     public send(): Response {
-        return this.res.status(this.status).json({
+        const response = {
             data: this.data,
             info: this.info,
-            error: this.opts?.debug ? this.error.message : this.error?.name,
+            error: this.opts?.debug
+                ? {name: this.error?.name, message: this.error?.message, stack: this.error?.stack}
+                : this.error?.name,
             validationErrors: this.validationErrors,
-        });
+        };
+
+        return this.res.status(this.status).json(response);
     }
 
     public redirect(location: string): void {
