@@ -1,4 +1,4 @@
-![CI](https://github.com/Yeseh/induct-core/workflows/CI/badge.svg?branch=master)
+![CI](https://github.com/inductjs/core/workflows/CI/badge.svg?branch=master)
 
 # Induct
 
@@ -15,7 +15,11 @@ Currently supported databases are:
 
 Install Induct Core as a dependency of your project:
 
-> npm install @yeseh/induct-core --save
+> npm install @inductjs/core --save
+
+With yarn:
+
+> yarn add @inductjs/core
 
 ### Define a schema
 
