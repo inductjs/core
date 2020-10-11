@@ -161,7 +161,7 @@ These handlers use the generic InductModel methods to query your database.
 
 ### Use InductModel in custom route handler
 
-You can use Inducts generic model class in your own route handlers as follows:
+You can use Inducts basic model in your own route handlers as follows:
 
 ```javascript
 import {ok, notFound, InductSQL} from "@inductjs/core";
@@ -195,6 +195,8 @@ Lets say we want to create a GET route that returns the current version of the p
 So we create a custom model that extends from InductModel, and add our `getCatalogVersion` and `updateCatalogVersion` methods:
 
 ```javascript
+import {SqlAdapter} from "@inductjs/core"
+
 export class ProductModel extends SqlAdapter {
     constructor(val, opts) {
         super(val, opts);
@@ -245,11 +247,10 @@ A couple of things to take into account when using custom models:
 1. Returning _NULL_ from a model method will result in a `400 BAD_REQUEST` response. Unless this is intended, return a non-null value such as an empty string or array from the model function.
 2. Using arrow functions as class methods is **NOT_SUPPORTED**. Using arrow functions causes these methods to not be bound to the prototype of the custom model, which Induct needs for some runtime validations. Make sure to use ordinary method syntax, and bind methods that need to use the class' _this_ context.
 3. You can provide the `query` and `mutation` with your custom model as a type parameter, which will extend the method names typescript will accept with all the methods of your custom model.
-4. When using extra custom handlers in addition to induct.router, take into account that routes have already been mounted to /:id
-   This can potentially lead to conflicting paths.
+4. When using extra custom handlers in addition to induct.router, take into account that routes have already been mounted to /:id. This can potentially lead to conflicting paths.
 5. Induct exposes several adapters for you to extend from. Use `SqlAdapter` ff building a custom model on an SQL database, or `MongoAdapter` when using MongoDB. Alternatively you can use `InductAdapter` to inherit an abstract class that allows you to customize all the basic methods and add your own.
 
-## Example
+## Examples
 
 Some example configurations can be found [here](https://github.com/inductjs/core/tree/master/examples).
 
