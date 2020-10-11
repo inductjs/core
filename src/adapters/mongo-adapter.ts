@@ -99,7 +99,8 @@ export class MongoAdapter<T> extends InductAdapter<T> {
 
             const updated = await this.mongo.findOneAndUpdate(
                 {[this._idField]: lookupVal},
-                updatedVal
+                updatedVal,
+                {new: true}
             );
 
             return updated;
@@ -110,7 +111,7 @@ export class MongoAdapter<T> extends InductAdapter<T> {
 
     public async delete(
         lookup?: T[keyof T]
-    ): Promise<{ok?: number; n?: number}> {
+    ): Promise<T> {
         try {
             const lookupVal = lookup ?? this._data[this._idField];
 
