@@ -39,7 +39,6 @@ export abstract class Induct<T, M extends InductModel<T>> {
     protected _schema: SchemaConstructor<T>;
     protected _customModel: ModelConstructor<T>;
 
-
     constructor(args: BaseOpts<T>) {
         this._idParam = args.idParam || "id";
         this._fields = args.fields;

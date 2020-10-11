@@ -100,12 +100,16 @@ export class InductServer {
                 fileName.indexOf("-router.ts")
             ) {
                 try {
-                     const route = `/${fileName.split("-")[0]}`;
+                    const route = `/${fileName.split("-")[0]}`;
 
                     const module = await import(fullName);
 
                     if (module) this._app.use(route, module.router);
-                    else throw new TypeError(`[error] could not load router module from ${fullName}.`);
+                    else {
+                        throw new TypeError(
+                            `[error] could not load router module from ${fullName}.`
+                        );
+                    }
 
                     console.log(magenta(`[route] mounted ${route}`));
                 } catch (e) {

@@ -38,7 +38,7 @@ export abstract class InductAdapter<T> {
 
     public abstract async update(value?: Partial<T>): Promise<number>;
 
-    public abstract async delete(lookup?: T[keyof T]): Promise<any>;
+    public abstract async delete(lookup?: T[keyof T]): Promise<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
     public abstract async validate(): Promise<ValidationError[]>;
 }

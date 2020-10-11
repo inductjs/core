@@ -1,6 +1,6 @@
 {
     "name": "@inductjs/core",
-    "version": "0.5.3",
+    "version": "0.5.5",
     "main": "dist/index.js",
     "module": "dist/index.es.js",
     "types": "dist/index.d.ts",

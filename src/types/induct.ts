@@ -7,7 +7,7 @@ import {MongoAdapter} from "../adapters/mongo-adapter";
 
 export type InductModel<T> = SqlAdapter<T> | MongoAdapter<T>;
 export type InductModelOpts<T> = InductSQLOpts<T> | InductMongoOpts<T>;
-export type SchemaConstructor<T> = new (val: T, ...args: any[]) => T;
+export type SchemaConstructor<T> = new (val: T, ...args: any[]) => T; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export interface BaseOpts<T> {
     schema: SchemaConstructor<T>;

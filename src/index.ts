@@ -30,7 +30,6 @@ export {
     InductServer,
     SqlAdapter,
     MongoAdapter,
-
     metaHandler,
     createServer,
 };
