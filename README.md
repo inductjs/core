@@ -1,21 +1,28 @@
-![CI](https://github.com/Yeseh/induct-core/workflows/CI/badge.svg?branch=master)
+<p align="center">
+  <img src="https://imgur.com/JRp3or5.png">
+   </br>
+   </br>
+  <img src="https://github.com/inductjs/core/workflows/CI/badge.svg?branch=master">
+</p>
 
-# Induct
+Induct is an extensible framework built on top of ExpressJS used for quickly creating REST APIs based on an SQL or mongodb database. Usage with typescript is fully supported and encouraged!
 
-Induct provides abstractions over ExpressJS in order to quickly create REST APIs from an existing SQL Database for prototyping purposes. Usage with typescript is fully supported and encouraged!
-
-Induct uses [Knex](https://knexjs.org/) to query databases, and therefore will only support databases supported by Knex.
-
-Currently supported databases are:
+Induct uses [Knex](https://knexjs.org/) to query SQL databases, and therefore will only support databases supported by Knex. Currently Induct supports the following SQL databases:
 
 -   Microsoft SQL Server
 -   MySQL
+
+Other Knex compatible databases (such as Postgres & Oracle)  will be supported in the future.
 
 ## Getting Started
 
 Install Induct Core as a dependency of your project:
 
-> npm install @yeseh/induct-core --save
+> npm install @inductjs/core --save
+
+With yarn:
+
+> yarn add @inductjs/core
 
 ### Define a schema
 
