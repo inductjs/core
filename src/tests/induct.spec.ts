@@ -40,6 +40,26 @@ describe("Induct Base", () => {
         });
     });
 
+    describe("_valuesFromRequest", () => {
+        it("Should correctly return the request's values", () => {
+            const induct = (new InductSQL(
+                mockSqlOpts
+            ) as unknown) as TestInduct<MockSchema>;
+
+            const req = mockRequest();
+
+            req.body.int = 1;
+            req.params.id = "123";
+
+            const values = induct._valuesFromRequest(req as any);
+
+            console.log(values);
+
+            expect(values.string).toBe("123");
+            expect(values.int).toBe(1);
+        });
+    });
+
     describe("model", () => {
         it("Model method should return an instance of the correct model class", async () => {
             const sql = (new InductSQL(mockSqlOpts) as unknown) as TestInduct<
@@ -284,7 +304,7 @@ describe("Induct Base", () => {
             expect(ControllerResult).toHaveBeenCalledWith(expected, undefined);
         });
 
-        it("result should return status 404 if no data can be found", async () => {
+        it("result should return status 204 if no data can be found", async () => {
             const induct = (new InductSQL(
                 mockSqlOpts
             ) as unknown) as TestInduct<MockSchema>;
@@ -301,7 +321,7 @@ describe("Induct Base", () => {
 
             const expected = {
                 res,
-                status: StatusCode.NotFound,
+                status: StatusCode.NoContent,
             };
 
             jest.mock("../express/controller-result.ts", () => {

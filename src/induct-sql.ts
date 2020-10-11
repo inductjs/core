@@ -12,6 +12,7 @@ export class InductSQL<T> extends Induct<T, SqlAdapter<T>> {
 
         this._db = opts.db;
         this._tableName = opts.tableName;
+        this._idField = opts.idField;
 
         this._baseModel = SqlAdapter;
     }

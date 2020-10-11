@@ -94,7 +94,6 @@ export class MockSchema {
     }
 }
 
-
 const mockMongoCon = {
     connection: (): string => "hallo",
     /* eslint-disable-next-line */

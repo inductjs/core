@@ -41,4 +41,5 @@ export interface TestInduct<T> {
     ) => RequestHandler;
     azureHttpTrigger(opts?: Partial<InductModelOpts<T>>): AzureFunction;
     router: () => Router;
+    _valuesFromRequest(request: Request): T;
 }
