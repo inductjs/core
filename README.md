@@ -21,8 +21,8 @@ Install Induct Core as a dependency of your project:
 
 Define a class to provide Induct with type information. Class-validator decorators are supported for incoming schema validation.
 
-```typescript
-// schema.js
+```javascript
+// src/models/user-model.ts
 export class UserSchema {
     @IsUUID()
     uuid: string;
@@ -37,22 +37,44 @@ export class UserSchema {
 }
 ```
 
+If you are using MongoDB define your schema as follows:
+
+```typescript
+// src/models/user-model.ts
+import {prop} from "@inductjs/core"; // re-export from @typegoose/typegoose!
+
+export class UserSchema {
+    prop();
+    uuid: string;
+    prop();
+    name: string;
+    prop();
+    age: number;
+
+    constructor(val: UserSchema) {
+        Object.assign(this, val);
+    }
+}
+```
+
 ### Create an express router
 
 Initialize Induct and provide a database object, an object schema, the table to query, and the field to use as ID parameter.
 
 ```javascript
-// router.js
-import {InductExpress} from "@inductjs/core";
+// src/routers/user-router.js
+import {InductSQL} from "@inductjs/core";
 
-const induct = new InductExpress({
-    connection: knex, // Knex connection object to your database
+const induct = new InductSQL({
+    db: knex, // Knex connection object to your database
     schema: UserSchema,
     tableName: "dbo.users",
     idField: "uuid",
 });
 
-export const inductRouter = induct.router();
+const router = induct.router();
+
+export default router; // make sure you export as default when using InductServer route autoloading!
 ```
 
 This method will create an express router with the following routes:
@@ -65,24 +87,43 @@ This method will create an express router with the following routes:
 
 ### Setup a server
 
-Finally, create an express entry point as usual, and bring in the created router:
+Finally, create a server for your app. This can be an ordinary express entry point, or you can use Induct's server to benefit from a preconfigured express server with autoloading routers like this:
 
 ```javascript
-// index.js
-import {createServer} from "http";
-import express from "express";
-import bodyParser from "body-parser";
+// src/index.js
+import {createServer} from "@inductjs/core";
 
-import {inductRouter} from "./router";
+(async function () {
+    // InductServer auto mounts routers from src/routers ending in -router.{js, ts}
+    const server = await createServer();
 
-const app = express();
+    server.start();
+})();
+```
 
-app.use(bodyParser.json()); // Make sure you are using body parser!
-app.use("/users", inductRouter);
+Or if using MongoDB:
 
-const server = createServer(app);
+```javascript
+import mongoose from "mongoose";
+import {createServer} from "@inductjs/core";
 
-server.listen(3000, () => console.log(`Server is listening on port 3000`));
+// Export mongoose connection object to use in models
+export let con;
+
+(async function (): Promise<void> {
+    await mongoose.connect("<your connection string here>", {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false,
+    });
+
+    con = mongoose.connection;
+
+    // InductServer auto mounts routers from src/routers ending in -router.{js, ts}
+    const server = await createServer();
+
+    server.start();
+})();
 ```
 
 ## Other usage options
@@ -116,11 +157,11 @@ These handlers use the generic InductModel methods to query your database.
 You can use Inducts generic model class in your own route handlers as follows:
 
 ```javascript
-import {ok, notFound} from "@inductjs/core";
+import {ok, notFound, InductSQL} from "@inductjs/core";
 
 // Create an Induct instance
-const induct = new Induct({
-    connection: knex, // Knex connection object to your database
+const induct = new InductSQL({
+    db: knex, // Knex connection object to your database
     schema: UserSchema,
     tableName: "dbo.users",
     idField: "uuid",
@@ -147,7 +188,7 @@ Lets say we want to create a GET route that returns the current version of the p
 So we create a custom model that extends from InductModel, and add our `getCatalogVersion` and `updateCatalogVersion` methods:
 
 ```javascript
-export class ProductModel extends InductModel {
+export class ProductModel extends SqlAdapter {
     constructor(val, opts) {
         super(val, opts);
 
@@ -169,9 +210,9 @@ export class ProductModel extends InductModel {
 Next we can instantiate Induct, and register our methods for use in the generic handlers:
 
 ```typescript
-const induct = new InductExpress({
-    connection: knex,
-    schema: UserSchema,
+const induct = new InductSQL({
+    db: knex,
+    schema: ProductSchema,
     tableName: "dbo.users",
     idField: "uuid",
     // Provide your custom model constructor
@@ -189,7 +230,7 @@ router.patch(
     induct.mutation<ProductModel>("updateCatalogVersion")
 );
 
-export {router};
+export default router;
 ```
 
 A couple of things to take into account when using custom models:
@@ -199,6 +240,7 @@ A couple of things to take into account when using custom models:
 3. You can provide the `query` and `mutation` with your custom model as a type parameter, which will extend the method names typescript will accept with all the methods of your custom model.
 4. When using extra custom handlers in addition to induct.router, take into account that routes have already been mounted to /:id
    This can potentially lead to conflicting paths.
+5. Induct exposes several adapters for you to extend from. Use `SqlAdapter` ff building a custom model on an SQL database, or `MongoAdapter` when using MongoDB. Alternatively you can use `InductAdapter` to inherit an abstract class that allows you to customize all the basic methods.
 
 ## Example
 
