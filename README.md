@@ -28,8 +28,8 @@ With yarn:
 
 Define a class to provide Induct with type information. Class-validator decorators are supported for incoming schema validation.
 
-```typescript
-// schema.js
+```javascript
+// src/models/user-model.ts
 export class UserSchema {
     @IsUUID()
     uuid: string;
@@ -44,22 +44,44 @@ export class UserSchema {
 }
 ```
 
+If you are using MongoDB define your schema as follows:
+
+```typescript
+// src/models/user-model.ts
+import {prop} from "@inductjs/core"; // re-export from @typegoose/typegoose!
+
+export class UserSchema {
+    prop();
+    uuid: string;
+    prop();
+    name: string;
+    prop();
+    age: number;
+
+    constructor(val: UserSchema) {
+        Object.assign(this, val);
+    }
+}
+```
+
 ### Create an express router
 
 Initialize Induct and provide a database object, an object schema, the table to query, and the field to use as ID parameter.
 
 ```javascript
-// router.js
-import {InductExpress} from "@yeseh/induct-core";
+// src/routers/user-router.js
+import {InductSQL} from "@inductjs/core";
 
-const induct = new InductExpress({
-    connection: knex, // Knex connection object to your database
+const induct = new InductSQL({
+    db: knex, // Knex connection object to your database
     schema: UserSchema,
     tableName: "dbo.users",
     idField: "uuid",
 });
 
-export const inductRouter = induct.router();
+const router = induct.router();
+
+export default router; // make sure you export as default when using InductServer route autoloading!
 ```
 
 This method will create an express router with the following routes:
@@ -72,52 +94,43 @@ This method will create an express router with the following routes:
 
 ### Setup a server
 
-Finally, create an express entry point as usual, and bring in the created router:
+Finally, create a server for your app. This can be an ordinary express entry point, or you can use Induct's server to benefit from a preconfigured express server with autoloading routers like this:
 
 ```javascript
-// index.js
-import {createServer} from "http";
-import express from "express";
-import bodyParser from "body-parser";
+// src/index.js
+import {createServer} from "@inductjs/core";
 
-import {inductRouter} from "./router";
+(async function () {
+    // InductServer auto mounts routers from src/routers ending in -router.{js, ts}
+    const server = await createServer();
 
-const app = express();
-
-app.use(bodyParser.json()); // Make sure you are using body parser!
-app.use("/users", inductRouter);
-
-const server = createServer(app);
-
-server.listen(3000, () => console.log(`Server is listening on port 3000`));
+    server.start();
+})();
 ```
 
-## Azure functions router
-
-The InductAzure class exposes a generic router for Azure HTTP trigger functions. The index.js of your function could look like this:
+Or if using MongoDB:
 
 ```javascript
-// index.js
-import {InductAzure} from "@yeseh/induct-core";
+import mongoose from "mongoose";
+import {createServer} from "@inductjs/core";
 
-const induct = new InductAzure({
-    connection: db,
-    schema: UserSchema,
-    idField: "user_uuid",
-    tableName: "SalesLT.Customer",
-});
+// Export mongoose connection object to use in models
+export let con;
 
-const main = async function (context, req) {
-    let res;
+(async function (): Promise<void> {
+    await mongoose.connect("<your connection string here>", {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false,
+    });
 
-    const router = induct.azureFunctionsRouter(opts);
+    con = mongoose.connection;
 
-    res = await router(context, req);
+    // InductServer auto mounts routers from src/routers ending in -router.{js, ts}
+    const server = await createServer();
 
-    context.res = res;
-};
-
-export default main;
+    server.start();
+})();
 ```
 
 ## Other usage options
@@ -132,7 +145,7 @@ You can create generic express route handlers for InductModel methods using the 
 const router = express.Router();
 
 router.get("/", induct.query("findAll"));
-// Second parameter of induct.handler accepts additional options that override class instance options
+// Second parameter accepts additional options that override class instance options
 router.post(`/`, induct.mutation("create", {validate: true}));
 
 router.get(`/:${induct.idParam}`, induct.query("findOneById"));
@@ -151,9 +164,11 @@ These handlers use the generic InductModel methods to query your database.
 You can use Inducts generic model class in your own route handlers as follows:
 
 ```javascript
+import {ok, notFound, InductSQL} from "@inductjs/core";
+
 // Create an Induct instance
-const induct = new Induct({
-    connection: knex, // Knex connection object to your database
+const induct = new InductSQL({
+    db: knex, // Knex connection object to your database
     schema: UserSchema,
     tableName: "dbo.users",
     idField: "uuid",
@@ -166,8 +181,11 @@ export const routeHandler = async (req, res) => {
     const result = await model.findOneById();
 
     // Return a response based on the results of the query
-    if (result && result[0]) return res.status(200).json(result);
-    else return res.status(404).json({message: "Resource not found"});
+    if (result && result[0]) {
+        return ok(res, result);
+    }
+
+    return notFound(res);
 };
 ```
 
@@ -177,7 +195,7 @@ Lets say we want to create a GET route that returns the current version of the p
 So we create a custom model that extends from InductModel, and add our `getCatalogVersion` and `updateCatalogVersion` methods:
 
 ```javascript
-export class ProductModel extends InductModel {
+export class ProductModel extends SqlAdapter {
     constructor(val, opts) {
         super(val, opts);
 
@@ -196,18 +214,12 @@ export class ProductModel extends InductModel {
 }
 ```
 
-A couple of things to take into account when using custom models:
-
-1. Returning _NULL_ from a model method will result in a `400 BAD_REQUEST` response. Unless this is intended, return a non-null value such as an empty string or array from the model function.
-2. Using arrow functions as class methods is \***\*NOT SUPPORTED\*\***. Using arrow functions causes these methods to not be bound to the prototype of the custom model, which Induct needs for some runtime validations. Make sure to use ordinary method syntax, and bind methods that need to use the class' _this_ context.
-3. You can provide the `query` and `mutation` with your custom model as a type parameter, which will extend the method names typescript will accept with all the methods of your custom model.
-
 Next we can instantiate Induct, and register our methods for use in the generic handlers:
 
 ```typescript
-const induct = new InductExpress({
-    connection: knex,
-    schema: UserSchema,
+const induct = new InductSQL({
+    db: knex,
+    schema: ProductSchema,
     tableName: "dbo.users",
     idField: "uuid",
     // Provide your custom model constructor
@@ -225,15 +237,21 @@ router.patch(
     induct.mutation<ProductModel>("updateCatalogVersion")
 );
 
-export {router};
+export default router;
 ```
 
-**NOTE:** When using extra custom handlers in addition to induct.router, take into account that routes have already been mounted to /:id
-This can potentially lead to conflicting paths.
+A couple of things to take into account when using custom models:
+
+1. Returning _NULL_ from a model method will result in a `400 BAD_REQUEST` response. Unless this is intended, return a non-null value such as an empty string or array from the model function.
+2. Using arrow functions as class methods is **NOT_SUPPORTED**. Using arrow functions causes these methods to not be bound to the prototype of the custom model, which Induct needs for some runtime validations. Make sure to use ordinary method syntax, and bind methods that need to use the class' _this_ context.
+3. You can provide the `query` and `mutation` with your custom model as a type parameter, which will extend the method names typescript will accept with all the methods of your custom model.
+4. When using extra custom handlers in addition to induct.router, take into account that routes have already been mounted to /:id
+   This can potentially lead to conflicting paths.
+5. Induct exposes several adapters for you to extend from. Use `SqlAdapter` ff building a custom model on an SQL database, or `MongoAdapter` when using MongoDB. Alternatively you can use `InductAdapter` to inherit an abstract class that allows you to customize all the basic methods.
 
 ## Example
 
-A complete example can be found [here](https://github.com/Yeseh/induct-core-test).
+A complete example can be found [here](https://github.com/inductjs/induct-core-test).
 
 # License
 

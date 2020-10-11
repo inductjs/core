@@ -1,20 +1,8 @@
-export {
-    Controller as InductController,
-    InductControllerOpts,
-    InductControllerBase,
-} from "./types/controller-schema";
-export {ValidationError, QueryError} from "./types/error-schema";
-export {
-    InductModelOpts,
-    IInductModel,
-    ValidationResult,
-    FunctionOfModel,
-    FunctionType,
-    FunctionOfInductModel,
-} from "./types/model-schema";
-export {InductModel} from "./base-model";
-export {IControllerResult, ControllerResult} from "./express/controller-result";
-export {InductConstructorOpts} from "./induct";
+export {InductSQLOpts, InductMongoOpts} from "./types/induct";
+export {ControllerResult} from "./express/controller-result";
+
+export {getModelForClass, prop} from "@typegoose/typegoose";
+
 export {
     ok,
     badRequest,
@@ -25,18 +13,25 @@ export {
     created,
 } from "./express/result-helpers";
 
-import {Induct} from "./induct";
-import {InductExpress} from "./express/induct-express";
-import {InductAzure} from "./azure/induct-azure";
-import {modelFactory} from "./model-factory";
+import {SqlAdapter} from "./adapters/sql-adapter";
+import {MongoAdapter} from "./adapters/mongo-adapter";
+import {InductAdapter} from "./adapters/abstract-adapter";
+
 import {metaHandler} from "./express/meta-handler";
+import {InductServer, createServer} from "./express/server";
 
-export {Induct, InductExpress, InductAzure, modelFactory, metaHandler};
+import {InductSQL} from "./induct-sql";
+import {InductMongo} from "./induct-mongo";
 
-export default {
-    Induct,
-    InductExpress,
-    InductAzure,
-    modelFactory,
+export {
+    InductMongo,
+    InductSQL,
+    InductAdapter,
+    InductServer,
+    SqlAdapter,
+    MongoAdapter,
     metaHandler,
+    createServer,
 };
+
+export default InductSQL;

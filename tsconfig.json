@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
-        "module": "ES2015",
+        "module": "esNext",
         "esModuleInterop": true,
-        "target": "es5",
+        "target": "es6",
         "moduleResolution": "node",
         "experimentalDecorators": true,
         "allowJs": true,
@@ -10,10 +10,10 @@
         "declaration": true,
         "declarationDir": "./dist",
         "outDir": "./dist",
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "emitDecoratorMetadata": true
     },
     "lib": ["es2015", "es2019", "dom"],
     "include": ["src/**/*"],
-    "exclude": ["node_modules", "**/*.spec.ts", "src/tests/**/*", "coverage"],
-    
+    "exclude": ["node_modules", "**/*.spec.ts", "src/tests/**/*", "coverage", "examples/"],
 }

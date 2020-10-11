@@ -1,11 +1,17 @@
 /* eslint-disable new-cap */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* istanbul-ignore */
-import {InductModel} from "../../base-model";
-import {InductModelOpts} from "../../types/model-schema";
+import {
+    InductModelOpts,
+    InductMongoOpts,
+    InductSQLOpts,
+} from "../../types/induct";
 import {IsInt, IsString} from "class-validator";
 import {Response, Request} from "express";
 import mdb from "./mockDb";
 import {HttpRequest, Context} from "@azure/functions";
+import {SqlAdapter} from "../../adapters/sql-adapter";
+import {prop} from "@typegoose/typegoose";
 
 export class TestError extends Error {
     constructor(msg: string) {
@@ -79,19 +85,25 @@ export const mockResponse = (): Response => {
 
 export class MockSchema {
     @IsString()
-    string: unknown;
+    string: string;
     @IsInt()
-    int: unknown;
+    int: number;
 
     constructor(val: MockSchema) {
         Object.assign(this, val);
     }
 }
 
-export class MockCustomModel extends InductModel<MockSchema> {
+const mockMongoCon = {
+    connection: (): string => "hallo",
+    /* eslint-disable-next-line */
+    model: (one: any, two: any): string => "model",
+};
+
+export class MockSQLModel extends SqlAdapter<MockSchema> {
     constructor(
         val: MockSchema,
-        opts: InductModelOpts<MockSchema>,
+        opts: InductSQLOpts<MockSchema>,
         public customProp: string = "This is a custom property"
     ) {
         super(val, opts);
@@ -99,6 +111,17 @@ export class MockCustomModel extends InductModel<MockSchema> {
 
     customMethod(): string {
         return "This is a custom method";
+    }
+}
+
+export class MockMongoSchema {
+    @prop()
+    string: string;
+    @prop()
+    int: number;
+
+    constructor(val: MockMongoSchema) {
+        Object.assign(this, val);
     }
 }
 
@@ -112,10 +135,16 @@ export const mockInvalidData1 = {
     int: 10,
 };
 
-export const mockOpts1: InductModelOpts<MockSchema> = {
-    connection: mdb,
+export const mockSqlOpts: InductSQLOpts<MockSchema> = {
+    db: mdb,
     schema: MockSchema,
     tableName: "table",
+    idField: "string",
+};
+
+export const mockMongoOpts: InductMongoOpts<MockMongoSchema> = {
+    db: mockMongoCon as any,
+    schema: MockMongoSchema,
     idField: "int",
 };
 
@@ -125,16 +154,16 @@ export const mockOptsOver: Partial<InductModelOpts<MockSchema>> = {
 };
 
 export const mockOptsCustomModel: InductModelOpts<MockSchema> = {
-    ...mockOpts1,
-    customModel: MockCustomModel,
+    ...mockSqlOpts,
+    customModel: MockSQLModel,
 };
 
 export const mockOptsValidation: InductModelOpts<MockSchema> = {
-    ...mockOpts1,
+    ...mockSqlOpts,
     validate: true,
 };
 
 export const mockOptsFieldsList: InductModelOpts<MockSchema> = {
-    ...mockOpts1,
+    ...mockSqlOpts,
     fields: ["string"],
 };

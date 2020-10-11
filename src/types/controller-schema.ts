@@ -1,17 +1,11 @@
 import {Request, Response, NextFunction} from "express";
-import {ModelFactory, BaseModelFunction, InductModelOpts} from "./model-schema";
+import {BaseOpts} from "./induct";
 import {ControllerResult} from "../express/controller-result";
 
 export type Controller<T> = (
     response: Response,
-    modelOpts: InductModelOpts<T>
+    modelOpts: BaseOpts<T>
 ) => Promise<ControllerResult<T>>;
-
-export interface InductControllerOpts<T, M> {
-    /** Name of the model function that the controller should call */
-    modelFn: BaseModelFunction;
-    modelFactory: ModelFactory<T>;
-}
 
 export interface InductControllerBase {
     getById: (
