@@ -1,18 +1,13 @@
-require("dotenv").config();
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import { HttpResponse } from "azure-functions-ts-essentials";
-
+import {InductSQL} from "@inductjs/core";
 import { CustomerClass } from "../schema";
-import {InductAzure} from "@inductjs/core";
 import db from "../database";
 
-const main: AzureFunction = async function (
+const main: AzureFunction = async function(
   context: Context,
   req: HttpRequest
 ): Promise<void> {
-  let res: HttpResponse;
-
-  const induct = new InductAzure({
+  const induct = new InductSQL({
     connection: db,
     schema: CustomerClass,
     idField: "CustomerID",
@@ -21,7 +16,7 @@ const main: AzureFunction = async function (
 
   const router = induct.azureHttpTrigger();
 
-  res = await router(context, req);
+  const res = await router(context, req);
 
   context.res = res;
 };

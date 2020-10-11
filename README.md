@@ -85,34 +85,6 @@ const server = createServer(app);
 server.listen(3000, () => console.log(`Server is listening on port 3000`));
 ```
 
-## Azure functions router
-
-The InductAzure class exposes a generic router for Azure HTTP trigger functions. The index.js of your function could look like this:
-
-```javascript
-// index.js
-import {InductAzure} from "@inductjs/core";
-
-const induct = new InductAzure({
-    connection: db,
-    schema: UserSchema,
-    idField: "user_uuid",
-    tableName: "SalesLT.Customer",
-});
-
-const main = async function (context, req) {
-    let res;
-
-    const router = induct.azureFunctionsRouter(opts);
-
-    res = await router(context, req);
-
-    context.res = res;
-};
-
-export default main;
-```
-
 ## Other usage options
 
 Induct exposes several levels of abstraction. The getting started example highlights the quickest way to expose a full table as a REST API, but the individual building blocks can be used separately too.
@@ -125,7 +97,7 @@ You can create generic express route handlers for InductModel methods using the 
 const router = express.Router();
 
 router.get("/", induct.query("findAll"));
-// Second parameter of induct.handler accepts additional options that override class instance options
+// Second parameter accepts additional options that override class instance options
 router.post(`/`, induct.mutation("create", {validate: true}));
 
 router.get(`/:${induct.idParam}`, induct.query("findOneById"));
@@ -144,6 +116,8 @@ These handlers use the generic InductModel methods to query your database.
 You can use Inducts generic model class in your own route handlers as follows:
 
 ```javascript
+import {ok, notFound} from "@inductjs/core";
+
 // Create an Induct instance
 const induct = new Induct({
     connection: knex, // Knex connection object to your database
@@ -159,8 +133,11 @@ export const routeHandler = async (req, res) => {
     const result = await model.findOneById();
 
     // Return a response based on the results of the query
-    if (result && result[0]) return res.status(200).json(result);
-    else return res.status(404).json({message: "Resource not found"});
+    if (result && result[0]) {
+        return ok(res, result);
+    }
+
+    return notFound(res);
 };
 ```
 
@@ -189,12 +166,6 @@ export class ProductModel extends InductModel {
 }
 ```
 
-A couple of things to take into account when using custom models:
-
-1. Returning _NULL_ from a model method will result in a `400 BAD_REQUEST` response. Unless this is intended, return a non-null value such as an empty string or array from the model function.
-2. Using arrow functions as class methods is \***\*NOT SUPPORTED\*\***. Using arrow functions causes these methods to not be bound to the prototype of the custom model, which Induct needs for some runtime validations. Make sure to use ordinary method syntax, and bind methods that need to use the class' _this_ context.
-3. You can provide the `query` and `mutation` with your custom model as a type parameter, which will extend the method names typescript will accept with all the methods of your custom model.
-
 Next we can instantiate Induct, and register our methods for use in the generic handlers:
 
 ```typescript
@@ -221,12 +192,17 @@ router.patch(
 export {router};
 ```
 
-**NOTE:** When using extra custom handlers in addition to induct.router, take into account that routes have already been mounted to /:id
-This can potentially lead to conflicting paths.
+A couple of things to take into account when using custom models:
+
+1. Returning _NULL_ from a model method will result in a `400 BAD_REQUEST` response. Unless this is intended, return a non-null value such as an empty string or array from the model function.
+2. Using arrow functions as class methods is **NOT_SUPPORTED**. Using arrow functions causes these methods to not be bound to the prototype of the custom model, which Induct needs for some runtime validations. Make sure to use ordinary method syntax, and bind methods that need to use the class' _this_ context.
+3. You can provide the `query` and `mutation` with your custom model as a type parameter, which will extend the method names typescript will accept with all the methods of your custom model.
+4. When using extra custom handlers in addition to induct.router, take into account that routes have already been mounted to /:id
+   This can potentially lead to conflicting paths.
 
 ## Example
 
-A complete example can be found [here](https://github.com/Yeseh/induct-core-test).
+A complete example can be found [here](https://github.com/inductjs/induct-core-test).
 
 # License
 
