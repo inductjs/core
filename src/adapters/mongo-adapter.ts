@@ -8,8 +8,8 @@ import InductAdapter from "./abstract-adapter";
 
 export class MongoAdapter<T> extends InductAdapter<T> {
     public mongo: ReturnType<typeof getModelForClass>;
+    protected data: T & {_id?: string};
     protected _db: mongoose.Connection;
-    protected _data: T & {_id?: string};
     protected _idField: keyof (T & {_id?: string});
     protected _fields: Array<keyof T> | keyof T;
     protected _limit: number;
@@ -26,18 +26,18 @@ export class MongoAdapter<T> extends InductAdapter<T> {
             this._db.models[this._schemaName] ??
             this._db.model(this._schemaName, buildSchema(opts.schema));
 
-        this._data = values;
+        this.data = values;
         this._fields = opts.fields;
         this._limit = opts.limit;
         this._validated = false;
     }
 
     public get<K extends keyof T>(prop: K): T[K] {
-        return this._data[prop];
+        return this.data[prop];
     }
 
     public set<K extends keyof T>(prop: K, value: T[K]): void {
-        this._data[prop] = value;
+        this.data[prop] = value;
     }
 
     public async findAll(): Promise<T[]> {
@@ -62,7 +62,7 @@ export class MongoAdapter<T> extends InductAdapter<T> {
 
     public async findOneById(lookup?: T[keyof T]): Promise<T[]> {
         try {
-            const lookupValue = lookup ?? this._data[this._idField];
+            const lookupValue = lookup ?? this.data[this._idField];
 
             const query = this.mongo.findOne({[this._idField]: lookupValue});
 
@@ -80,7 +80,7 @@ export class MongoAdapter<T> extends InductAdapter<T> {
 
     public async create(value?: Partial<T>): Promise<T> {
         try {
-            const insertedValue = value ?? this._data;
+            const insertedValue = value ?? this.data;
 
             const created = await this.mongo.create<T>(
                 insertedValue as CreateQuery<T>
@@ -94,8 +94,8 @@ export class MongoAdapter<T> extends InductAdapter<T> {
 
     public async update(value?: Partial<T>): Promise<number> {
         try {
-            const updatedVal = value ?? this._data;
-            const lookupVal = this._data[this._idField];
+            const updatedVal = value ?? this.data;
+            const lookupVal = this.data[this._idField];
 
             const updated = await this.mongo.findOneAndUpdate(
                 {[this._idField]: lookupVal},
@@ -113,7 +113,7 @@ export class MongoAdapter<T> extends InductAdapter<T> {
         lookup?: T[keyof T]
     ): Promise<T> {
         try {
-            const lookupVal = lookup ?? this._data[this._idField];
+            const lookupVal = lookup ?? this.data[this._idField];
 
             const deleted = await this.mongo.findOneAndDelete({
                 [this._idField]: lookupVal,

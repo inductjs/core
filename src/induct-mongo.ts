@@ -10,9 +10,9 @@ export class InductMongo<T> extends Induct<T, MongoAdapter<T>> {
         super(opts);
 
         this._baseModel = MongoAdapter;
-        this._schema = opts.schema;
         this._db = opts.db;
         this._idField = opts.idField ?? "_id";
+        this._customModel = opts.customModel;
     }
 
     public getMongoModel(

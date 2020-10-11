@@ -41,7 +41,7 @@ describe("Induct Base", () => {
     });
 
     describe("_valuesFromRequest", () => {
-        it("Should correctly return the request's values", () => {
+        it("Should correctly parse the request values", () => {
             const induct = (new InductSQL(
                 mockSqlOpts
             ) as unknown) as TestInduct<MockSchema>;
@@ -52,8 +52,6 @@ describe("Induct Base", () => {
             req.params.id = "123";
 
             const values = induct._valuesFromRequest(req as any);
-
-            console.log(values);
 
             expect(values.string).toBe("123");
             expect(values.int).toBe(1);

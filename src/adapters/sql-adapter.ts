@@ -15,7 +15,6 @@ export class SqlAdapter<T> extends InductAdapter<T> {
     protected _tableName: string;
     protected _idField: keyof T;
     protected _trx: knex.Transaction;
-    protected _data: T;
     protected _options: BaseOpts<T>;
     protected _trxProvider: any;
     protected _validated: boolean;
@@ -24,7 +23,7 @@ export class SqlAdapter<T> extends InductAdapter<T> {
     constructor(values: T, opts: InductSQLOpts<T>) {
         super();
 
-        if (values) this._data = new opts.schema(values); // eslint-disable-line new-cap
+        if (values) this.data = new opts.schema(values); // eslint-disable-line new-cap
 
         this._tableName = opts.tableName;
         this._con = opts.db;
@@ -55,12 +54,12 @@ export class SqlAdapter<T> extends InductAdapter<T> {
 
     /* istanbul ignore next */
     public get<K extends keyof T>(prop: K): T[K] {
-        return this._data[prop];
+        return this.data[prop];
     }
 
     /* istanbul ignore next */
     public set<K extends keyof T>(prop: K, value: T[K]): void {
-        this._data[prop] = value;
+        this.data[prop] = value;
     }
 
     /* istanbul ignore next */
@@ -89,7 +88,7 @@ export class SqlAdapter<T> extends InductAdapter<T> {
     /* istanbul ignore next */
     public async findOneById(lookup?: T[keyof T]): Promise<T[]> {
         try {
-            const lookupValue = lookup ?? this._data[this._idField];
+            const lookupValue = lookup ?? this.data[this._idField];
 
             const result = await this._qb
                 .select(this._fields)
@@ -106,11 +105,11 @@ export class SqlAdapter<T> extends InductAdapter<T> {
     /* istanbul ignore next */
     public async create(value?: Partial<T>): Promise<T> {
         try {
-            const insertedValue = value ?? this._data;
+            const insertedValue = value ?? this.data;
 
             await this._qb.insert(insertedValue);
 
-            return this._data;
+            return this.data;
         } catch (e) {
             throw new QueryError(`InductModel.create failed with error ${e}`);
         }
@@ -119,8 +118,8 @@ export class SqlAdapter<T> extends InductAdapter<T> {
     /* istanbul ignore next */
     public async update(value?: Partial<T>): Promise<number> {
         try {
-            const updatedVal = value ?? this._data;
-            const lookupVal = this._data[this._idField];
+            const updatedVal = value ?? this.data;
+            const lookupVal = this.data[this._idField];
 
             const result = await this._qb
                 .update(updatedVal)
@@ -135,7 +134,7 @@ export class SqlAdapter<T> extends InductAdapter<T> {
     /* istanbul ignore next */
     public async delete(lookup?: T[keyof T]): Promise<T[keyof T]> {
         try {
-            const lookupVal = lookup ?? this._data[this._idField];
+            const lookupVal = lookup ?? this.data[this._idField];
 
             await this._qb.where(this._idField, lookupVal).del();
 
@@ -147,7 +146,7 @@ export class SqlAdapter<T> extends InductAdapter<T> {
 
     /* istanbul ignore next */
     public async validate(): Promise<ValidationError[]> {
-        const result = await validate(this._data);
+        const result = await validate(this.data);
         this._validated = true;
 
         return result;

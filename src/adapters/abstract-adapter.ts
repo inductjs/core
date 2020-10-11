@@ -1,7 +1,7 @@
 import {ValidationError} from "class-validator";
 
 export abstract class InductAdapter<T> {
-    protected _data: T;
+    protected data: T;
 
     constructor() {
         this.findAll = this.findAll.bind(this);
@@ -16,12 +16,12 @@ export abstract class InductAdapter<T> {
 
     /* istanbul ignore next */
     public get<K extends keyof T>(prop: K): T[K] {
-        return this._data[prop];
+        return this.data[prop];
     }
 
     /* istanbul ignore next */
     public set<K extends keyof T>(prop: K, value: T[K]): void {
-        this._data[prop] = value;
+        this.data[prop] = value;
     }
 
     /* istanbul ignore next */

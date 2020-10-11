@@ -19,6 +19,7 @@ import {
     InductModel,
     BaseOpts,
     OverridableOpts,
+    SchemaConstructor,
 } from "./types/induct";
 import {ValidationError} from "./types/error-schema";
 import {Context, HttpRequest, AzureFunction} from "@azure/functions";
@@ -31,10 +32,13 @@ export abstract class Induct<T, M extends InductModel<T>> {
     protected _idField: keyof T | keyof (T & {_id: string});
     protected _fields: Array<keyof T>;
     protected _validate: boolean;
-    protected _resultOpts: ControllerResultOpts;
-    protected _baseModel: Constructor<M>;
-    protected _schema: Constructor<T>;
     protected _db: Knex | mongoose.Connection;
+    protected _resultOpts: ControllerResultOpts;
+
+    protected _baseModel: Constructor<M>;
+    protected _schema: SchemaConstructor<T>;
+    protected _customModel: ModelConstructor<T>;
+
 
     constructor(args: BaseOpts<T>) {
         this._idParam = args.idParam || "id";
@@ -42,6 +46,7 @@ export abstract class Induct<T, M extends InductModel<T>> {
         this._validate = args.validate;
         this._resultOpts = args.resultOpts;
         this._schema = args.schema;
+        this._customModel = args.customModel;
     }
 
     public router(): Router {
@@ -255,6 +260,7 @@ export abstract class Induct<T, M extends InductModel<T>> {
             model: thisCopy._model,
             db: thisCopy._db,
             resultOpts: thisCopy._resultOpts,
+            customModel: thisCopy._customModel,
         };
 
         for (const [key, value] of entries) {

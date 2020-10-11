@@ -1,7 +1,5 @@
-export {BaseOpts, InductSQLOpts, InductMongoOpts} from "./types/induct";
-
+export {InductSQLOpts, InductMongoOpts} from "./types/induct";
 export {ControllerResult} from "./express/controller-result";
-export {BaseOpts as InductBaseOpts} from "./types/induct";
 
 export {getModelForClass, prop} from "@typegoose/typegoose";
 
@@ -29,10 +27,11 @@ export {
     InductMongo,
     InductSQL,
     InductAdapter,
+    InductServer,
     SqlAdapter,
     MongoAdapter,
+
     metaHandler,
-    InductServer,
     createServer,
 };
 

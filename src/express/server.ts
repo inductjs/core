@@ -1,8 +1,9 @@
-import {green, magenta} from "chalk";
+import {green, magenta, red} from "chalk";
 import path from "path";
 import bodyParser from "body-parser";
 import fs from "fs";
 import express, {Application} from "express";
+import {metaHandler} from "./meta-handler";
 
 /* eslint-disable no-invalid-this */
 
@@ -80,7 +81,7 @@ export class InductServer {
     }
 
     mountRoutes = async (dirName?: string): Promise<void> => {
-        const folder = dirName ?? "routers";
+        const folder = dirName ?? "src/routers";
         const dir = path.join(process.cwd(), folder);
 
         const files = fs.readdirSync(dir);
@@ -98,15 +99,22 @@ export class InductServer {
                 fileName.indexOf("-router.js") ||
                 fileName.indexOf("-router.ts")
             ) {
-                const route = `/${fileName.split("-")[0]}`;
+                try {
+                     const route = `/${fileName.split("-")[0]}`;
 
-                const module = await import(fullName);
+                    const module = await import(fullName);
 
-                this._app.use(route, module.router);
+                    if (module) this._app.use(route, module.router);
+                    else throw new TypeError(`[error] could not load router module from ${fullName}.`);
 
-                console.log(magenta(`[route] mounted ${route}`));
+                    console.log(magenta(`[route] mounted ${route}`));
+                } catch (e) {
+                    console.log(red(e));
+                }
             }
         }
+
+        this._app.get("/meta", metaHandler(this._app as express.Express));
     };
 
     /**
