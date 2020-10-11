@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {ValidationError} from "class-validator";
 import {InductModel, InductModelOpts} from "./induct";
 import {getModelForClass} from "@typegoose/typegoose";

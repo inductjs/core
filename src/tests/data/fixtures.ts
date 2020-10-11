@@ -10,7 +10,7 @@ import {IsInt, IsString} from "class-validator";
 import {Response, Request} from "express";
 import mdb from "./mockDb";
 import {HttpRequest, Context} from "@azure/functions";
-import {SqlModelBase} from "../..";
+import {SqlAdapter} from "../../adapters/sql-adapter";
 import {prop} from "@typegoose/typegoose";
 
 export class TestError extends Error {
@@ -94,12 +94,14 @@ export class MockSchema {
     }
 }
 
+
 const mockMongoCon = {
     connection: (): string => "hallo",
+    /* eslint-disable-next-line */
     model: (one: any, two: any): string => "model",
 };
 
-export class MockSQLModel extends SqlModelBase<MockSchema> {
+export class MockSQLModel extends SqlAdapter<MockSchema> {
     constructor(
         val: MockSchema,
         opts: InductSQLOpts<MockSchema>,

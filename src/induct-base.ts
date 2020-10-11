@@ -28,7 +28,7 @@ import Knex from "knex";
 
 export abstract class Induct<T, M extends InductModel<T>> {
     protected _idParam: string;
-    protected _idField: keyof T | keyof (T & {_id: string})
+    protected _idField: keyof T | keyof (T & {_id: string});
     protected _fields: Array<keyof T>;
     protected _validate: boolean;
     protected _resultOpts: ControllerResultOpts;
@@ -240,7 +240,7 @@ export abstract class Induct<T, M extends InductModel<T>> {
     ): InductModelOpts<T> {
         const entries = Object.entries(overrides);
 
-        const thisCopy = JSON.parse(JSON.stringify(this)); // eslint-disable-line @typescript-eslint/no-explicit-any
+        const thisCopy = Object.assign({}, this) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
         const opts = {
             schema: thisCopy._schema,

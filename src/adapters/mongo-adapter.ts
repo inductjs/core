@@ -108,10 +108,11 @@ export class MongoAdapter<T> extends InductAdapter<T> {
         }
     }
 
-    public async delete(lookup?: T[keyof T]): Promise<{ ok?: number; n?: number }> {
+    public async delete(
+        lookup?: T[keyof T]
+    ): Promise<{ok?: number; n?: number}> {
         try {
             const lookupVal = lookup ?? this._data[this._idField];
-
 
             const deleted = await this.mongo.findOneAndDelete({
                 [this._idField]: lookupVal,
