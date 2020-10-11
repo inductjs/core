@@ -109,6 +109,10 @@ export abstract class Induct<T, M extends InductModel<T>> {
                         return badRequest(res, this._resultOpts);
                     }
 
+                    if (modelFn === "findAll") {
+                        return noContent(res, this._resultOpts);
+                    }
+
                     return notFound(res, this._resultOpts);
                 }
 

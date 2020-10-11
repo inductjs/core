@@ -54,7 +54,7 @@ export class MongoAdapter<T> extends InductAdapter<T> {
 
             const result = await query;
 
-            return result;
+            return result || [];
         } catch (e) {
             console.log(e);
         }
@@ -72,7 +72,7 @@ export class MongoAdapter<T> extends InductAdapter<T> {
 
             const result = await query;
 
-            return result;
+            return result || [];
         } catch (e) {
             throw new QueryError(`InductModel.create failed with error ${e}`);
         }
