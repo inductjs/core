@@ -207,9 +207,9 @@ export class ProductModel extends SqlAdapter {
     }
 
     updateCatalogVersion() {
-        // The values from the request body are stored in this.model
-        // So this.model.CatalogVersion is equivalent to req.body.CatalogVersion
-        return `Catalog version updated to: ${this.model.CatalogVersion}`;
+        // The values from the request body are stored in this.data
+        // So this.data.CatalogVersion is equivalent to req.body.CatalogVersion
+        return `Catalog version updated to: ${this.data.CatalogVersion}`;
     }
 }
 ```
@@ -247,11 +247,11 @@ A couple of things to take into account when using custom models:
 3. You can provide the `query` and `mutation` with your custom model as a type parameter, which will extend the method names typescript will accept with all the methods of your custom model.
 4. When using extra custom handlers in addition to induct.router, take into account that routes have already been mounted to /:id
    This can potentially lead to conflicting paths.
-5. Induct exposes several adapters for you to extend from. Use `SqlAdapter` ff building a custom model on an SQL database, or `MongoAdapter` when using MongoDB. Alternatively you can use `InductAdapter` to inherit an abstract class that allows you to customize all the basic methods.
+5. Induct exposes several adapters for you to extend from. Use `SqlAdapter` ff building a custom model on an SQL database, or `MongoAdapter` when using MongoDB. Alternatively you can use `InductAdapter` to inherit an abstract class that allows you to customize all the basic methods and add your own.
 
 ## Example
 
-A complete example can be found [here](https://github.com/inductjs/induct-core-test).
+Some example configurations can be found [here](https://github.com/inductjs/core/tree/master/examples).
 
 # License
 
