@@ -187,6 +187,12 @@ export const routeHandler = async (req, res) => {
 
     return notFound(res);
 };
+
+// Create a router and mount custom handler
+const router = induct.router()
+router.get("/custom/:id", routeHandler)
+
+export default router;
 ```
 
 ### Using custom models
