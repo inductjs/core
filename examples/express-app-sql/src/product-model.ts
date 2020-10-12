@@ -34,11 +34,11 @@ export class ProductModel extends SqlAdapter<ProductSchema> {
     this.updateCatalogVersion = this.updateCatalogVersion.bind(this);
   }
 
-  getCatalogVersion() {
+  getCatalogVersion(): string {
     return "1.0";
   };
 
-  updateCatalogVersion() {
+  updateCatalogVersion(): string {
     // The values from the request body are stored in this._data
     return `Catalog version updated to: ${this._data.CatalogVersion}`;
   };

@@ -1,9 +1,15 @@
+import {SqlController} from "./sql-controller";
 import knex from "knex";
-import {ModelConstructor} from "./model-schema";
+import {ModelConstructor} from "../types/model-schema";
 import mongoose from "mongoose";
 import {ControllerResultOpts} from "../express/controller-result";
 import {SqlAdapter} from "../adapters/sql-adapter";
 import {MongoAdapter} from "../adapters/mongo-adapter";
+import {MongoController} from "./mongo-controller";
+
+export type InductController<T> = SqlController<T> | MongoController<T>;
+export type ControllerMap<T> = Map<string, InductController<T>>
+
 
 export type InductModel<T> = SqlAdapter<T> | MongoAdapter<T>;
 export type InductModelOpts<T> = InductSQLOpts<T> | InductMongoOpts<T>;
@@ -31,6 +37,12 @@ export interface BaseOpts<T> {
     limit?: number;
     /** Options to transform the HTTP response object */
     resultOpts?: ControllerResultOpts;
+}
+
+export interface InductControllerOpts<T> extends BaseOpts<T> {
+    idField: keyof T | keyof (T & {_id?: string});
+    tableName?: string;
+    db?: knex | mongoose.Connection;
 }
 
 export interface InductSQLOpts<T> extends BaseOpts<T> {

@@ -5,12 +5,13 @@ import {validate, ValidationError} from "class-validator";
 import {BaseOpts, InductSQLOpts} from "../types/induct";
 import {QueryError} from "../types/error-schema";
 import InductAdapter from "./abstract-adapter";
+import { AdapterFunction } from "../types/model-schema";
 
 /**
  * Base class for CRUD operation APIs. Takes a generic type parameter based on
  */
 export class SqlAdapter<T> extends InductAdapter<T> {
-    protected _con: knex;
+    protected _db: knex;
     protected _qb: knex.QueryBuilder;
     protected _tableName: string;
     protected _idField: keyof T;
@@ -26,10 +27,10 @@ export class SqlAdapter<T> extends InductAdapter<T> {
         if (values) this.data = new opts.schema(values); // eslint-disable-line new-cap
 
         this._tableName = opts.tableName;
-        this._con = opts.db;
+        this._db = opts.db;
         this._idField = opts.idField;
         this._fields = opts.fields ?? "*";
-        this._qb = this._con(this._tableName);
+        this._qb = this._db(this._tableName);
     }
 
     // public async destroyConnection(): Promise<void> {
@@ -94,7 +95,7 @@ export class SqlAdapter<T> extends InductAdapter<T> {
                 .select(this._fields)
                 .where(this._idField, lookupValue);
 
-            return result;
+            return result ?? [];
         } catch (e) {
             throw new QueryError(
                 `InductModel.findOneById failed with error ${e}`
@@ -150,6 +151,53 @@ export class SqlAdapter<T> extends InductAdapter<T> {
         this._validated = true;
 
         return result;
+    }
+
+    /** Factory function that can be used to customize the lookup fields used for finding, deleting and updating records */
+    public adapterFunction<K extends keyof T>(lookupProps: K | K[], type: "find" | "delete" | "update", fnName?: string): AdapterFunction<T> {
+        return async (lookup?: T | T[K], newVal?: T): Promise<T[]> => {
+            try {
+                let lookupHash;
+                let lookupVal;
+
+                // Build lookup object
+                if (Array.isArray(lookupProps)) {
+                    lookupHash = lookupProps.map((p: keyof T) => ({
+                        [p as keyof T]: (lookup as T)[p] ?? this.data[p] as T[K],
+                    }))
+                    .reduce((prev, next) => ({...prev, ...next}), {});
+                } else {
+                    lookupVal = lookup ?? this.data[lookupProps];
+                }
+
+                let query: knex.QueryBuilder;
+
+                if (type === "update") {
+                    query = this._qb.update(newVal);
+                } else {
+                    query = this._qb.select(this._fields);
+                }
+
+                // Lookup for multiple values or single value
+                if (lookupHash) {
+                    query.where(lookupHash);
+                } else {
+                    query.where(lookupProps as string, lookupVal);
+                }
+
+                if (type === "delete") {
+                    query.del();
+                }
+
+                const result = await query;
+
+                return result;
+            } catch (e) {
+                throw new QueryError(
+                    `InductModel.${fnName || "customMethod"} failed with error ${e}`
+                );
+            }
+        };
     }
 }
 
