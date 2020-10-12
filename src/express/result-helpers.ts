@@ -19,6 +19,29 @@ export const ok = <T>(
     return new ControllerResult(result, opts).send();
 };
 
+export const unauthorized = <T>(
+    res: Response,
+    opts?: ControllerResultOpts
+): Response => {
+     const result: IControllerResult<T> = {
+        res,
+        status: HttpStatusCode.Unauthorized,
+    };
+
+    return new ControllerResult(result, opts).send();
+};
+
+export const forbidden = <T>(
+    res: Response,
+    opts?: ControllerResultOpts
+): Response => {
+     const result: IControllerResult<T> = {
+        res,
+        status: HttpStatusCode.Forbidden,
+    };
+
+    return new ControllerResult(result, opts).send();
+};
 export const badRequest = <T>(
     res: Response,
     opts?: ControllerResultOpts
