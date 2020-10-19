@@ -4,21 +4,20 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import compression from "compression";
 import fs from "fs";
-import express, {Application} from "express";
+import express, {Application as ExpressApplication} from "express";
 import {metaHandler} from "../express/meta-handler";
-import { InductController, ControllerMap } from "./types";
-import { ApplicationOpts } from "./app-schema";
+import { Controller } from "./induct-controller";
+import { ApplicationOpts } from "./types/ApplicationOptions";
 import { mongoose } from "@typegoose/typegoose";
 import Knex from "knex";
 
 /* eslint-disable no-invalid-this */
-
-export class InductApp {
+export class Application {
     private opts: ApplicationOpts;
     private _port: string | number;
-    private _express: Application;
-    private _contFolder: string;
-    private _controllers: ControllerMap<any>;
+    private _express: ExpressApplication;
+    private _contFolder: string | false;
+    private _controllers: Array<Controller<any>>;
     private _rootNs: string;
     private _db: Knex | mongoose.Connection;
 
@@ -32,15 +31,19 @@ export class InductApp {
         this._express = express();
         this._port = opts.port || 3000;
         this._rootNs = opts.rootNamespace || "api";
-        this._contFolder = opts.controllerFolder || "src/controllers";
+        this._contFolder = opts.controllerLoader !== false
+            ? opts.controllerLoader || "src/controllers"
+            : false;
+        this._controllers = [];
+        this._db = opts.db;
 
         this._config();
 
         // this.errorHandling();
     }
 
-    get controllers(): ControllerMap<any> {
-        return this.controllers;
+    get controllers(): Controller<any>[] {
+        return this._controllers;
     }
 
     /**
@@ -49,9 +52,9 @@ export class InductApp {
      * Mounts middleware functions to the express application
      */
     private _config(): void {
+        this._express.use(cookieParser());
         this._express.use(bodyParser.json({limit: "50mb"}));
         this._express.use(bodyParser.urlencoded({extended: false, limit: "50mb"}));
-        this._express.use(cookieParser());
         this._express.use(compression());
     }
 
@@ -87,13 +90,15 @@ export class InductApp {
         });
     }
 
-    public addController = (ctrlr: InductController<any>): void => {
-        this._controllers.set(ctrlr.basePath, ctrlr);
+    public addController = (ctrlr: Controller<any>): void => {
+        if (!ctrlr.db) ctrlr.db = this._db;
+
+        this._controllers.push(ctrlr);
     }
 
     /** Loads all the induct controller files from the given directory. Default: src/controllers */
     public loadControllerFiles = async (): Promise<void> => {
-        const fullDir = path.join(process.cwd(), this._contFolder);
+        const fullDir = path.join(process.cwd(), this._contFolder as string);
 
         const files = fs.readdirSync(fullDir);
 
@@ -107,19 +112,17 @@ export class InductApp {
                 fileName.indexOf(".ts")
             ) {
                 try {
-                    const controller = await import(fullName) as InductController<any>;
+                    const controller = await import(fullName);
 
-                    const route = `/${controller.basePath || fileName.split(".")[0]}`;
-
-                    if (controller) {
-                        this._express.use(route, controller.router);
-                    } else {
+                    if (!controller) {
                         throw new TypeError(
-                            `[error] could not load router module from ${fullName} on path ${route}.`
+                            `[error] could not load router module from ${fullName}`
                         );
+                    } else {
+                        this._controllers.push(controller.default);
                     }
 
-                    console.log(magenta(`[route] mounted ${route}`));
+                    console.log(magenta(`[route] mounted /${controller.basePath || fileName.split(".")[0]}`));
                 } catch (e) {
                     console.log(red(e));
                 }
@@ -136,7 +139,10 @@ export class InductApp {
             this._express.use(`/${this._rootNs}/${c.basePath}`, c.router);
         });
 
-        this._express.get("/meta", metaHandler(this._express as express.Express));
+        // Add meta route if router has routes
+        if (this._express._router) {
+            this._express.get("/meta", metaHandler(this._express as express.Express));
+        }
     }
 
     /**
@@ -159,10 +165,10 @@ export class InductApp {
     }
 }
 
-export const induct = async (opts: ApplicationOpts): Promise<InductApp> => {
-    const server = new InductApp(opts);
+export const induct = async (opts: ApplicationOpts): Promise<Application> => {
+    const server = new Application(opts);
 
-    if (opts.controllerFolder) await server.loadControllerFiles();
+    if (opts.controllerLoader !== false) await server.loadControllerFiles();
     if (opts.serveSPA) server.addStaticPath();
 
     server.mount();
@@ -170,5 +176,5 @@ export const induct = async (opts: ApplicationOpts): Promise<InductApp> => {
     return server;
 };
 
-export default InductApp;
+export default ExpressApplication;
 

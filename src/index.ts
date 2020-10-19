@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-
 export {InductSQLOpts, InductMongoOpts} from "./types/induct";
 export {ControllerResult} from "./express/controller-result";
 
@@ -39,11 +38,12 @@ export {
 };
 
 // v0.6 beta API and Types
-export { ApplicationOpts } from "./v0.6/app-schema";
-export { InductApp, induct } from "./v0.6/induct-app";
-export { controller } from "./v0.6/controller-factory";
-export { InductControllerBase } from "./v0.6/induct-base-controller";
-export { SqlController} from "./v0.6/sql-controller";
-export { MongoController } from "./v0.6/mongo-controller";
+export { ApplicationOpts } from "./v0.6/types/ApplicationOptions";
+export { Application, induct } from "./v0.6/induct-app";
+export { createController } from "./v0.6/controller-factory";
+export { Controller } from "./v0.6/induct-controller";
+export { SqlStrategy} from "./v0.6/strategies/sql-strategy";
+export { MongoStrategy } from "./v0.6/strategies/mongo-strategy";
+export { InductOptions } from "./v0.6/types"
 
 export default InductSQL;

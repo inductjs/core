@@ -1,21 +1,23 @@
-import { mongoose } from "@typegoose/typegoose";
-import { yellow } from "chalk";
-import InductMongo from "../induct-mongo";
-import { InductSQL } from "../induct-sql";
-import { InductMongoOpts, InductSQLOpts } from "./types";
-import { InductControllerOpts } from "./types";
+import { MongoStrategy } from "./strategies/mongo-strategy";
+import { SqlStrategy } from "./strategies/sql-strategy";
+import { Constructor } from "./types/utilities";
+import { InductOptions } from "./types";
+import {Controller} from "./induct-controller";
+import { Strategy } from "./strategies/abstract-strategy";
 
-/** Instantiates and returns either an InductSQL or InductMongo controller based on the provided options */
-export const controller = <T>(opts: InductControllerOpts<T>): InductSQL<T> | InductMongo<T> => {
-    const {db} = opts;
+/** Instantiates an Induct Controller using the given strategy */
+export const createController = <T>(
+    path: string, 
+    strategy: Constructor<Strategy<T>>, 
+    opts: InductOptions<T>): Controller<T> => {
 
-    if (db instanceof mongoose.Connection) {
-        return new InductMongo(opts as InductMongoOpts<T>);
-    } else if (opts.tableName) {
-        return new InductSQL(opts as InductSQLOpts<T>) as InductSQL<T>;
-    } else {
-        console.log(yellow(`[warning] could not determine controller database type based on provided options. Falling back to InductSQL`));
+    if (strategy === MongoStrategy) {
+        if (!opts.idField) opts.idField = "_id";
+    } 
 
-        return new InductSQL(opts as InductSQLOpts<T>) as InductSQL<T>;
+    else if (strategy === SqlStrategy && !opts.tableName) {
+        throw new TypeError("[error] tableName property missing while using Sql Strategy")
     }
+
+    return new Controller(path, strategy, opts);
 };

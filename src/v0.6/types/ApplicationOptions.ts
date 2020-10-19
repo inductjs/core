@@ -13,7 +13,7 @@ export interface ApplicationOpts {
      * Setting this option enables controller auto-loading
      *
      * Default: src/controllers */
-    controllerFolder?: string;
+    controllerLoader?: string | false;
     /** Port number the server should run on.
      *
      * Default: 3000 */
@@ -35,7 +35,7 @@ export interface ApplicationOpts {
      * Default: false
      *  */
     simpleRbac?: boolean;
-    /** Adds an authentication method to the application the.
+    /** Adds an authentication method to the application.
      *
      * If set, allows the authn: {type} option in controllers and routes
      *
