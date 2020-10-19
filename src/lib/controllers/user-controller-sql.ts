@@ -1,14 +1,14 @@
-import { InductSQLOpts } from "../../types/induct";
-import {SqlAdapter} from "../../adapters/sql-adapter";
 import { AdapterFunction } from "../../types/model-schema";
-import {InductSQL} from "../../induct-sql";
 import {BasicUserSql} from "../schemas/basic-user";
 import Knex from "knex";
+import SqlStrategy from "../../strategies/sql-strategy";
+import { InductOptions } from "../../types/induct";
+import { Controller } from "../../induct-controller";
 
-class UserSQLModel extends SqlAdapter<BasicUserSql> {
+class UserStrategy extends SqlStrategy<BasicUserSql> {
     findOneByEmail: AdapterFunction<BasicUserSql>;
 
-    constructor(val: BasicUserSql, opts: InductSQLOpts<BasicUserSql>) {
+    constructor(val: BasicUserSql, opts: InductOptions<BasicUserSql>) {
         super(val, opts);
 
         this.findOneByEmail = this.adapterFunction("email", "find", "findOneByEmail").bind(this);
@@ -19,13 +19,16 @@ class UserSQLModel extends SqlAdapter<BasicUserSql> {
 export const createUserController = async (db: Knex, tableName?: string) => {
     // Create table if not exists ${tableName}
 
-    const userController = new InductSQL({
+    const userController = new Controller("user", UserStrategy, {
         db,
         tableName: tableName,
         schema: BasicUserSql,
         idField: "userId",
-        customModel: UserSQLModel,
     });
+
+    const router = userController.defaultRouter();
+    router.get("/")
+    
 
     return userController;
 };

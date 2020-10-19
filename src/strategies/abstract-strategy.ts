@@ -10,11 +10,17 @@ export abstract class Strategy<T> {
     }
 
     public abstract async findAll(): Promise<T[]>;
+
     public abstract async findOneById(lookup?: T[keyof T]): Promise<T | T[]>;
+
     public abstract async create(value?: Partial<T>):Promise<T>;
+
     public abstract async update(value?: Partial<T>) :Promise<T | number>;
+
     public abstract async delete(lookup?: T[keyof T]): Promise<any>;
+
     public abstract async validate(value?: T): Promise<any>;
+    
     public abstract async exists<K extends keyof T>(
         field: K,
         value: T[K]

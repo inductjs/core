@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import compression from "compression";
 import fs from "fs";
 import express, {Application as ExpressApplication} from "express";
-import {metaHandler} from "../express/meta-handler";
+import {metaHandler} from "./express/meta-handler";
 import { Controller } from "./induct-controller";
 import { ApplicationOpts } from "./types/ApplicationOptions";
 import { mongoose } from "@typegoose/typegoose";
@@ -165,7 +165,7 @@ export class Application {
     }
 }
 
-export const induct = async (opts: ApplicationOpts): Promise<Application> => {
+export const createApp = async (opts: ApplicationOpts): Promise<Application> => {
     const server = new Application(opts);
 
     if (opts.controllerLoader !== false) await server.loadControllerFiles();

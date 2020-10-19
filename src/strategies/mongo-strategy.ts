@@ -3,11 +3,11 @@ import mongoose from "mongoose";
 import {CreateQuery} from "mongoose";
 import {QueryError} from "../types/error-schema";
 import {ValidationError} from "class-validator";
-import {InductMongoOpts} from "../types/induct";
-import InductAdapter from "./abstract-adapter";
+import { InductOptions } from "../types/induct";
+import {Strategy} from "./abstract-strategy";
 
-export class MongoAdapter<T> extends InductAdapter<T> {
-    public mongo: ReturnType<typeof getModelForClass>;
+export class MongoStrategy<T> extends Strategy<T> {
+    public model: ReturnType<typeof getModelForClass>;
     protected data: T & {_id?: string};
     protected _db: mongoose.Connection;
     protected _idField: keyof (T & {_id?: string});
@@ -16,33 +16,28 @@ export class MongoAdapter<T> extends InductAdapter<T> {
     protected _validated: boolean;
     protected _schemaName: string;
 
-    constructor(values: T, opts: InductMongoOpts<T>) {
+    constructor(values: T, opts: InductOptions<T>) {
         super();
 
         this._schemaName = opts.schema.name;
-        this._db = opts.db;
 
-        this.mongo =
+        this._db = opts.db as mongoose.Connection;;
+
+        this.model =
             this._db.models[this._schemaName] ??
             this._db.model(this._schemaName, buildSchema(opts.schema));
 
         this.data = values;
         this._fields = opts.fields;
         this._limit = opts.limit;
+        this._idField = opts.idField || "_id";
         this._validated = false;
-    }
-
-    public get<K extends keyof T>(prop: K): T[K] {
-        return this.data[prop];
-    }
-
-    public set<K extends keyof T>(prop: K, value: T[K]): void {
-        this.data[prop] = value;
+        
     }
 
     public async findAll(): Promise<T[]> {
         try {
-            const query = this.mongo.find();
+            const query = this.model.find();
 
             if (Array.isArray(this._fields) && this._fields.length > 0) {
                 query.select(this._fields.join(" "));
@@ -56,7 +51,7 @@ export class MongoAdapter<T> extends InductAdapter<T> {
 
             return result || [];
         } catch (e) {
-            console.log(e);
+           throw new QueryError(`InductModel.findAll failed with error ${e}`);
         }
     }
 
@@ -64,7 +59,7 @@ export class MongoAdapter<T> extends InductAdapter<T> {
         try {
             const lookupValue = lookup ?? this.data[this._idField];
 
-            const query = this.mongo.findOne({[this._idField]: lookupValue});
+            const query = this.model.findOne({[this._idField]: lookupValue});
 
             if (Array.isArray(this._fields) && this._fields.length > 0) {
                 query.select(this._fields.join(" "));
@@ -82,7 +77,7 @@ export class MongoAdapter<T> extends InductAdapter<T> {
         try {
             const insertedValue = value ?? this.data;
 
-            const created = await this.mongo.create<T>(
+            const created = await this.model.create<T>(
                 insertedValue as CreateQuery<T>
             );
 
@@ -97,7 +92,7 @@ export class MongoAdapter<T> extends InductAdapter<T> {
             const updatedVal = value ?? this.data;
             const lookupVal = this.data[this._idField];
 
-            const updated = await this.mongo.findOneAndUpdate(
+            const updated = await this.model.findOneAndUpdate(
                 {[this._idField]: lookupVal},
                 updatedVal,
                 {new: true}
@@ -113,7 +108,7 @@ export class MongoAdapter<T> extends InductAdapter<T> {
         try {
             const lookupVal = lookup ?? this.data[this._idField];
 
-            const deleted = await this.mongo.findOneAndDelete({
+            const deleted = await this.model.findOneAndDelete({
                 [this._idField]: lookupVal,
             });
 
@@ -133,7 +128,7 @@ export class MongoAdapter<T> extends InductAdapter<T> {
         value: T[K]
     ): Promise<boolean> {
         try {
-            const result = await this.mongo
+            const result = await this.model
                 .findOne({[field]: value})
                 .select("_id");
 
@@ -144,4 +139,4 @@ export class MongoAdapter<T> extends InductAdapter<T> {
     }
 }
 
-export default MongoAdapter;
+export default MongoStrategy;

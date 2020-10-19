@@ -2,65 +2,38 @@
 /* eslint-disable no-invalid-this */
 import knex from "knex";
 import {validate, ValidationError} from "class-validator";
-import {BaseOpts, InductSQLOpts} from "../types/induct";
+import {InductOptions} from "../types/induct";
 import {QueryError} from "../types/error-schema";
-import InductAdapter from "./abstract-adapter";
 import { AdapterFunction } from "../types/model-schema";
+import {Strategy} from "./abstract-strategy";
+import Knex from "knex";
 
 /**
  * Base class for CRUD operation APIs. Takes a generic type parameter based on
  */
-export class SqlAdapter<T> extends InductAdapter<T> {
+export class SqlStrategy<T> extends Strategy<T> {
     protected _db: knex;
     protected _qb: knex.QueryBuilder;
     protected _tableName: string;
     protected _idField: keyof T;
     protected _trx: knex.Transaction;
-    protected _options: BaseOpts<T>;
+    protected _options: InductOptions<T>;
     protected _trxProvider: any;
     protected _validated: boolean;
     protected _fields: Array<keyof T> | string;
+    protected data: T;
 
-    constructor(values: T, opts: InductSQLOpts<T>) {
+    constructor(values: T, opts: InductOptions<T>) {
         super();
 
         if (values) this.data = new opts.schema(values); // eslint-disable-line new-cap
+        this._db = opts.db as Knex;
 
         this._tableName = opts.tableName;
-        this._db = opts.db;
-        this._idField = opts.idField;
+        this._idField = opts.idField as keyof T;
         this._fields = opts.fields ?? "*";
+
         this._qb = this._db(this._tableName);
-    }
-
-    // public async destroyConnection(): Promise<void> {
-    //     await this._trx.destroy();
-    // }
-
-    // public async startTransaction(): Promise<knex.Transaction> {
-    //     if (this._trx) await this._trx.destroy();
-
-    //     this._trx = await this._con.transaction();
-
-    //     return this._trx;
-    // }
-
-    // public async commitTransaction(): Promise<void> {
-    //     this._trx.commit();
-    // }
-
-    // public async rollbackTransaction(): Promise<void> {
-    //     this._trx.rollback();
-    // }
-
-    /* istanbul ignore next */
-    public get<K extends keyof T>(prop: K): T[K] {
-        return this.data[prop];
-    }
-
-    /* istanbul ignore next */
-    public set<K extends keyof T>(prop: K, value: T[K]): void {
-        this.data[prop] = value;
     }
 
     /* istanbul ignore next */
@@ -153,8 +126,9 @@ export class SqlAdapter<T> extends InductAdapter<T> {
         return result;
     }
 
-    /** Factory function that can be used to customize the lookup fields used for finding, deleting and updating records */
-    public adapterFunction<K extends keyof T>(lookupProps: K | K[], type: "find" | "delete" | "update", fnName?: string): AdapterFunction<T> {
+    public adapterFunction<K extends keyof T>(
+        lookupProps: K | K[], type: "find" | "delete" | "update", 
+        fnName?: string): AdapterFunction<T> {
         return async (lookup?: T | T[K], newVal?: T): Promise<T[]> => {
             try {
                 let lookupHash;
@@ -166,7 +140,8 @@ export class SqlAdapter<T> extends InductAdapter<T> {
                         [p as keyof T]: (lookup as T)[p] ?? this.data[p] as T[K],
                     }))
                     .reduce((prev, next) => ({...prev, ...next}), {});
-                } else {
+                } 
+                else {
                     lookupVal = lookup ?? this.data[lookupProps];
                 }
 
@@ -174,14 +149,16 @@ export class SqlAdapter<T> extends InductAdapter<T> {
 
                 if (type === "update") {
                     query = this._qb.update(newVal);
-                } else {
+                } 
+                else {
                     query = this._qb.select(this._fields);
                 }
 
                 // Lookup for multiple values or single value
                 if (lookupHash) {
                     query.where(lookupHash);
-                } else {
+                } 
+                else {
                     query.where(lookupProps as string, lookupVal);
                 }
 
@@ -201,4 +178,4 @@ export class SqlAdapter<T> extends InductAdapter<T> {
     }
 }
 
-export default SqlAdapter;
+export default SqlStrategy;

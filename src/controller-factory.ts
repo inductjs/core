@@ -1,7 +1,7 @@
 import { MongoStrategy } from "./strategies/mongo-strategy";
 import { SqlStrategy } from "./strategies/sql-strategy";
 import { Constructor } from "./types/utilities";
-import { InductOptions } from "./types";
+import { InductOptions } from "./types/induct";
 import {Controller} from "./induct-controller";
 import { Strategy } from "./strategies/abstract-strategy";
 
