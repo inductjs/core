@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any  */
-/* eslint-disable no-invalid-this */
+/* istanbul ignore file */
+
 import knex from "knex";
 import {validate, ValidationError} from "class-validator";
 import {InductOptions} from "../types/induct";
@@ -8,8 +8,10 @@ import { AdapterFunction } from "../types/model-schema";
 import {Strategy} from "./abstract-strategy";
 import Knex from "knex";
 
+/* eslint-disable @typescript-eslint/no-explicit-any, no-invalid-this  */
+
 /**
- * Base class for CRUD operation APIs. Takes a generic type parameter based on
+ * Induct Strategy for communicating with SQL databases. Uses KnexJS to execute database queries.
  */
 export class SqlStrategy<T> extends Strategy<T> {
     protected _db: knex;
@@ -36,7 +38,6 @@ export class SqlStrategy<T> extends Strategy<T> {
         this._qb = this._db(this._tableName);
     }
 
-    /* istanbul ignore next */
     public async exists<K extends keyof T>(
         column: K,
         value: T[K]
@@ -48,7 +49,6 @@ export class SqlStrategy<T> extends Strategy<T> {
         return exists.length > 0;
     }
 
-    /* istanbul ignore next */
     public async findAll(): Promise<T[]> {
         try {
             const result = await this._qb.select(this._fields);
@@ -59,7 +59,6 @@ export class SqlStrategy<T> extends Strategy<T> {
         }
     }
 
-    /* istanbul ignore next */
     public async findOneById(lookup?: T[keyof T]): Promise<T[]> {
         try {
             const lookupValue = lookup ?? this.data[this._idField];
@@ -76,7 +75,6 @@ export class SqlStrategy<T> extends Strategy<T> {
         }
     }
 
-    /* istanbul ignore next */
     public async create(value?: Partial<T>): Promise<T> {
         try {
             const insertedValue = value ?? this.data;
@@ -89,7 +87,6 @@ export class SqlStrategy<T> extends Strategy<T> {
         }
     }
 
-    /* istanbul ignore next */
     public async update(value?: Partial<T>): Promise<number> {
         try {
             const updatedVal = value ?? this.data;
@@ -105,7 +102,6 @@ export class SqlStrategy<T> extends Strategy<T> {
         }
     }
 
-    /* istanbul ignore next */
     public async delete(lookup?: T[keyof T]): Promise<T[keyof T]> {
         try {
             const lookupVal = lookup ?? this.data[this._idField];
@@ -118,7 +114,6 @@ export class SqlStrategy<T> extends Strategy<T> {
         }
     }
 
-    /* istanbul ignore next */
     public async validate(): Promise<ValidationError[]> {
         const result = await validate(this.data);
         this._validated = true;

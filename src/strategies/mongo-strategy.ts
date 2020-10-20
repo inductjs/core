@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import {getModelForClass, buildSchema} from "@typegoose/typegoose";
 import mongoose from "mongoose";
 import {CreateQuery} from "mongoose";

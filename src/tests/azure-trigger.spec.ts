@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-function-return-type*/
-import {InductSQL} from "../induct-sql";
+import {SqlStrategy} from "../strategies/sql-strategy";
+import {Controller} from "../induct-controller";
 import {
     mockSqlOpts,
     MockSchema,
@@ -11,7 +12,7 @@ import {HttpMethod} from "azure-functions-ts-essentials";
 
 describe("Azure HTTP trigger", () => {
     it("Induct Instance should expose method 'azureHttpTrigger'", () => {
-        const induct = new InductSQL(mockSqlOpts);
+        const induct = new Controller("test", SqlStrategy, mockSqlOpts);
 
         expect(induct.azureHttpTrigger).toBeDefined;
         expect(typeof induct.azureHttpTrigger === "function").toBeTruthy;
@@ -19,9 +20,7 @@ describe("Azure HTTP trigger", () => {
 
     describe("azureHttpTrigger", () => {
         it("should return a function", () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const router = induct.azureHttpTrigger(mockSqlOpts);
 
@@ -29,11 +28,9 @@ describe("Azure HTTP trigger", () => {
         });
 
         it("should return 400 status when model creation fails", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            induct._modelFactory = jest.fn(() => null) as any;
+            induct._initStrategy = jest.fn(() => null) as any;
 
             const req = mockAzReq();
             req.params[induct._idField] = "test";
@@ -48,11 +45,9 @@ describe("Azure HTTP trigger", () => {
         });
 
         it("should return 200 status on GET when id parameter is provided", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     findOneById: jest.fn(() => ["test"]),
                 };
@@ -72,11 +67,9 @@ describe("Azure HTTP trigger", () => {
         });
 
         it("should return 200 status on GET when id parameter is not provided", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     findAll: jest.fn(() => ["test", "test1"]),
                 };
@@ -95,11 +88,9 @@ describe("Azure HTTP trigger", () => {
         });
 
         it("should return 201 status on successful POST", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     create: jest.fn(() => "test"),
                 };
@@ -118,11 +109,9 @@ describe("Azure HTTP trigger", () => {
         });
 
         it("should return 400 status on failed POST", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     create: jest.fn(() => null),
                 };
@@ -141,11 +130,9 @@ describe("Azure HTTP trigger", () => {
         });
 
         it("should return 200 status on successful PATCH", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     update: jest.fn(() => "test"),
                 };
@@ -165,11 +152,9 @@ describe("Azure HTTP trigger", () => {
         });
 
         it("should return 400 status on failed PATCH", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     update: jest.fn(() => null),
                 };
@@ -188,11 +173,9 @@ describe("Azure HTTP trigger", () => {
         });
 
         it("should return 204 status on successful DELETE", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     delete: jest.fn(() => "test"),
                 };
@@ -212,11 +195,9 @@ describe("Azure HTTP trigger", () => {
         });
 
         it("should return 404 status on failed DELETE", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     delete: jest.fn(() => null),
                 };
@@ -236,11 +217,9 @@ describe("Azure HTTP trigger", () => {
         });
 
         it("should return 405 status on other METHOD", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     delete: jest.fn(() => null),
                 };
@@ -260,11 +239,9 @@ describe("Azure HTTP trigger", () => {
         });
 
         it("should return 500 status on other error", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     delete: jest.fn(() => {
                         throw Error();

@@ -1,9 +1,11 @@
 import {
     FunctionOfInductModel,
     ModelFactory,
-    Constructor,
 } from "../../types/model-schema";
-import {InductModelOpts, InductModel} from "../../types/induct";
+import {
+    Constructor
+} from "../../types/utilities";
+import {InductOptions} from "../../types/induct";
 import {RequestHandler, Router} from "express";
 import {AzureFunction} from "@azure/functions";
 import knex from "knex";
@@ -19,27 +21,27 @@ export interface TestInduct<T> {
     _schema: Constructor<T>;
     _model: Constructor<T>;
 
-    _modelFactory: ModelFactory<T>;
+    _initStrategy: ModelFactory<T>;
 
-    _copyOpts: (overrides: Partial<InductModelOpts<T>>) => InductModelOpts<T>;
-    model: (data: T, opts?: InductModelOpts<T>) => Promise<InductModel<T>>;
+    _copyOpts: (overrides: Partial<InductOptions<T>>) => InductOptions<T>;
+    model: (data: T, opts?: InductOptions<T>) => Promise<InductOptions<T>>;
     mutation: (
         modelFn: FunctionOfInductModel<T>,
-        opts?: Partial<InductModelOpts<T>>
+        opts?: Partial<InductOptions<T>>
     ) => RequestHandler;
     query: (
         modelFn: FunctionOfInductModel<T>,
-        opts?: Partial<InductModelOpts<T>>
+        opts?: Partial<InductOptions<T>>
     ) => RequestHandler;
     _createQueryHandler: (
         modelFn: string,
-        opts?: Partial<InductModelOpts<T>>
+        opts?: Partial<InductOptions<T>>
     ) => RequestHandler;
     _createMutationHandler: (
         modelFn: string,
-        opts?: Partial<InductModelOpts<T>>
+        opts?: Partial<InductOptions<T>>
     ) => RequestHandler;
-    azureHttpTrigger(opts?: Partial<InductModelOpts<T>>): AzureFunction;
-    router: () => Router;
+    azureHttpTrigger(opts?: Partial<InductOptions<T>>): AzureFunction;
+    defaultRouter: () => Router;
     _valuesFromRequest(request: Request): T;
 }

@@ -1,7 +1,7 @@
 import {mockData1, MockMongoSchema, mockMongoOpts} from "./data/fixtures";
-import MongoAdapter from "../adapters/mongo-adapter";
+import MongoAdapter from "../strategies/mongo-strategy";
 
-describe("Mongo Adapter", () => {
+describe("Mongo Strategy", () => {
     it("Model instance should expose method 'findAll'", () => {
         const model = new MongoAdapter<MockMongoSchema>(
             mockData1,
@@ -50,25 +50,5 @@ describe("Mongo Adapter", () => {
 
         expect(model.delete).toBeDefined;
         expect(typeof model.delete).toBe("function");
-    });
-
-    it("Model instance should expose method 'get'", () => {
-        const model = new MongoAdapter<MockMongoSchema>(
-            mockData1,
-            mockMongoOpts
-        );
-
-        expect(model.get).toBeDefined;
-        expect(typeof model.get).toBe("function");
-    });
-
-    it("Model instance should expose method 'set'", () => {
-        const model = new MongoAdapter<MockMongoSchema>(
-            mockData1,
-            mockMongoOpts
-        );
-
-        expect(model.set).toBeDefined;
-        expect(typeof model.set).toBe("function");
     });
 });

@@ -100,10 +100,8 @@ export class Application {
     public loadControllerFiles = async (): Promise<void> => {
         const fullDir = path.join(process.cwd(), this._contFolder as string);
 
-        const files = fs.readdirSync(fullDir);
-
-        for (const file of files) {
-            const fullName = path.join(fullDir, file);
+        for (const file of fs.readdirSync(fullDir)) {
+            const fullPath = path.join(fullDir, file);
 
             const fileName = file.toLowerCase();
 
@@ -112,11 +110,11 @@ export class Application {
                 fileName.indexOf(".ts")
             ) {
                 try {
-                    const controller = await import(fullName);
+                    const controller = await import(fullPath);
 
                     if (!controller) {
                         throw new TypeError(
-                            `[error] could not load router module from ${fullName}`
+                            `[error] could not load router module from ${fullPath}`
                         );
                     } else {
                         this._controllers.push(controller.default);
@@ -151,6 +149,8 @@ export class Application {
      * @Remarks Starts an HTTP server on the specified port
      */
     public start(): void {
+        this.mount();
+
         try {
             this._express.listen(this._port, () =>
                 console.log(
@@ -170,8 +170,6 @@ export const createApp = async (opts: ApplicationOpts): Promise<Application> => 
 
     if (opts.controllerLoader !== false) await server.loadControllerFiles();
     if (opts.serveSPA) server.addStaticPath();
-
-    server.mount();
 
     return server;
 };

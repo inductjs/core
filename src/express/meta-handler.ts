@@ -21,18 +21,12 @@ export const metaHandler = (app: Express): Handler => {
         routers: [],
     };
 
-    const routers = app._router.stack?.filter((route) => {
-        return route.name === "router";
-    });
+    const routers = app._router.stack?.filter((r) => r.name === "router");
 
     for (const router of routers) {
-        const routerPath = regExpToPath(router.regexp.source as string);
-
-        const routes = router.handle.stack;
-
         const routerRoutes: Route[] = [];
 
-        for (const route of routes) {
+        for (const route of router.handle.stack) {
             const expRoute = route.route;
 
             route.route.stack.forEach((r) => {
@@ -41,7 +35,7 @@ export const metaHandler = (app: Express): Handler => {
         }
 
         meta.routers.push({
-            path: routerPath,
+            path: regExpToPath(router.regexp.source as string),
             routes: routerRoutes,
         });
     }

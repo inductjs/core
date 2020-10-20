@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-function-return-type*/
-import {InductSQL} from "../induct-sql";
+import {Controller} from "../induct-controller";
 import {
     mockSqlOpts,
     MockSchema,
@@ -10,15 +10,15 @@ import {
     mockInvalidData1,
     mockOptsCustomModel,
     mockOptsValidation,
-    MockSQLModel,
+    CustomStrategy,
 } from "./data/fixtures";
 import {TestInduct} from "./data/induct-mock";
+import {SqlStrategy} from "../strategies/sql-strategy";
 import ControllerResult, {
     IControllerResult,
 } from "../express/controller-result";
 import {HttpStatusCode as StatusCode} from "azure-functions-ts-essentials";
-import {InductSQLOpts} from "../types/induct";
-import {SqlAdapter} from "../adapters/sql-adapter";
+import {InductOptions} from "../types/induct";
 // import {InductMongo} from "../induct-mongo";
 
 jest.mock("../express/controller-result");
@@ -26,11 +26,9 @@ jest.mock("../express/controller-result");
 describe("Induct Base", () => {
     describe("_copyOpts", () => {
         it("copyOpts should correctly override class properties", () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            const newOpts = induct._copyOpts(mockOptsOver) as InductSQLOpts<
+            const newOpts = induct._copyOpts(mockOptsOver) as InductOptions<
                 MockSchema
             >;
 
@@ -42,9 +40,7 @@ describe("Induct Base", () => {
 
     describe("_valuesFromRequest", () => {
         it("Should correctly parse the request values", () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
 
@@ -60,7 +56,7 @@ describe("Induct Base", () => {
 
     describe("model", () => {
         it("Model method should return an instance of the correct model class", async () => {
-            const sql = (new InductSQL(mockSqlOpts) as unknown) as TestInduct<
+            const sql = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<
                 MockSchema
             >;
 
@@ -69,15 +65,13 @@ describe("Induct Base", () => {
             const modelsql = await sql.model(mockData1);
             // const modelmongo = await mongo.model(mockData1);
 
-            expect(modelsql).toBeInstanceOf(SqlAdapter);
+            expect(modelsql).toBeInstanceOf(SqlStrategy);
             // expect(modelmongo).toBeInstanceOf(MongoModelBase);
         });
 
         it("model method should return null when model factory fails", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
-            induct._modelFactory = jest.fn(() => {
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
+            induct._initStrategy = jest.fn(() => {
                 throw new Error();
             }) as any;
 
@@ -88,9 +82,7 @@ describe("Induct Base", () => {
 
     it("Query method should throw when an unsupported model method is supplied", () => {
         try {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             induct.query("test" as any);
         } catch (e) {
@@ -100,9 +92,7 @@ describe("Induct Base", () => {
 
     it("Mutation method should throw when an unsupported model method is supplied", () => {
         try {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             induct.mutation("test" as any);
         } catch (e) {
@@ -110,25 +100,25 @@ describe("Induct Base", () => {
         }
     });
 
-    it("router should return an Express router", () => {
-        const induct = (new InductSQL(mockSqlOpts) as unknown) as TestInduct<
+    it("defaultRouter should return an Express router", () => {
+        const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<
             MockSchema
         >;
 
-        const router = induct.router();
+        const router = induct.defaultRouter();
 
         expect(typeof router).toEqual("function");
     });
 
-    it("router method should add the correct routes", () => {
-        const induct = (new InductSQL(mockSqlOpts) as unknown) as TestInduct<
+    it("defaultRouter method should add the correct routes", () => {
+        const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<
             MockSchema
         >;
 
         jest.spyOn(induct, "query");
         jest.spyOn(induct, "mutation");
 
-        const router = induct.router();
+        const router = induct.defaultRouter();
 
         expect(induct.query).toHaveBeenCalledTimes(2);
         expect(induct.mutation).toHaveBeenCalledTimes(3);
@@ -148,49 +138,41 @@ describe("Induct Base", () => {
     });
 
     describe("Induct Model Factory", () => {
-        it("Should return an instance of InductModel", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+        it("Should return a Strategy instance", async () => {
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            const model = await induct._modelFactory(mockData1, mockSqlOpts);
+            const model = await induct._initStrategy(mockData1, mockSqlOpts);
 
-            expect(model).toBeInstanceOf(SqlAdapter);
+            expect(model).toBeInstanceOf(SqlStrategy);
         });
 
-        it("Should return an instance of the custom model if one is provided", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+        it("Should properly return an instance of a custom strategy if one is provided", async () => {
+            const induct = (new Controller("test", CustomStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            const model = await induct._modelFactory(
+            const model = await induct._initStrategy(
                 mockData1,
                 mockOptsCustomModel
             );
 
-            expect(model).toBeInstanceOf(MockSQLModel);
+            expect(model).toBeInstanceOf(CustomStrategy);
         });
 
         it("Should return an instance of InductModel if data is valid and validation option is enabled", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-            const model = await induct._modelFactory(
+            const model = await induct._initStrategy(
                 mockData1,
                 mockOptsValidation
             );
 
-            expect(model).toBeInstanceOf(SqlAdapter);
+            expect(model).toBeInstanceOf(SqlStrategy);
         });
 
         it("Should throw when data is invalid and validation option is enabled", async () => {
             try {
-                const induct = (new InductSQL(
-                    mockSqlOpts
-                ) as unknown) as TestInduct<MockSchema>;
+                const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
-                await induct._modelFactory(
+                await induct._initStrategy(
                     mockInvalidData1 as any,
                     mockOptsValidation
                 );
@@ -203,9 +185,7 @@ describe("Induct Base", () => {
 
     describe("_createQueryHandler", () => {
         it("should return a function", () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const handler = induct._createQueryHandler("findAll");
 
@@ -214,9 +194,7 @@ describe("Induct Base", () => {
 
         it("should throw on an invalid lookup method", () => {
             try {
-                const induct = (new InductSQL(
-                    mockSqlOpts
-                ) as unknown) as TestInduct<MockSchema>;
+                const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
                 induct._createQueryHandler("test" as any);
             } catch (e) {
                 expect(e).toBeInstanceOf(TypeError);
@@ -224,16 +202,14 @@ describe("Induct Base", () => {
         });
 
         it("result should return status 200 with data when called with 'findOneById'", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             req.params[induct._idParam] = "test";
             const res = mockResponse();
             const next = jest.fn();
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     findOneById: async () => ["test"],
                 };
@@ -264,15 +240,13 @@ describe("Induct Base", () => {
         });
 
         it("result should return status 200 with data when called with 'findAll'", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             const res = mockResponse();
             const next = jest.fn();
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     findAll: async () => ["test", "test2"],
                 };
@@ -303,15 +277,13 @@ describe("Induct Base", () => {
         });
 
         it("result should return status 204 if no data can be found", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             const res = mockResponse();
             const next = jest.fn();
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     findAll: async () => [],
                 };
@@ -341,15 +313,13 @@ describe("Induct Base", () => {
         });
 
         it("result should return status 400 if model creation fails", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             const res = mockResponse();
             const next = jest.fn();
 
-            induct._modelFactory = jest.fn(() => null) as any;
+            induct._initStrategy = jest.fn(() => null) as any;
 
             const expected = {
                 res,
@@ -375,16 +345,14 @@ describe("Induct Base", () => {
         });
 
         it("result should return status 500 status on other error", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             const res = mockResponse();
             const next = jest.fn();
             const error = new Error("oeps");
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     findAll: () => {
                         throw error;
@@ -419,9 +387,7 @@ describe("Induct Base", () => {
 
     describe("_createMutationHandler", () => {
         it("should return a function", () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const handler = induct._createMutationHandler("delete");
 
@@ -430,9 +396,7 @@ describe("Induct Base", () => {
 
         it("should throw on an invalid lookup method", () => {
             try {
-                const induct = (new InductSQL(
-                    mockSqlOpts
-                ) as unknown) as TestInduct<MockSchema>;
+                const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
                 induct._createMutationHandler("test" as any);
             } catch (e) {
                 expect(e).toBeInstanceOf(TypeError);
@@ -440,15 +404,13 @@ describe("Induct Base", () => {
         });
 
         it("result should return status 400 if model creation fails", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             const res = mockResponse();
             const next = jest.fn();
 
-            induct._modelFactory = jest.fn(() => null) as any;
+            induct._initStrategy = jest.fn(() => null) as any;
 
             const expected = {
                 res,
@@ -474,15 +436,13 @@ describe("Induct Base", () => {
         });
 
         it("result should return status 201 with data when called with 'create'", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             const res = mockResponse();
             const next = jest.fn();
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     create: async () => "test",
                 };
@@ -513,15 +473,13 @@ describe("Induct Base", () => {
         });
 
         it("result should return status 400 if creation fails when called with 'create'", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             const res = mockResponse();
             const next = jest.fn();
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     create: async () => null,
                 };
@@ -551,16 +509,14 @@ describe("Induct Base", () => {
         });
 
         it("result should return status 200 with data when called with 'update'", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             req.params[induct._idParam] = "test";
             const res = mockResponse();
             const next = jest.fn();
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     update: async () => "test",
                 };
@@ -591,15 +547,13 @@ describe("Induct Base", () => {
         });
 
         it("result should return status 404 if updating fails when called with 'update'", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             const res = mockResponse();
             const next = jest.fn();
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     update: async () => undefined,
                 };
@@ -629,15 +583,13 @@ describe("Induct Base", () => {
         });
 
         it("result should return 204 status when called with 'delete'", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             const res = mockResponse();
             const next = jest.fn();
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     delete: async () => "test",
                 };
@@ -667,15 +619,13 @@ describe("Induct Base", () => {
         });
 
         it("result should return status 404 if no data can be found when called with 'delete'", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             const res = mockResponse();
             const next = jest.fn();
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     delete: async () => undefined,
                 };
@@ -705,16 +655,14 @@ describe("Induct Base", () => {
         });
 
         it("result should return status 500 status on other error", async () => {
-            const induct = (new InductSQL(
-                mockSqlOpts
-            ) as unknown) as TestInduct<MockSchema>;
+            const induct = (new Controller("test", SqlStrategy, mockSqlOpts) as unknown) as TestInduct<MockSchema>;
 
             const req = mockRequest();
             const res = mockResponse();
             const next = jest.fn();
             const error = new Error("oeps");
 
-            induct._modelFactory = jest.fn(() => {
+            induct._initStrategy = jest.fn(() => {
                 return {
                     create: () => {
                         throw error;
