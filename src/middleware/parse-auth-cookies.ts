@@ -15,8 +15,6 @@ export function authCookieParser(cookieName = 'access-token') {
 		next: NextFunction
 	): Promise<void | Response> {
 		const cookie = req.cookies[cookieName];
-		// const sessionSignature = req.cookies['blyb-session-signature'];
-		// const sessionHeader = req.cookies['blyb-session-header'];
 
 		// If session token is present, use that to set authorization header
 		if (cookie) {

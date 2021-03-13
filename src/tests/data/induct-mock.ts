@@ -1,14 +1,12 @@
 import {
-    FunctionOfInductModel,
-    ModelFactory,
-} from "../../types/model-schema";
-import {
-    Constructor
-} from "../../types/utilities";
-import {InductOptions} from "../../types/induct";
-import {RequestHandler, Router} from "express";
-import {AzureFunction} from "@azure/functions";
-import knex from "knex";
+	FunctionOfInductModel,
+	ModelFactory,
+} from '../../types/model-schema';
+import { Constructor } from '../../types/constructors';
+import { InductOptions } from '../../types/induct';
+import { RequestHandler, Router } from 'express';
+import { AzureFunction } from '@azure/functions';
+import knex from 'knex';
 
 export interface TestInduct<T> {
     _connection: knex;

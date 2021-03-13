@@ -1,26 +1,26 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-export {ControllerResult} from "./express/controller-result";
-export {getModelForClass, prop} from "@typegoose/typegoose";
+export { ControllerResult } from './express/controller-result';
+export { getModelForClass, prop } from '@typegoose/typegoose';
 export {
-    ok,
-    badRequest,
-    noContent,
-    internalError,
-    conflict,
-    notFound,
-    created,
-    forbidden,
-    unauthorized,
-} from "./express/result-helpers";
+	ok,
+	badRequest,
+	noContent,
+	internalError,
+	conflict,
+	notFound,
+	created,
+	forbidden,
+	unauthorized,
+} from './express/result-helpers';
 
-export {metaHandler} from "./express/meta-handler";
-export { SqlStrategy as SqlStrategy} from "./strategies/sql-strategy";
-export { MongoStrategy as MongoStrategy } from "./strategies/mongo-strategy";
+export { metaHandler } from './express/meta-handler';
+export { SqlStrategy as SqlStrategy } from './strategies/sql-strategy';
+export { MongoStrategy as MongoStrategy } from './strategies/mongo-strategy';
 
 // v0.6 beta API and Types
-export { ApplicationOpts } from "./types/ApplicationOptions";
-export { Application, createApp as induct } from "./induct-app";
-export { createController } from "./controller-factory";
-export { Controller } from "./induct-controller";
+export { ApplicationOpts } from './types/ApplicationOptions';
+export { Application, createApp as induct } from './induct-app';
+export { createController } from './controller-factory';
+export { Controller } from './induct-controller';
 
-export { InductOptions } from "./types/induct";
+export { InductOptions } from './types/induct';

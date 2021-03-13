@@ -1,5 +1,5 @@
 import { StatusCode } from './types/http';
-import { ValidationError } from './errors';
+import { ValidationError } from './types/error';
 import { Response } from 'express';
 
 export interface ICommandResult<T> {
