@@ -1,14 +1,12 @@
-import { HttpStatusCode } from 'azure-functions-ts-essentials';
-import { ValidationError } from '../types/error';
+import { StatusCode } from './types/http';
+import { ValidationError } from './errors';
 import { Response } from 'express';
 
-export interface IControllerResult<T> {
+export interface ICommandResult<T> {
     /** HTTP Status code as integer */
-    status: HttpStatusCode;
-    /** Express response object */
-    res: Response;
+    status: StatusCode;
     /** Data to be returned as the response body */
-    data?: T | T[] | T[keyof T] | number;
+    data?: T;
     /** Optional extra information about the response */
     info?: string;
     /** Optional error message */
@@ -17,34 +15,33 @@ export interface IControllerResult<T> {
     /** Array of occurred validation errors */
     validationErrors?: ValidationError[];
     /** Wrapper function around express' .json. Returns JSON response formed from data stored in ControllerResult instance */
-    send?: () => Response;
+    send?: (res: Response) => Response;
     /** Wrapper for express.response.redirect */
-    redirect?: (location: string) => void;
+    redirect?: (res: Response, location: string) => void;
 }
 
-export interface ControllerResultOpts {
+export interface CommandResultOpts {
     /** enables full error messages in response body */
     debug: boolean;
 }
 
-export class ControllerResult<T> implements IControllerResult<T> {
-    public readonly status: HttpStatusCode;
-    public readonly data: T | T[] | T[keyof T] | number;
+export class CommandResult<T> implements ICommandResult<T> {
+    public readonly status: StatusCode;
+    public readonly data: T;
     public readonly info: string;
     public readonly error: Error;
-    public readonly res: Response;
     public readonly validationErrors: ValidationError[];
 
-    private opts: ControllerResultOpts;
+    private opts: CommandResultOpts;
 
-    constructor(result: IControllerResult<T>, opts?: ControllerResultOpts) {
+    constructor(result: ICommandResult<T>, opts?: CommandResultOpts) {
     	Object.assign(this, result);
     	this.opts = opts;
     }
 
-    public send(): Response {
+    public send(res: Response): Response {
     	const response = {
-    		data: this.data,
+    		...this.data,
     		info: this.info,
     		error: this.opts?.debug
     			? {
@@ -56,12 +53,10 @@ export class ControllerResult<T> implements IControllerResult<T> {
     		validationErrors: this.validationErrors,
     	};
 
-    	return this.res.status(this.status).json(response);
+    	return res.status(this.status).send(response);
     }
 
-    public redirect(location: string): void {
-    	return this.res.redirect(location);
+    public redirect(res: Response, location: string): void {
+    	return res.redirect(location);
     }
 }
-
-export default ControllerResult;

@@ -1,18 +1,19 @@
-import knex from "knex";
-import mongoose from "mongoose";
-import {ControllerResultOpts} from "../express/controller-result";
-import { Controller } from "../induct-controller";
+import knex from 'knex';
+import mongoose from 'mongoose';
+import { ControllerResultOpts } from '../express/controller-result';
+import { Controller } from '../induct-controller';
 
 export type ControllerMap<T> = Map<string, Controller<T>>
-export type InductStrategyOpts<T> = InductOptions<T> //SqlStrategyOpts<T> | MongoStrategyOpts<T>;
+
+export type InductStrategyOpts<T> = InductOptions<T> // SqlStrategyOpts<T> | MongoStrategyOpts<T>;
 export type SchemaConstructor<T> = new (val: T, ...args: any[]) => T; // eslint-disable-line @typescript-eslint/no-explicit-any
 export type OverridableOpts<T> = Pick<InductOptions<T>, OverridableProps>;
 export type OverridableProps =
-    | "schema"
-    | "validate"
-    | "fields"
-    | "tableName"
-    | "limit";
+    | 'schema'
+    | 'validate'
+    | 'fields'
+    | 'tableName'
+    | 'limit';
 
 export interface InductOptions<T> {
     /** Schema class */

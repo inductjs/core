@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Strategy } from "../strategies/abstract-strategy";
-import { InductStrategyOpts } from "./induct";
-import { SubType } from "./utilities";
+import { Strategy } from '../strategies/abstract-strategy';
+import { InductStrategyOpts } from './induct';
+import { SubType } from './utils';
 
 export enum FunctionType {
-    Query = "query",
-    Mutation = "mutation",
+    Query = 'query',
+    Mutation = 'mutation',
 }
 
 export type ModelFactory<T> = (
@@ -27,15 +27,15 @@ export type FunctionOfModel<T> = keyof Omit<
 >;
 
 export type InternalFunctions =
-    | "commitTransaction"
-    | "destroyConnection"
-    | "startTransaction"
-    | "rollbackTransaction"
-    | "validate"
-    | "con"
-    | "trx"
-    | "get"
-    | "set";
+    | 'commitTransaction'
+    | 'destroyConnection'
+    | 'startTransaction'
+    | 'rollbackTransaction'
+    | 'validate'
+    | 'con'
+    | 'trx'
+    | 'get'
+    | 'set';
 
 export interface ValidationResult<T> {
     data: T | T[];

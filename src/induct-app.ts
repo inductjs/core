@@ -1,15 +1,17 @@
-import {green, magenta, red} from "chalk";
-import path from "path";
-import bodyParser from "body-parser";
-import cookieParser from "cookie-parser";
-import compression from "compression";
-import fs from "fs";
-import express, {Application as ExpressApplication} from "express";
-import {metaHandler} from "./express/meta-handler";
-import { Controller } from "./induct-controller";
-import { ApplicationOpts } from "./types/ApplicationOptions";
-import { mongoose } from "@typegoose/typegoose";
-import Knex from "knex";
+import {
+	green, magenta, red,
+} from 'chalk';
+import path from 'path';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import compression from 'compression';
+import fs from 'fs';
+import express, { Application as ExpressApplication } from 'express';
+import { metaHandler } from './express/meta-handler';
+import { Controller } from './induct-controller';
+import { ApplicationOpts } from './types/ApplicationOptions';
+import { mongoose } from '@typegoose/typegoose';
+import Knex from 'knex';
 
 /* eslint-disable no-invalid-this */
 export class Application {
@@ -27,23 +29,23 @@ export class Application {
      * Initializes an express app with contents specified in the class
      */
     constructor(opts: ApplicationOpts) {
-        this.opts = opts;
-        this._express = express();
-        this._port = opts.port || 3000;
-        this._rootNs = opts.rootNamespace || "api";
-        this._contFolder = opts.controllerLoader !== false
-            ? opts.controllerLoader || "src/controllers"
-            : false;
-        this._controllers = [];
-        this._db = opts.db;
+    	this.opts = opts;
+    	this._express = express();
+    	this._port = opts.port || 3000;
+    	this._rootNs = opts.rootNamespace || 'api';
+    	this._contFolder = opts.controllerLoader !== false
+    		? opts.controllerLoader || 'src/controllers'
+    		: false;
+    	this._controllers = [];
+    	this._db = opts.db;
 
-        this._config();
+    	this._config();
 
-        // this.errorHandling();
+    	// this.errorHandling();
     }
 
     get controllers(): Controller<any>[] {
-        return this._controllers;
+    	return this._controllers;
     }
 
     /**
@@ -52,10 +54,13 @@ export class Application {
      * Mounts middleware functions to the express application
      */
     private _config(): void {
-        this._express.use(cookieParser());
-        this._express.use(bodyParser.json({limit: "50mb"}));
-        this._express.use(bodyParser.urlencoded({extended: false, limit: "50mb"}));
-        this._express.use(compression());
+    	this._express.use(cookieParser());
+    	this._express.use(bodyParser.json({ limit: '50mb' }));
+    	this._express.use(bodyParser.urlencoded({
+    		extended: false,
+    		limit: '50mb',
+    	}));
+    	this._express.use(compression());
     }
 
     /*
@@ -67,80 +72,83 @@ export class Application {
 
     // OPTION: SPA
     public addStaticPath(): void {
-        let staticPath: string;
+    	let staticPath: string;
 
-        if (process.env.NODE_ENV === "production") {
-            staticPath = "../static";
-        } else {
-            staticPath = "../../dist/static";
-        }
+    	if (process.env.NODE_ENV === 'production') {
+    		staticPath = '../static';
+    	}
+    	else {
+    		staticPath = '../../dist/static';
+    	}
 
-        this._express.use(express.static(path.join(__dirname, staticPath)));
+    	this._express.use(express.static(path.join(__dirname, staticPath)));
 
-        this._express.get("/", (req, res) => {
-            res.sendFile("index.html", {
-                root: path.join(__dirname, staticPath),
-            });
-        });
+    	this._express.get('/', (req, res) => {
+    		res.sendFile('index.html', { root: path.join(__dirname, staticPath) });
+    	});
 
-        this._express.get("*", (req, res) => {
-            res.sendFile("index.html", {
-                root: path.join(__dirname, staticPath),
-            });
-        });
+    	this._express.get('*', (req, res) => {
+    		res.sendFile('index.html', { root: path.join(__dirname, staticPath) });
+    	});
     }
 
     public addController = (ctrlr: Controller<any>): void => {
-        if (!ctrlr.db) ctrlr.db = this._db;
+    	if (!ctrlr.db) {
+    		ctrlr.db = this._db;
+    	}
 
-        this._controllers.push(ctrlr);
+    	this._controllers.push(ctrlr);
     }
 
     /** Loads all the induct controller files from the given directory. Default: src/controllers */
     public loadControllerFiles = async (): Promise<void> => {
-        const fullDir = path.join(process.cwd(), this._contFolder as string);
+    	const fullDir = path.join(process.cwd(), this._contFolder as string);
 
-        for (const file of fs.readdirSync(fullDir)) {
-            const fullPath = path.join(fullDir, file);
+    	for (const file of fs.readdirSync(fullDir)) {
+    		const fullPath = path.join(fullDir, file);
 
-            const fileName = file.toLowerCase();
+    		const fileName = file.toLowerCase();
 
-            if (
-                fileName.indexOf(".js") ||
-                fileName.indexOf(".ts")
-            ) {
-                try {
-                    const controller = await import(fullPath);
+    		if (
+    			fileName.indexOf('.js') ||
+                fileName.indexOf('.ts')
+    		) {
+    			try {
+    				const controller = await import(fullPath);
 
-                    if (!controller) {
-                        throw new TypeError(
-                            `[error] could not load router module from ${fullPath}`
-                        );
-                    } else {
-                        this._controllers.push(controller.default);
-                    }
+    				if (!controller) {
+    					throw new TypeError(
+    						`[error] could not load router module from ${fullPath}`
+    					);
+    				}
+    				else {
+    					this._controllers.push(controller.default);
+    				}
 
-                    console.log(magenta(`[route] mounted /${controller.basePath || fileName.split(".")[0]}`));
-                } catch (e) {
-                    console.log(red(e));
-                }
-            }
-        }
+    				console.log(magenta(`[route] mounted /${controller.basePath || fileName.split('.')[0]}`));
+    			}
+    			catch (e) {
+    				console.log(red(e));
+    			}
+    		}
+    	}
     };
 
     /** Mounts all the controllers currently loaded in the application instance */
     public mount = (): void => {
-        this._controllers.forEach((c) => {
-            // set db object for each controller if not set already
-            if (!c.db) c.db = this._db;
-            // mount to express app
-            this._express.use(`/${this._rootNs}/${c.basePath}`, c.router);
-        });
+    	this._controllers.forEach(c => {
+    		// set db object for each controller if not set already
+    		if (!c.db) {
+    			c.db = this._db;
+    		}
+    		// mount to express app
+    		this._express.use(`/${this._rootNs}/${c.basePath}`, c.router);
+    	});
 
-        // Add meta route if router has routes
-        if (this._express._router) {
-            this._express.get("/meta", metaHandler(this._express as express.Express));
-        }
+    	// Add meta route if router has routes
+    	if (this._express._router) {
+    		this._express.get('/meta', metaHandler(this._express as express.Express));
+    	}
     }
 
     /**
@@ -149,29 +157,34 @@ export class Application {
      * @Remarks Starts an HTTP server on the specified port
      */
     public start(): void {
-        this.mount();
+    	this.mount();
 
-        try {
-            this._express.listen(this._port, () =>
-                console.log(
-                    green(
-                        `[info] HTTP server is listening on port ${this._port}`
-                    )
-                )
-            );
-        } catch (e) {
-            console.log(e);
-        }
+    	try {
+    		this._express.listen(this._port, () =>
+    			console.log(
+    				green(
+    					`[info] HTTP server is listening on port ${this._port}`
+    				)
+    			)
+    		);
+    	}
+    	catch (e) {
+    		console.log(e);
+    	}
     }
 }
 
 export const createApp = async (opts: ApplicationOpts): Promise<Application> => {
-    const server = new Application(opts);
+	const server = new Application(opts);
 
-    if (opts.controllerLoader !== false) await server.loadControllerFiles();
-    if (opts.serveSPA) server.addStaticPath();
+	if (opts.controllerLoader !== false) {
+		await server.loadControllerFiles();
+	}
+	if (opts.serveSPA) {
+		server.addStaticPath();
+	}
 
-    return server;
+	return server;
 };
 
 export default ExpressApplication;

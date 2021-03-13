@@ -2,7 +2,7 @@
 import {getModelForClass, buildSchema} from "@typegoose/typegoose";
 import mongoose from "mongoose";
 import {CreateQuery} from "mongoose";
-import {QueryError} from "../types/error-schema";
+import {QueryError} from "../types/error";
 import {ValidationError} from "class-validator";
 import { InductOptions } from "../types/induct";
 import {Strategy} from "./abstract-strategy";
