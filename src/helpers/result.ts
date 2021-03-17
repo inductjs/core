@@ -1,7 +1,7 @@
 import { StatusCode } from '../types/http';
 import {
-	CommandResult, ICommandResult, CommandResultOpts,
-} from '../command-result';
+	CommandResult, CommandResultData, CommandResultOpts,
+} from './command-result';
 import { Response } from 'express';
 
 export const ok = <T>(
@@ -9,56 +9,56 @@ export const ok = <T>(
 	data?: any,
 	opts?: CommandResultOpts
 ): Response => {
-	const result: ICommandResult<T> = {
+	const result: CommandResultData<T> = {
 		status: StatusCode.OK,
 		data,
 	};
 
-	return new CommandResult(result, opts).send(res);
+	return CommandResult(result, opts).send(res);
 };
 
 export const unauthorized = <T>(
 	res: Response,
 	opts?: CommandResultOpts
 ): Response => {
-	const result: ICommandResult<T> = { status: StatusCode.UNAUTHORIZED };
+	const result: CommandResultData<T> = { status: StatusCode.UNAUTHORIZED };
 
-	return new CommandResult(result, opts).send(res);
+	return CommandResult(result, opts).send(res);
 };
 
 export const forbidden = <T>(
 	res: Response,
 	opts?: CommandResultOpts
 ): Response => {
-	const result: ICommandResult<T> = { status: StatusCode.FORBIDDEN };
+	const result: CommandResultData<T> = { status: StatusCode.FORBIDDEN };
 
-	return new CommandResult(result, opts).send(res);
+	return CommandResult(result, opts).send(res);
 };
 export const badRequest = <T>(
 	res: Response,
 	opts?: CommandResultOpts
 ): Response => {
-	const result: ICommandResult<T> = { status: StatusCode.BAD_REQUEST };
+	const result: CommandResultData<T> = { status: StatusCode.BAD_REQUEST };
 
-	return new CommandResult(result, opts).send(res);
+	return CommandResult(result, opts).send(res);
 };
 
 export const notFound = <T>(
 	res: Response,
 	opts?: CommandResultOpts
 ): Response => {
-	const result: ICommandResult<T> = { status: StatusCode.NOT_FOUND };
+	const result: CommandResultData<T> = { status: StatusCode.NOT_FOUND };
 
-	return new CommandResult(result, opts).send(res);
+	return CommandResult(result, opts).send(res);
 };
 
 export const noContent = <T>(
 	res: Response,
 	opts?: CommandResultOpts
 ): Response => {
-	const result: ICommandResult<T> = { status: StatusCode.NO_CONTENT };
+	const result: CommandResultData<T> = { status: StatusCode.NO_CONTENT };
 
-	return new CommandResult(result, opts).send(res);
+	return CommandResult(result, opts).send(res);
 };
 
 export const created = <T>(
@@ -66,12 +66,12 @@ export const created = <T>(
 	data?: any,
 	opts?: CommandResultOpts
 ): Response => {
-	const result: ICommandResult<T> = {
+	const result: CommandResultData<T> = {
 		status: StatusCode.CREATED,
 		data,
 	};
 
-	return new CommandResult(result, opts).send(res);
+	return CommandResult(result, opts).send(res);
 };
 
 export const internalError = <T>(
@@ -79,19 +79,19 @@ export const internalError = <T>(
 	error?: Error,
 	opts?: CommandResultOpts
 ): Response => {
-	const result: ICommandResult<T> = {
+	const result: CommandResultData<T> = {
 		status: StatusCode.INTERNAL_SERVER_ERROR,
 		error,
 	};
 
-	return new CommandResult(result, opts).send(res);
+	return CommandResult(result, opts).send(res);
 };
 
 export const conflict = <T>(
 	res: Response,
 	opts?: CommandResultOpts
 ): Response => {
-	const result: ICommandResult<T> = { status: StatusCode.CONFLICT };
+	const result: CommandResultData<T> = { status: StatusCode.CONFLICT };
 
-	return new CommandResult(result, opts).send(res);
+	return CommandResult(result, opts).send(res);
 };

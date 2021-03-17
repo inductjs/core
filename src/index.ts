@@ -1,26 +1,42 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-export { ControllerResult } from './express/controller-result';
+export { CommandResult } from './helpers/command-result';
 export { getModelForClass, prop } from '@typegoose/typegoose';
-export {
-	ok,
-	badRequest,
-	noContent,
-	internalError,
-	conflict,
-	notFound,
-	created,
-	forbidden,
-	unauthorized,
-} from './express/result-helpers';
 
-export { metaHandler } from './express/meta-handler';
+// Module imports
+import * as helpers from './helpers';
+import * as middleware from './middleware';
+import * as handlers from './handlers';
+import * as types from './types';
+
+// Definition of top level imports for consumer
+export const { result, wrapAsync } = helpers;
+export const { queryAction, validateDto } = middleware;
+export { composeHandler } from './compose-handler';
+export { Validator } from './validator';
+
 export { SqlStrategy as SqlStrategy } from './strategies/sql-strategy';
-export { MongoStrategy as MongoStrategy } from './strategies/mongo-strategy';
-
-// v0.6 beta API and Types
 export { ApplicationOpts } from './types/ApplicationOptions';
-export { Application, createApp as induct } from './induct-app';
-export { createController } from './controller-factory';
-export { Controller } from './induct-controller';
+export {
+	ContextError, QueryError, ValidationError, CommandError,
+} from './types/error';
+import { createApp as induct } from './induct-app';
+import { DefaultSqlService } from './sql-service';
+import { createController } from './induct-controller';
 
-export { InductOptions } from './types/induct';
+export const {
+	ok,
+	unauthorized,
+	forbidden,
+	notFound,
+	noContent,
+	conflict,
+	created,
+	internalError,
+	badRequest,
+} = result;
+
+export {
+	helpers, handlers, middleware, types, induct, DefaultSqlService,
+	createController,
+};
+

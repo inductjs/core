@@ -1,6 +1,6 @@
 
-import { InductSQL } from "@inductjs/core";
-import { openConnection } from "../db";
+import { InductSQL } from '@inductjs/core';
+import { openConnection } from '../db';
 
 const db = openConnection();
 
@@ -20,15 +20,15 @@ export class CustomerSchema {
   ModifiedDate: Date;
 
   constructor(val: CustomerSchema) {
-    Object.assign(this, val);
+  	Object.assign(this, val);
   }
 }
 
 const induct = new InductSQL({
-  db,
-  schema: CustomerSchema,
-  idField: "CustomerID",
-  tableName: "SalesLT.Customer",
+	db,
+	schema: CustomerSchema,
+	idField: 'CustomerID',
+	tableName: 'SalesLT.Customer',
 });
 
 const router = induct.router();

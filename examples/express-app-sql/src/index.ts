@@ -1,9 +1,9 @@
-require("dotenv").config();
-import {createServer} from "@inductjs/core";
+require('dotenv').config();
+import { createServer } from '@inductjs/core';
 
 (async function(): Promise<void> {
-  // InductServer auto mounts routers from src/routers ending in -router.{js, ts}
-  const server = await createServer();
+	// InductServer auto mounts routers from src/routers ending in -router.{js, ts}
+	const server = await createServer();
 
-  server.start();
+	server.start();
 })();

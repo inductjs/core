@@ -1,5 +1,4 @@
-import { mongoose } from "@typegoose/typegoose";
-import Knex from "knex";
+import Knex from 'knex';
 
 export interface ApplicationOpts {
     /** Connection object to your database.
@@ -7,13 +6,13 @@ export interface ApplicationOpts {
      * This connection is assigned to each loaded controller at runtime,
      * and serves as the default connection if none is set in the configuration of individual controllers.
      */
-    db: mongoose.Connection | Knex;
+    db: Knex;
     /** Path to a folder that includes InductController files, from the root of the application.
      *
      * Setting this option enables controller auto-loading
      *
      * Default: src/controllers */
-    controllerLoader?: string | false;
+    controllerFolder?: string;
     /** Port number the server should run on.
      *
      * Default: 3000 */
@@ -41,7 +40,7 @@ export interface ApplicationOpts {
      *
      * Default: false
      * */
-    authentication?: Array<"basic" | "JWT" | {oauth: "discord" | "google" | "facebook" | "twitter"}>;
+    authentication?: Array<'basic' | 'JWT' | {oauth: 'discord' | 'google' | 'facebook' | 'twitter'}>;
     /** Enables serving of a single index.html file for Single Page Applications
      *
      * Default: false

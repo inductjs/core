@@ -20,15 +20,10 @@ export const verifyJWT = async (
 		return unauthorized(res);
 	}
 
-	try {
-		const data = await verify(token, JWT_SECRET_KEY);
-
-		// data.tenant = req.slug;
-		req.context.user = data;
-
-		next();
-	}
-	catch (e) {
-		return unauthorized(res);
-	}
+	verify(token, JWT_SECRET_KEY)
+		.then(data => {
+			req.context.user = data;
+			next();
+		})
+		.catch(() => unauthorized(res));
 };

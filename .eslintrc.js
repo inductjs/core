@@ -29,7 +29,7 @@ module.exports = {
 		'no-caller': 'error',
 		'no-extend-native': 'error',
 		'no-extra-bind': 'error',
-		'no-invalid-this': 'error',
+		'no-invalid-this': 'off',
 		'no-multi-spaces': 'error',
 		'no-multi-str': 'error',
 		'no-new-wrappers': 'error',
@@ -114,12 +114,7 @@ module.exports = {
 		'object-curly-spacing': ['error', 'always'],
 		'object-property-newline': ['error'],
 		'one-var': [
-			'error',
-			{
-				var: 'never',
-				let: 'never',
-				const: 'never',
-			},
+			'off',
 		],
 		'operator-linebreak': 'off',
 		'padded-blocks': ['error', 'never'],
@@ -148,10 +143,10 @@ module.exports = {
 		'no-duplicate-imports': 'error',
 		'no-new-symbol': 'error', // eslint:recommended
 		'no-this-before-super': 'error', // eslint:recommended
-		'no-var': 'error',
+		'no-var': 'off',
 		// 'object-shorthand': 'off',
 		'prefer-arrow-callback': 'error',
-		'prefer-const': ['error', { destructuring: 'all' }],
+		'prefer-const': 'off',
 		'prefer-rest-params': 'error',
 		'prefer-spread': 'error',
 		'rest-spread-spacing': 'error',

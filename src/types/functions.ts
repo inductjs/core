@@ -1,6 +1,6 @@
-import { ErrReturn } from './utils';
+import { ErrorEither, PErrorEither } from './utils';
+import { Model } from '../sql-service';
 
 export type ModelAction<T> = (
-    model?: T,
-    newVal?: any
-) => Promise<ErrReturn<T | T[]>> | ErrReturn<T | T[]>;
+	model: Model<T>
+) => PErrorEither<T | T[]> | ErrorEither<T | T[]>;

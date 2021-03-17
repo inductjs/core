@@ -1,6 +1,6 @@
 import { MongoStrategy } from './strategies/mongo-strategy';
 import { SqlStrategy } from './strategies/sql-strategy';
-import { Constructor } from './types/utils';
+import { Constructor } from './types/constructors';
 import { InductOptions } from './types/induct';
 import { Controller } from './induct-controller';
 import { Strategy } from './strategies/abstract-strategy';
@@ -10,10 +10,8 @@ export const createController = <T>(
 	path: string,
 	strategy: Constructor<Strategy<T>>,
 	opts: InductOptions<T>): Controller<T> => {
-	if (strategy === MongoStrategy) {
-		if (!opts.idField) {
-			opts.idField = '_id';
-		}
+	if (strategy === MongoStrategy && !opts.idField) {
+		opts.idField = '_id';
 	}
 
 	else if (strategy === SqlStrategy && !opts.tableName) {

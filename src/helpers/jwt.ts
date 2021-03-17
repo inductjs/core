@@ -7,7 +7,7 @@ const {
 } = process.env;
 
 
-export const sign = async <T>(
+export const sign = async <T extends object>(
 	payload: T,
 	opts: SignOptions,
 	secret?: string
@@ -15,21 +15,20 @@ export const sign = async <T>(
 	return new Promise((resolve, reject) => {
 		jwt.sign(
 			payload,
-			secret ?? JWT_SECRET,
+			secret ?? JWT_SECRET!,
 			opts,
-			(err, token) => {
+			(err: Error | null, token: string | undefined) => {
 				if (err) {
 					reject(err);
 				}
-				else {
-					resolve(token);
-				}
+
+				resolve(token as string);
 			}
 		);
 	});
 };
 
-export const verify = async <T>(
+export const verify = async <T extends object>(
 	token: string,
 	secret: string,
 	opts?: VerifyOptions
@@ -40,14 +39,14 @@ export const verify = async <T>(
 				reject(err);
 			}
 
-			resolve(data);
+			resolve(data as T);
 		});
 	});
 
 	return prom;
 };
 
-export const signAuthTokens = async <T>(payload: T): Promise<{
+export const signAuthTokens = async <T extends object>(payload: T): Promise<{
 	sessionToken: string;
 	refreshToken: string;
 }> => {

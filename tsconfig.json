@@ -8,8 +8,8 @@
         "allowJs": true,
         "strict": false,
         "declaration": true,
-        "declarationDir": "./dist",
-        "outDir": "./dist",
+        "declarationDir": "./lib",
+        "outDir": "./lib",
         "resolveJsonModule": true,
         "emitDecoratorMetadata": true
     },

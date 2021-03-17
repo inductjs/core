@@ -2,8 +2,8 @@ import { StringMap } from './utils';
 
 export type ContextKeys<T> = keyof T
 
-export type RequestContext<T = {}> = {
-    user: T;
+export type RequestContext = {
+    user: object;
 }
 
 export type ContextMap<T, C = {}> = {

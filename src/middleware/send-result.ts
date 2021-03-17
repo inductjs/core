@@ -1,11 +1,11 @@
 // Turn into middleware that interprets req.result object
-import { CommandResult } from '../command-result';
+import { CommandResult, InductResult } from '../helpers/command-result';
 import { ValidationError } from '../types/error';
 import { Request, Response } from '../types/express';
 import { StatusCode } from '../types/http';
 import { wrapAsync } from '../helpers/wrap-async';
 
-function handleGet<T>(values: any): CommandResult<T | T[]> {
+function handleGet<T>(values: any): InductResult {
 	let status: StatusCode;
 	let data: T | T[];
 	let info: string;
@@ -27,7 +27,7 @@ function handleGet<T>(values: any): CommandResult<T | T[]> {
 		data = values;
 	}
 
-	return new CommandResult({
+	return CommandResult({
 		status,
 		data,
 		info,
@@ -36,7 +36,7 @@ function handleGet<T>(values: any): CommandResult<T | T[]> {
 	});
 }
 
-function handleUpdate<T>(values: any): CommandResult<T | T[]> {
+function handleUpdate<T>(values: any): InductResult {
 	let status: StatusCode;
 	let data: T | T[];
 	let info: string;
@@ -58,7 +58,7 @@ function handleUpdate<T>(values: any): CommandResult<T | T[]> {
 		data = values;
 	}
 
-	return new CommandResult({
+	return CommandResult({
 		status,
 		data,
 		info,
@@ -67,7 +67,7 @@ function handleUpdate<T>(values: any): CommandResult<T | T[]> {
 	});
 }
 
-function handlePost<T>(values: any): CommandResult<T | T[]> {
+function handlePost<T>(values: any): InductResult {
 	let status: StatusCode;
 	let data: T | T[];
 	let info: string;
@@ -86,7 +86,7 @@ function handlePost<T>(values: any): CommandResult<T | T[]> {
 		data = values;
 	}
 
-	return new CommandResult({
+	return CommandResult({
 		status,
 		data,
 		info,
@@ -95,7 +95,7 @@ function handlePost<T>(values: any): CommandResult<T | T[]> {
 	});
 }
 
-function handleDelete<T>(values: any): CommandResult<T | T[]> {
+function handleDelete<T>(values: any): InductResult {
 	let status: StatusCode;
 	let data: T | T[];
 	let info: string;
@@ -114,7 +114,7 @@ function handleDelete<T>(values: any): CommandResult<T | T[]> {
 		data = values;
 	}
 
-	return new CommandResult({
+	return CommandResult({
 		status,
 		data,
 		info,
@@ -127,7 +127,7 @@ export const sendResult = wrapAsync(async <T>(
 	req: Request,
 	res: Response,
 ): Promise<Response> => {
-	let result: CommandResult<T | T[]>;
+	let result: InductResult;
 
 	const values = req.result;
 

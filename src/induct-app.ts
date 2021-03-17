@@ -1,191 +1,137 @@
-import {
-	green, magenta, red,
-} from 'chalk';
 import path from 'path';
-import bodyParser from 'body-parser';
+import { bold } from 'chalk';
+import { json as bodyParserJson, urlencoded as bodyParserUrlEnc } from 'body-parser';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import fs from 'fs';
-import express, { Application as ExpressApplication } from 'express';
-import { metaHandler } from './express/meta-handler';
-import { Controller } from './induct-controller';
+import helmet from 'helmet';
+import express from 'express';
+// import { metaHandler } from './handlers/meta-handler';
 import { ApplicationOpts } from './types/ApplicationOptions';
-import { mongoose } from '@typegoose/typegoose';
-import Knex from 'knex';
+import { logError, logInfo } from './helpers/logging';
+import { errorHandler } from './middleware';
 
-/* eslint-disable no-invalid-this */
-export class Application {
-    private opts: ApplicationOpts;
-    private _port: string | number;
-    private _express: ExpressApplication;
-    private _contFolder: string | false;
-    private _controllers: Array<Controller<any>>;
-    private _rootNs: string;
-    private _db: Knex | mongoose.Connection;
-
-    /**
-     * @class Server
-     * @method constructor
-     * Initializes an express app with contents specified in the class
-     */
-    constructor(opts: ApplicationOpts) {
-    	this.opts = opts;
-    	this._express = express();
-    	this._port = opts.port || 3000;
-    	this._rootNs = opts.rootNamespace || 'api';
-    	this._contFolder = opts.controllerLoader !== false
-    		? opts.controllerLoader || 'src/controllers'
-    		: false;
-    	this._controllers = [];
-    	this._db = opts.db;
-
-    	this._config();
-
-    	// this.errorHandling();
-    }
-
-    get controllers(): Controller<any>[] {
-    	return this._controllers;
-    }
-
-    /**
-     * @class Server
-     * @method config
-     * Mounts middleware functions to the express application
-     */
-    private _config(): void {
-    	this._express.use(cookieParser());
-    	this._express.use(bodyParser.json({ limit: '50mb' }));
-    	this._express.use(bodyParser.urlencoded({
-    		extended: false,
-    		limit: '50mb',
-    	}));
-    	this._express.use(compression());
-    }
-
-    /*
-    securityEssentials(): void {
-        this._app.use(helmet);
-        ... etc
-    }
-    */
-
-    // OPTION: SPA
-    public addStaticPath(): void {
-    	let staticPath: string;
-
-    	if (process.env.NODE_ENV === 'production') {
-    		staticPath = '../static';
-    	}
-    	else {
-    		staticPath = '../../dist/static';
-    	}
-
-    	this._express.use(express.static(path.join(__dirname, staticPath)));
-
-    	this._express.get('/', (req, res) => {
-    		res.sendFile('index.html', { root: path.join(__dirname, staticPath) });
-    	});
-
-    	this._express.get('*', (req, res) => {
-    		res.sendFile('index.html', { root: path.join(__dirname, staticPath) });
-    	});
-    }
-
-    public addController = (ctrlr: Controller<any>): void => {
-    	if (!ctrlr.db) {
-    		ctrlr.db = this._db;
-    	}
-
-    	this._controllers.push(ctrlr);
-    }
-
-    /** Loads all the induct controller files from the given directory. Default: src/controllers */
-    public loadControllerFiles = async (): Promise<void> => {
-    	const fullDir = path.join(process.cwd(), this._contFolder as string);
-
-    	for (const file of fs.readdirSync(fullDir)) {
-    		const fullPath = path.join(fullDir, file);
-
-    		const fileName = file.toLowerCase();
-
-    		if (
-    			fileName.indexOf('.js') ||
-                fileName.indexOf('.ts')
-    		) {
-    			try {
-    				const controller = await import(fullPath);
-
-    				if (!controller) {
-    					throw new TypeError(
-    						`[error] could not load router module from ${fullPath}`
-    					);
-    				}
-    				else {
-    					this._controllers.push(controller.default);
-    				}
-
-    				console.log(magenta(`[route] mounted /${controller.basePath || fileName.split('.')[0]}`));
-    			}
-    			catch (e) {
-    				console.log(red(e));
-    			}
-    		}
-    	}
-    };
-
-    /** Mounts all the controllers currently loaded in the application instance */
-    public mount = (): void => {
-    	this._controllers.forEach(c => {
-    		// set db object for each controller if not set already
-    		if (!c.db) {
-    			c.db = this._db;
-    		}
-    		// mount to express app
-    		this._express.use(`/${this._rootNs}/${c.basePath}`, c.router);
-    	});
-
-    	// Add meta route if router has routes
-    	if (this._express._router) {
-    		this._express.get('/meta', metaHandler(this._express as express.Express));
-    	}
-    }
-
-    /**
-     * @class Server
-     * @method start
-     * @Remarks Starts an HTTP server on the specified port
-     */
-    public start(): void {
-    	this.mount();
-
-    	try {
-    		this._express.listen(this._port, () =>
-    			console.log(
-    				green(
-    					`[info] HTTP server is listening on port ${this._port}`
-    				)
-    			)
-    		);
-    	}
-    	catch (e) {
-    		console.log(e);
-    	}
-    }
+interface ControllerFile {
+	path: string;
+	router: express.IRouter;
 }
 
-export const createApp = async (opts: ApplicationOpts): Promise<Application> => {
-	const server = new Application(opts);
+const app = express();
 
-	if (opts.controllerLoader !== false) {
-		await server.loadControllerFiles();
-	}
-	if (opts.serveSPA) {
-		server.addStaticPath();
+/* eslint-disable no-invalid-this */
+function mountAppLevelMiddleware(): void {
+	app.use(cookieParser());
+	app.use(bodyParserJson({ limit: '50mb' }));
+	app.use(bodyParserUrlEnc({
+		extended: false,
+		limit: '50mb',
+	}));
+	app.use(compression());
+	app.use(helmet());
+}
+
+function configureServeStaticPath(): void {
+	let staticPath = process.env.NODE_ENV === 'production'
+		? '../static'
+		: '../../dist/static';
+
+	app.use(express.static(path.join(__dirname, staticPath)));
+
+	app.get('/', (req, res) => {
+		res.sendFile('index.html', { root: path.join(__dirname, staticPath) });
+	});
+
+	app.get('*', (req, res) => {
+		res.sendFile('index.html', { root: path.join(__dirname, staticPath) });
+	});
+}
+
+async function loadControllerFiles(folder: string): Promise<ControllerFile[]> {
+	const controllers = [] as ControllerFile[];
+	const fullDir = path.join(process.cwd(), folder);
+
+	console.log('looking for controller files in ', fullDir);
+
+	for (const file of fs.readdirSync(fullDir)) {
+		console.log(file);
+		const fullPath = path.join(fullDir, file),
+			ext = file.toLowerCase().substr(file.length -2);
+
+		if (ext !== 'js' && ext !== 'ts') {
+			continue;
+		}
+
+		try {
+			const controller = (await import(fullPath)).default;
+			const path = file.substring(0, file.length -3);
+
+			console.log({controller})
+
+			if (!controller) {
+				throw new TypeError(
+					`[error] could not load router module from ${fullPath}. Does the file have a default export?`
+				);
+			}
+
+			controllers.push({
+				path,
+				router: controller,
+			});
+		}
+		catch (e) {
+			logError(e);
+			throw e;
+		}
 	}
 
-	return server;
+	return controllers;
 };
 
-export default ExpressApplication;
+function mountControllers(rootNs: string, files: ControllerFile[]): void {
+	for (const file of files) {
+		const path = `/${rootNs}/${file.path}`;
+		app.use(path, file.router);
 
+		logInfo(`[route] mounted ${path}`);
+	}
+}
+
+// function mountMetaHandler(): void {
+//	app.get('/meta', metaHandler(this._express as express.Express));
+// }
+
+function mountErrorHandler(): void {
+	app.use(errorHandler);
+}
+
+export async function createApp(opts: ApplicationOpts):
+	Promise<{ app: express.Express; start: () => void}> {
+	const rootNs = opts.rootNamespace ?? 'api';
+	const port = opts.port ?? 3000;
+	const controllerFolder = opts.controllerFolder ?? './src/controllers';
+
+	const controllers = await loadControllerFiles(controllerFolder);
+	console.log(controllers.length)
+
+	mountAppLevelMiddleware();
+	if (controllers.length) {
+		mountControllers(rootNs, controllers);
+	}
+	//	mountMetaHandler();
+	if (opts.serveSPA) {
+		configureServeStaticPath();
+	}
+
+	mountErrorHandler();
+
+	function start(): void {
+		app.listen(port, () => logInfo(
+			`[info] HTTP server is listening on port ${bold(port)}`
+		));
+	}
+
+	return {
+		app,
+		start,
+	};
+}

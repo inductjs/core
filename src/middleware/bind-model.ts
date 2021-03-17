@@ -23,20 +23,20 @@ function getValue(ctx, prop): any {
 	if (typeof prop === 'string') {
 		return { [prop]: ctx[prop] };
 	}
-	else if (Array.isArray(prop)) {
+
+	if (Array.isArray(prop)) {
 		return prop.map(p => ({ [p]: ctx[p] }));
 	}
-	else if (typeof prop === 'object') {
-		const result = {};
 
-		const entries = Object.entries(prop);
+	const result = {};
 
-		for (const [key, value] of entries) {
-			Object.assign(result, { [value as string]: ctx[key] });
-		}
+	const entries = Object.entries(prop);
 
-		return result;
+	for (const [key, value] of entries) {
+		Object.assign(result, { [value as string]: ctx[key] });
 	}
+
+	return result;
 }
 
 /**
@@ -79,16 +79,16 @@ function extractContext<T>(
 export function bindModel<T>(conf?: BindingConfig<T>): Handler {
 	return wrapAsync(async (
 		req: Request,
-		res: Response,
+		_res: Response,
 		next: NextFunction
 	): Promise<any> => {
-		const modelData = {};
+		let modelData = {};
 
 		if (conf?.user) {
-			Object.assign(
-				modelData,
-				extractContext<T>(req.context.user, conf.user)
-			);
+			modelData = {
+				...modelData,
+				...extractContext<T>(req.context.user, conf.user),
+			};
 		}
 
 		if (conf?.params) {
@@ -110,8 +110,6 @@ export function bindModel<T>(conf?: BindingConfig<T>): Handler {
 			modelData,
 			req.body
 		);
-
-		req.binding = modelData;
 
 		next();
 	});

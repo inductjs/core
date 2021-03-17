@@ -1,9 +1,11 @@
 import knex from 'knex';
 import mongoose from 'mongoose';
-import { ControllerResultOpts } from '../express/controller-result';
-import { Controller } from '../induct-controller';
+import { CommandResultOpts } from '../helpers/command-result';
+import { InductController } from '../induct-controller';
+import { PErrorEither } from './utils';
+import { ModelAction } from './functions';
 
-export type ControllerMap<T> = Map<string, Controller<T>>
+export type ControllerMap<T> = Map<string, InductController<T>>
 
 export type InductStrategyOpts<T> = InductOptions<T> // SqlStrategyOpts<T> | MongoStrategyOpts<T>;
 export type SchemaConstructor<T> = new (val: T, ...args: any[]) => T; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -33,5 +35,15 @@ export interface InductOptions<T> {
     /** Maximum amount of records returned */
     limit?: number;
     /** Options to transform the HTTP response object */
-    resultOpts?: ControllerResultOpts;
+    resultOpts?: CommandResultOpts;
+}
+
+export type ServiceFactory = <T>(con: knex, table: string) => InductService<T>
+export interface InductService<T> {
+    create: (model: Model<T>) => PErrorEither<T>;
+    find: (model: Model<T>) => PErrorEither<T[]>;
+    findAll: () => PErrorEither<T[]>;
+    update: (model: Model<T>) => PErrorEither<T>;
+    del: (model: Model<T>) => PErrorEither<T>;
+    [k: string]: ModelAction<T>;
 }

@@ -4,6 +4,9 @@ import { authCookieParser } from './middleware/parse-auth-cookies';
 import { sendResult } from './middleware/send-result';
 import { Handler } from './types/express';
 import { BindingConfig } from './types/request-context';
+import { ControllerOpts } from './induct-controller';
+import { isNullOrUndefined } from './helpers/value-checks';
+import initContext from './middleware/init-context';
 
 interface HandlerOpts<T> {
 	/** Handler should check if the logged-in user is an admin. Default: false */
@@ -17,9 +20,16 @@ interface HandlerOpts<T> {
 
 export const composeHandler = <T>(
 	action: Handler | Handler[],
-	opts: HandlerOpts<T> = { authorize: true },
+	cOpts?: ControllerOpts<T>,
+	opts?: HandlerOpts<T>
 ): Handler[] => {
 	const chain: Handler[] = [];
+
+	if (isNullOrUndefined(cOpts)) {
+			
+	}
+
+	chain.push(initContext(cOpts));
 
 	if (opts.authorize !== false) {
 		// @todo implement tests with cookies, don't use middleware in test for now
@@ -31,9 +41,6 @@ export const composeHandler = <T>(
 	}
 
 	chain.push(bindModel(opts.context));
-
-	// chain.push(initConnection());
-	// chain.push(initModel(model, opts));
 
 	if (Array.isArray(action)) {
 		chain.push(...action);
