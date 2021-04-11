@@ -8,12 +8,13 @@
         "allowJs": true,
         "strict": false,
         "declaration": true,
-        "declarationDir": "./lib",
-        "outDir": "./lib",
+        "declarationDir": "./dist",
+        "outDir": "./dist",
         "resolveJsonModule": true,
-        "emitDecoratorMetadata": true
+        "emitDecoratorMetadata": true,
+        "skipLibCheck": true
     },
     "lib": ["es2015", "es2019", "dom"],
     "include": ["src/**/*"],
-    "exclude": ["node_modules", "**/*.spec.ts", "src/tests/**/*", "coverage", "examples/**/*"],
+    "exclude": ["node_modules/**/*", "**/*.spec.ts", "src/tests/**/*", "coverage", "examples/**/*"],
 }

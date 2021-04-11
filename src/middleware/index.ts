@@ -1,8 +1,8 @@
-export { validateDto } from './dto-validation';
-export { bindModel } from './bind-model';
+export { bindModel } from './dto-validation';
+export { consolidateRequestData } from './consolidate-req-data';
 export { errorHandler } from './handle-error';
 export { initContext } from './init-context';
 export { authCookieParser } from './parse-auth-cookies';
-export { queryAction } from './query-action';
+export { dbAction } from './database-action';
 export { sendResult } from './send-result';
 export { verifyJWT } from './verify-jwt';

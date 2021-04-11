@@ -1,6 +1,12 @@
-import { ErrorEither, PErrorEither } from './utils';
-import { Model } from '../sql-service';
+import { PErrorEither } from './utils';
+import knex from 'knex';
 
 export type ModelAction<T> = (
-	model: Model<T>
-) => PErrorEither<T | T[]> | ErrorEither<T | T[]>;
+    con: knex,
+    data?: Partial<T>
+) => PErrorEither<T | T[]>;
+export type ModelActionFactory<T> = (
+    table: string,
+    lookupFields?: string[],
+    returnFields?: string[]
+) => ModelAction<T>;

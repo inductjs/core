@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 export { CommandResult } from './helpers/command-result';
-export { getModelForClass, prop } from '@typegoose/typegoose';
 
 // Module imports
 import * as helpers from './helpers';
@@ -9,19 +8,35 @@ import * as handlers from './handlers';
 import * as types from './types';
 
 // Definition of top level imports for consumer
-export const { result, wrapAsync } = helpers;
-export const { queryAction, validateDto } = middleware;
-export { composeHandler } from './compose-handler';
-export { Validator } from './validator';
+export const {
+	result, wrapAsync, jwt, log,
+} = helpers;
+export const {
+	dbAction: createDbAction,
+	consolidateRequestData,
+	bindModel,
+	errorHandler,
+} = middleware;
+export const {
+	QueryType,
+	buildCreateQuery,
+	buildDeleteQuery,
+	buildFindAllQuery,
+	buildUpdateQuery,
+	buildFindQuery,
+	createQuery,
+} = helpers.queries;
 
-export { SqlStrategy as SqlStrategy } from './strategies/sql-strategy';
+export { createHandler } from './create-handler';
+export { Validator as DTO } from './middleware/dto-validation';
 export { ApplicationOpts } from './types/ApplicationOptions';
 export {
-	ContextError, QueryError, ValidationError, CommandError,
+	ContextError,
+	QueryError,
+	ValidationError,
+	CommandError,
 } from './types/error';
-import { createApp as induct } from './induct-app';
-import { DefaultSqlService } from './sql-service';
-import { createController } from './induct-controller';
+import { createApplication } from './induct-app';
 
 export const {
 	ok,
@@ -36,7 +51,5 @@ export const {
 } = result;
 
 export {
-	helpers, handlers, middleware, types, induct, DefaultSqlService,
-	createController,
+	helpers, handlers, middleware, types, createApplication,
 };
-

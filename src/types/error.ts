@@ -1,4 +1,4 @@
-import { errMsg, logError } from '../helpers/logging';
+import { errMsg, error } from '../helpers/logging';
 import { red } from 'chalk';
 
 export class ContextError extends Error {

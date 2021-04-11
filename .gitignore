@@ -106,3 +106,5 @@ dist
 
 **/node_modules
 ROADMAP.md
+
+lib/

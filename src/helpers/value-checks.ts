@@ -5,7 +5,9 @@ export const isNonEmptyArray = (arr: any): boolean => {
 };
 
 export const isNonEmptyObject = (obj: any): boolean => {
-	return !isNullOrUndefined(obj)
-		&& typeof obj === 'object'
-		&& Object.keys(obj).length > 0;
+	return (
+		!isNullOrUndefined(obj) &&
+        typeof obj === 'object' &&
+        Object.keys(obj).length > 0
+	);
 };

@@ -8,8 +8,9 @@ import helmet from 'helmet';
 import express from 'express';
 // import { metaHandler } from './handlers/meta-handler';
 import { ApplicationOpts } from './types/ApplicationOptions';
-import { logError, logInfo } from './helpers/logging';
+import { error, info } from './helpers/logging';
 import { errorHandler } from './middleware';
+import { isNonEmptyArray } from './helpers';
 
 interface ControllerFile {
 	path: string;
@@ -65,7 +66,7 @@ async function loadControllerFiles(folder: string): Promise<ControllerFile[]> {
 			const controller = (await import(fullPath)).default;
 			const path = file.substring(0, file.length -3);
 
-			console.log({controller})
+			console.log({ controller });
 
 			if (!controller) {
 				throw new TypeError(
@@ -79,7 +80,7 @@ async function loadControllerFiles(folder: string): Promise<ControllerFile[]> {
 			});
 		}
 		catch (e) {
-			logError(e);
+			error(e);
 			throw e;
 		}
 	}
@@ -92,7 +93,7 @@ function mountControllers(rootNs: string, files: ControllerFile[]): void {
 		const path = `/${rootNs}/${file.path}`;
 		app.use(path, file.router);
 
-		logInfo(`[route] mounted ${path}`);
+		info(`[route] mounted ${path}`);
 	}
 }
 
@@ -104,17 +105,17 @@ function mountErrorHandler(): void {
 	app.use(errorHandler);
 }
 
-export async function createApp(opts: ApplicationOpts):
+export async function createApplication(opts: ApplicationOpts):
 	Promise<{ app: express.Express; start: () => void}> {
 	const rootNs = opts.rootNamespace ?? 'api';
 	const port = opts.port ?? 3000;
 	const controllerFolder = opts.controllerFolder ?? './src/controllers';
 
 	const controllers = await loadControllerFiles(controllerFolder);
-	console.log(controllers.length)
 
 	mountAppLevelMiddleware();
-	if (controllers.length) {
+
+	if (isNonEmptyArray(controllers)) {
 		mountControllers(rootNs, controllers);
 	}
 	//	mountMetaHandler();
@@ -125,7 +126,7 @@ export async function createApp(opts: ApplicationOpts):
 	mountErrorHandler();
 
 	function start(): void {
-		app.listen(port, () => logInfo(
+		app.listen(port, () => info(
 			`[info] HTTP server is listening on port ${bold(port)}`
 		));
 	}

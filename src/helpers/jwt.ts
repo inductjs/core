@@ -6,8 +6,7 @@ const {
 	JWT_SECRET,
 } = process.env;
 
-
-export const sign = async <T extends object>(
+export const sign = async <T extends Record<string, any>>(
 	payload: T,
 	opts: SignOptions,
 	secret?: string
@@ -28,7 +27,7 @@ export const sign = async <T extends object>(
 	});
 };
 
-export const verify = async <T extends object>(
+export const verify = async <T extends Record<string, any>>(
 	token: string,
 	secret: string,
 	opts?: VerifyOptions
@@ -46,21 +45,19 @@ export const verify = async <T extends object>(
 	return prom;
 };
 
-export const signAuthTokens = async <T extends object>(payload: T): Promise<{
-	sessionToken: string;
-	refreshToken: string;
+export const signAuthTokens = async <T extends Record<string, any>>(
+	payload: T
+): Promise<{
+    sessionToken: string;
+    refreshToken: string;
 }> => {
-	const signSession = sign(
-		payload,
-		{ expiresIn: SESSION_TOKEN_DURATION }
-	);
+	const signSession = sign(payload, { expiresIn: SESSION_TOKEN_DURATION });
 
 	const signRefresh = sign(
 		{
 			...payload,
 			isRefresh: true,
-		}
-		,
+		},
 		{ expiresIn: REFRESH_TOKEN_DURATION }
 	);
 
@@ -74,6 +71,5 @@ export const signAuthTokens = async <T extends object>(payload: T): Promise<{
 		refreshToken,
 	};
 };
-
 
 export default sign;

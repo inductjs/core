@@ -1,5 +1,5 @@
 
-import { logError } from '../helpers/logging';
+import { error } from '../helpers/logging';
 import { Response } from 'express';
 
 export function errorHandler(err, req, res, next): Response {
@@ -8,7 +8,7 @@ export function errorHandler(err, req, res, next): Response {
 	}
 
 	if (process.env.NODE_ENV !== 'production') {
-		logError(`${err.name}: ${err.message}\n\n${err.stack}`);
+		error(`${err.name}: ${err.message}\n\n${err.stack}`);
 	}
 
 	const status = err.name === 'NotFoundError'

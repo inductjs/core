@@ -1,39 +1,61 @@
+import { ValidationError, Validator } from 'class-validator';
 import {
 	Request, Response, NextFunction, Handler,
 } from '../types/express';
-import { wrapAsync } from '../helpers/wrap-async';
+import { isNonEmptyArray } from '../helpers';
 import { badRequest } from '../helpers/result';
-import { Validator } from '../validator';
-import { DTOConstructor } from '../types/constructors';
-import { ContextError } from '../types/error';
-import { isNonEmptyArray, isNonEmptyObject } from '../helpers/value-checks';
 
-/**
- * Returns middleware that validates the stored model data.
- * Overwrites req.model with a frozen version of the validated DTO data.
- */
-export const validateDto = <T>(dto: DTOConstructor<T>): Handler => {
-	return wrapAsync(
-		async (
-			req: Request,
-			res: Response,
-			next: NextFunction
-		): Promise<Response> => {
-			if (!isNonEmptyObject(req.binding)) {
-				throw new ContextError('ValidateDTO missing request binding');
-			}
+export type DTOConstructor<T> = new (data: Partial<T>) => Validator;
+interface IModelBinder<T> {
+    validate(): Promise<ValidationError[]>;
+    extractModelBinding(): Partial<T>;
+}
 
-			const validator = new Validator<T>(dto, req.model);
+function ModelBinder<T>(
+	dto: Validator,
+	data: Partial<T>
+): IModelBinder<T> {
+	return {
+		validate(): Promise<ValidationError[]> {
+			return dto.validate(data);
+		},
 
-			const validationErrors = await validator.validate();
+		extractModelBinding(): Partial<T> {
+			const keys = [data, dto]
+				.map(o => Object.keys(o))
+				.sort((a, b) => a.length - b.length)
+				.reduce((a, b) => a.filter(key => b.includes(key)));
 
-			if (isNonEmptyArray(validationErrors)) {
-				return badRequest(res);
-			}
+			const model = {};
 
-			req.model = Object.freeze(validator.dtoData());
+			keys.forEach(key => (model[key] = data[key]));
 
-			next();
+			return model;
+		},
+	};
+}
+
+export default function bindModel<T = {}>(dtoc: DTOConstructor<T>): Handler {
+	return async function(
+		req: Request,
+		res: Response,
+		next: NextFunction
+	): Promise<Response> {
+		const dto = new dtoc(req.body);
+		const val = ModelBinder(dto, req.body);
+
+		const errors = await val.validate();
+
+		if (isNonEmptyArray(errors)) {
+			return badRequest(res);
 		}
-	);
+
+		req.model = Object.freeze(val.extractModelBinding());
+
+		next();
+	};
+}
+
+export {
+	bindModel, Validator, ValidationError,
 };
