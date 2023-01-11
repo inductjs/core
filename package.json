@@ -57,7 +57,7 @@
         "eslint": "^7.5.0",
         "git-cz": "^4.7.1",
         "jest": "^26.4.2",
-        "knex": "^0.21.2",
+        "knex": "^2.4.0",
         "mock-knex": "^0.4.9",
         "prettier": "^2.0.5",
         "prettier-eslint": "^9.0.1",
@@ -78,7 +78,7 @@
         "body-parser": "^1.19.0",
         "class-validator": "^0.12.2",
         "express": "^4.17.1",
-        "knex": "^0.21.2",
+        "knex": "^2.4.0",
         "mongoose": "^5.10.8",
         "ts-transformer-keys": "^0.4.2",
         "chalk": "^4.1.0"
